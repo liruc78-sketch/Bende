@@ -411,6 +411,9 @@ async function doLogin(){
   const btn=document.getElementById('login-btn');
   btn.textContent='登录中...';btn.disabled=true;
   try{
+    // 修复BUG核心：登录前强制清除本地可能损坏的旧会话状态
+    await sb.auth.signOut();
+    
     const{data,error}=await sb.auth.signInWithPassword({email,password:pwd});
     if(error){showAuthErr(error.message);return;}
     // 显式写入 session，防止 localStorage 未自动持久化
@@ -473,8 +476,8 @@ async function doLogout(){
 }
 
 // INIT
-sb.auth.onAuthStateChange(async(event,session)=>{
-  if(event==='SIGNED_IN'&&session?.user&&!currentUser){
+async function initApp(session) {
+  if(session?.user && !currentUser){
     currentUser=session.user;
     await loadProfile();
     if(!currentProfile){
@@ -485,10 +488,25 @@ sb.auth.onAuthStateChange(async(event,session)=>{
     updateSidebar();
     navigate('dashboard');
   }
-});
-sb.auth.getSession().then(({data:{session}})=>{
-  if(!session){
+}
+
+sb.auth.onAuthStateChange(async(event,session)=>{
+  if((event==='SIGNED_IN' || event==='INITIAL_SESSION') && session){
+    initApp(session);
+  } else if (event === 'SIGNED_OUT') {
+    currentUser=null;
+    currentProfile=null;
+    document.getElementById('app').style.display='none';
     document.getElementById('auth-screen').style.display='flex';
+  }
+});
+
+sb.auth.getSession().then(({data:{session}, error})=>{
+  if(error || !session){
+    if(error) sb.auth.signOut(); // 如果 Token 损坏则自动清理
+    document.getElementById('auth-screen').style.display='flex';
+  } else {
+    initApp(session); // 刷新页面时自动恢复登录状态
   }
 });
 
