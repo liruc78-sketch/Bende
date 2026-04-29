@@ -541,24 +541,7 @@ async function proxyFetch(apiPath, {method='GET', queryParams={}, body}={}){
   });
 }
 
-async function syncRemoteBalance(){
-  try{
-    const res=await proxyFetch('/api/user/balance');
-    const data=await res.json();
-    if(data.code===0&&data.data?.balance!==undefined){
-      const remoteBalance=parseFloat(data.data.balance);
-      await sb.from('profiles').update({balance:remoteBalance}).eq('id',currentUser.id);
-      currentProfile.balance=remoteBalance;
-      updateSidebar();
-      toast((currentLang==='zh'?'余额已同步：':'Balance synced: ')+remoteBalance.toFixed(2)+' '+t('points'),'success');
-    } else {
-      toast((currentLang==='zh'?'同步失败: ':'Sync failed: ')+(data.message||'unknown error'),'error');
-    }
-  }catch(e){
-    console.warn('syncRemoteBalance failed:',e.message);
-    toast((currentLang==='zh'?'同步失败: ':'Sync failed: ')+e.message,'error');
-  }
-}
+// 已移除 syncRemoteBalance，启用本地独立积分系统
 
 async function toggleLang(){
   currentLang=currentLang==='zh'?'en':'zh';
@@ -588,10 +571,7 @@ function navigate(page){
   if(pages[page])pages[page]();
 }
 
-function promptSyncBalance(){
-  toast(currentLang==='zh'?'正在同步余额...':'Syncing balance...','info');
-  syncRemoteBalance();
-}
+// 已移除 promptSyncBalance
 
 // ─── DASHBOARD ───
 async function renderDashboard(){
@@ -637,7 +617,6 @@ async function renderDashboard(){
     <div class="section-header">
       <div class="section-title">${currentLang==='zh'?'最近任务':'Recent Tasks'}</div>
       <button class="btn btn-secondary btn-sm" onclick="navigate('task')">${currentLang==='zh'?'+ 新建任务':'+ New Task'}</button>
-      <button class="btn btn-secondary btn-sm" onclick="promptSyncBalance()">${currentLang==='zh'?'🔄 同步余额':'🔄 Sync Balance'}</button>
     </div>
     <div class="section-body">
       ${(tasks||[]).length===0?`<div class="empty-state">${t('empty')}</div>`:
@@ -793,6 +772,13 @@ async function submitTask(){
   const country=document.getElementById('task-country').value;
   const taskName=document.getElementById('task-name').value.trim();
   if(!selectedFile){toast(currentLang==='zh'?'请上传号码文件':'Please upload a file','error');return;}
+  
+  // 新增：提交前检查本地独立积分余额是否充足
+  if(parseFloat(currentProfile?.balance || 0) <= 0){
+    toast(currentLang==='zh'?'余额不足，请先充值':'Insufficient balance, please recharge','error');
+    return;
+  }
+
   const btn=document.getElementById('submit-task-btn');
   btn.textContent=currentLang==='zh'?'提交中...':'Submitting...';
   btn.disabled=true;
