@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>TH DATA - 号码筛选平台</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bg:#0d0f14;
+  --bg2:#141720;
+  --bg3:#1c2030;
+  --bg4:#242840;
+  --border:#2a2f45;
+  --border2:#353b58;
+  --text:#e8eaf0;
+  --text2:#9199b8;
+  --text3:#5a6280;
+  --accent:#4f8ef7;
+  --accent2:#3a7ae0;
+  --green:#2ecc7a;
+  --green2:#1fa85a;
+  --yellow:#f5a623;
+  --red:#e05252;
+  --purple:#8b5cf6;
+  --radius:10px;
+  --radius2:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;min-height:100vh;overflow-x:hidden}
+a{color:var(--accent);text-decoration:none}
+
+/* LAYOUT */
+#app{display:flex;min-height:100vh}
+#sidebar{width:220px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;transition:transform .3s}
+#main{margin-left:220px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+#topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+#content{padding:28px;flex:1}
+
+/* SIDEBAR */
+.logo{padding:20px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.logo-icon{width:34px;height:34px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff}
+.logo-text{font-weight:700;font-size:16px;color:var(--text)}
+.logo-sub{font-size:11px;color:var(--text3);margin-top:1px}
+.nav-section{padding:16px 12px 4px;font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.08em;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 14px;margin:1px 8px;border-radius:var(--radius);cursor:pointer;color:var(--text2);font-size:13.5px;transition:all .15s;position:relative}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:rgba(79,142,247,.15);color:var(--accent);font-weight:500}
+.nav-item svg{width:16px;height:16px;flex-shrink:0}
+.nav-bottom{margin-top:auto;padding:12px;border-top:1px solid var(--border)}
+.user-pill{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius);background:var(--bg3)}
+.user-avatar{width:30px;height:30px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#fff;flex-shrink:0}
+.user-info{flex:1;overflow:hidden}
+.user-name{font-size:12.5px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-bal{font-size:11px;color:var(--green);white-space:nowrap}
+
+/* TOPBAR */
+.page-title{font-size:15px;font-weight:600;color:var(--text)}
+.topbar-actions{display:flex;align-items:center;gap:10px}
+.lang-btn{background:var(--bg3);border:1px solid var(--border);color:var(--text2);padding:5px 10px;border-radius:6px;cursor:pointer;font-size:12px}
+.lang-btn:hover{color:var(--text);border-color:var(--border2)}
+
+/* CARDS */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:18px 20px}
+.stat-label{font-size:12px;color:var(--text3);margin-bottom:6px}
+.stat-value{font-size:26px;font-weight:700;color:var(--text)}
+.stat-sub{font-size:11px;color:var(--text3);margin-top:4px}
+.stat-card.accent-green .stat-value{color:var(--green)}
+.stat-card.accent-blue .stat-value{color:var(--accent)}
+.stat-card.accent-yellow .stat-value{color:var(--yellow)}
+
+/* SECTION */
+.section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);overflow:hidden}
+.section-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.section-title{font-size:14px;font-weight:600;color:var(--text)}
+.section-body{padding:20px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;border:none;transition:all .15s;text-decoration:none}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);border:1px solid var(--border2);color:var(--text)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn-danger{background:rgba(224,82,82,.15);border:1px solid var(--red);color:var(--red)}
+.btn-success{background:rgba(46,204,122,.15);border:1px solid var(--green);color:var(--green)}
+.btn-sm{padding:5px 10px;font-size:12px}
+
+/* FORMS */
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:12px;color:var(--text2);margin-bottom:6px;font-weight:500}
+.form-input,.form-select,.form-textarea{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:9px 12px;font-size:13.5px;font-family:inherit;outline:none;transition:border-color .15s}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent)}
+.form-input::placeholder{color:var(--text3)}
+.form-textarea{resize:vertical;min-height:80px}
+.form-select option{background:var(--bg3)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+
+/* TABLE */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;border-bottom:1px solid var(--border)}
+td{padding:11px 14px;font-size:13px;color:var(--text);border-bottom:1px solid var(--border)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:500}
+.badge-green{background:rgba(46,204,122,.15);color:var(--green)}
+.badge-blue{background:rgba(79,142,247,.15);color:var(--accent)}
+.badge-yellow{background:rgba(245,166,35,.15);color:var(--yellow)}
+.badge-red{background:rgba(224,82,82,.15);color:var(--red)}
+.badge-gray{background:rgba(255,255,255,.07);color:var(--text2)}
+.badge-purple{background:rgba(139,92,246,.15);color:var(--purple)}
+
+/* AUTH */
+#auth-screen{min-height:100vh;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px}
+.auth-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:36px 32px;width:100%;max-width:400px}
+.auth-logo{text-align:center;margin-bottom:28px}
+.auth-logo-icon{width:50px;height:50px;background:var(--accent);border-radius:12px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;color:#fff;margin-bottom:10px}
+.auth-logo h1{font-size:20px;font-weight:700;color:var(--text)}
+.auth-logo p{font-size:13px;color:var(--text3);margin-top:4px}
+.auth-tabs{display:flex;background:var(--bg3);border-radius:8px;padding:3px;margin-bottom:24px;gap:3px}
+.auth-tab{flex:1;text-align:center;padding:7px;border-radius:6px;cursor:pointer;font-size:13px;color:var(--text2);transition:all .15s}
+.auth-tab.active{background:var(--bg2);color:var(--text);font-weight:500}
+.auth-divider{text-align:center;font-size:12px;color:var(--text3);margin:8px 0}
+.auth-err{background:rgba(224,82,82,.12);border:1px solid var(--red);color:var(--red);border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none}
+
+/* PROGRESS BAR */
+.progress-bar{background:var(--bg3);border-radius:20px;height:6px;overflow:hidden}
+.progress-fill{height:100%;border-radius:20px;background:var(--accent);transition:width .4s}
+
+/* UPLOAD ZONE */
+.upload-zone{border:2px dashed var(--border2);border-radius:var(--radius2);padding:32px;text-align:center;cursor:pointer;transition:all .15s;background:var(--bg3)}
+.upload-zone:hover,.upload-zone.dragover{border-color:var(--accent);background:rgba(79,142,247,.05)}
+.upload-zone p{color:var(--text2);font-size:13px;margin-top:8px}
+.upload-zone.has-file{border-color:var(--green);background:rgba(46,204,122,.05)}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;display:none}
+.modal-overlay.open{display:flex}
+.modal-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:28px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.modal-title{font-size:16px;font-weight:600;color:var(--text)}
+.modal-close{cursor:pointer;color:var(--text3);font-size:20px;line-height:1}
+.modal-close:hover{color:var(--text)}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;right:24px;z-index:999;display:flex;flex-direction:column;gap:8px}
+.toast-item{padding:12px 18px;border-radius:var(--radius);font-size:13.5px;color:#fff;min-width:220px;animation:slideIn .2s ease;box-shadow:0 4px 20px rgba(0,0,0,.5)}
+.toast-success{background:#1a6b3e}
+.toast-error{background:#7a2020}
+.toast-info{background:#1a3a6b}
+@keyframes slideIn{from{transform:translateX(40px);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* ADMIN TAB */
+.admin-tabs{display:flex;gap:4px;margin-bottom:20px;background:var(--bg3);padding:4px;border-radius:10px;display:inline-flex}
+.admin-tab{padding:7px 16px;border-radius:7px;cursor:pointer;font-size:13px;color:var(--text2)}
+.admin-tab.active{background:var(--bg2);color:var(--text);font-weight:500}
+
+/* PRICE GRID */
+.price-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.price-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
+.price-card-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.price-card-icon{font-size:18px}
+.price-card-name{font-size:13px;font-weight:600;color:var(--text)}
+.price-item{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:12px}
+.price-item:last-child{border-bottom:none}
+.price-item-label{color:var(--text2)}
+.price-item-val{color:var(--accent);font-weight:500}
+.price-item-status{padding:2px 6px;border-radius:10px;font-size:10px}
+
+/* MISC */
+.empty-state{text-align:center;padding:48px 20px;color:var(--text3)}
+.empty-state svg{width:40px;height:40px;margin:0 auto 12px;opacity:.3;display:block}
+.copy-addr{cursor:pointer;color:var(--accent);font-size:12px;margin-left:8px}
+.copy-addr:hover{text-decoration:underline}
+.info-box{background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.25);border-radius:var(--radius);padding:12px 14px;font-size:13px;color:var(--text2);margin-bottom:16px}
+.info-box strong{color:var(--accent)}
+.steps{display:flex;gap:12px;margin:12px 0}
+.step{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px;text-align:center;font-size:12px}
+.step-num{width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;font-size:12px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:6px}
+.step-label{color:var(--text2)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:700px){.two-col{grid-template-columns:1fr}.form-row{grid-template-columns:1fr}#sidebar{transform:translateX(-220px)}#main{margin-left:0}}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:5px}
+.dot-green{background:var(--green)}
+.dot-yellow{background:var(--yellow)}
+.dot-blue{background:var(--accent)}
+.dot-red{background:var(--red)}
+.qr-box{background:#fff;border-radius:8px;padding:8px;display:inline-block}
+.wallet-addr{font-family:monospace;font-size:12px;background:var(--bg3);padding:8px 12px;border-radius:6px;word-break:break-all;color:var(--text2);border:1px solid var(--border)}
+</style>
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">TH</div>
+      <h1>TH DATA</h1>
+      <p id="auth-subtitle">号码筛选平台 · Phone Screening Platform</p>
+    </div>
+    <div class="auth-tabs">
+      <div class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">登录 Login</div>
+      <div class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">注册 Register</div>
+    </div>
+    <div id="auth-err" class="auth-err"></div>
+    <div id="login-form">
+      <div class="form-group">
+        <label class="form-label">邮箱 Email</label>
+        <input type="email" id="login-email" class="form-input" placeholder="your@email.com"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">密码 Password</label>
+        <input type="password" id="login-pwd" class="form-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
+      </div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="doLogin()" id="login-btn">登录 Login</button>
+    </div>
+    <div id="register-form" style="display:none">
+      <div class="form-group">
+        <label class="form-label">邮箱 Email</label>
+        <input type="email" id="reg-email" class="form-input" placeholder="your@email.com"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">密码 Password（至少6位 / min 6 chars）</label>
+        <input type="password" id="reg-pwd" class="form-input" placeholder="••••••••"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">确认密码 Confirm Password</label>
+        <input type="password" id="reg-pwd2" class="form-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')doRegister()"/>
+      </div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="doRegister()" id="reg-btn">注册 Register</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" style="display:none">
+  <!-- Sidebar -->
+  <div id="sidebar">
+    <div class="logo">
+      <div class="logo-icon">TH</div>
+      <div>
+        <div class="logo-text">TH DATA</div>
+        <div class="logo-sub">筛选平台 Screening</div>
+      </div>
+    </div>
+    <div style="overflow-y:auto;flex:1">
+      <div class="nav-section" id="nav-sec1">主菜单 MENU</div>
+      <div class="nav-item active" onclick="navigate('dashboard')" id="nav-dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        <span id="nav-label-dashboard">控制台 Dashboard</span>
+      </div>
+      <div class="nav-item" onclick="navigate('task')" id="nav-task">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+        <span id="nav-label-task">提交任务 New Task</span>
+      </div>
+      <div class="nav-item" onclick="navigate('tasks')" id="nav-tasks">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        <span id="nav-label-tasks">任务列表 Tasks</span>
+      </div>
+      <div class="nav-item" onclick="navigate('recharge')" id="nav-recharge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+        <span id="nav-label-recharge">充值 Recharge</span>
+      </div>
+      <div class="nav-item" onclick="navigate('logs')" id="nav-logs">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>
+        <span id="nav-label-logs">积分记录 Balance Logs</span>
+      </div>
+      <div class="nav-item" onclick="navigate('prices')" id="nav-prices">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="nav-label-prices">价格列表 Pricing</span>
+      </div>
+      <div id="admin-nav" style="display:none">
+        <div class="nav-section" id="nav-sec2">管理员 ADMIN</div>
+        <div class="nav-item" onclick="navigate('admin')" id="nav-admin">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span id="nav-label-admin">后台管理 Admin</span>
+        </div>
+      </div>
+    </div>
+    <div class="nav-bottom">
+      <div class="user-pill">
+        <div class="user-avatar" id="user-avatar-sb">?</div>
+        <div class="user-info">
+          <div class="user-name" id="user-name-sb">Loading...</div>
+          <div class="user-bal" id="user-bal-sb">0 积分</div>
+        </div>
+      </div>
+      <button class="btn btn-secondary btn-sm" style="width:100%;margin-top:8px;justify-content:center" onclick="doLogout()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <span id="logout-label">退出 Logout</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div id="main">
+    <div id="topbar">
+      <div class="page-title" id="page-title">控制台</div>
+      <div class="topbar-actions">
+        <button class="lang-btn" onclick="toggleLang()">🌐 <span id="lang-toggle-label">EN</span></button>
+        <div style="font-size:12px;color:var(--text3)" id="topbar-balance">余额: 0</div>
+      </div>
+    </div>
+    <div id="content">
+      <!-- Pages rendered here -->
+    </div>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modal-approve">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-approve-title">审核充值订单</div>
+      <div class="modal-close" onclick="closeModal('modal-approve')">×</div>
+    </div>
+    <div id="modal-approve-body"></div>
+  </div>
+</div>
+<div class="modal-overlay" id="modal-adjust">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">手动调整积分 / Adjust Balance</div>
+      <div class="modal-close" onclick="closeModal('modal-adjust')">×</div>
+    </div>
+    <div id="modal-adjust-body"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+const SUPABASE_URL='https://tdpavflqliqcxvougcdf.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRkcGF2ZmxxbGlxY3h2b3VnY2RmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMTE3OTUsImV4cCI6MjA5Mjg4Nzc5NX0.qPMFm-qq3B6SkHts0ghqOuBJ07jnfoF6ZB_rWMhpeZE';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{
+  auth:{
+    persistSession:true,
+    autoRefreshToken:true,
+    detectSessionInUrl:false,
+    storage:window.localStorage
+  }
+});
+
+let currentUser=null;
+let currentProfile=null;
+let currentLang='zh';
+let currentPage='dashboard';
+
+const T={
+  'dashboard':{zh:'控制台',en:'Dashboard'},
+  'task':{zh:'提交任务',en:'New Task'},
+  'tasks':{zh:'任务列表',en:'My Tasks'},
+  'recharge':{zh:'充值',en:'Recharge'},
+  'logs':{zh:'积分记录',en:'Balance Logs'},
+  'prices':{zh:'价格列表',en:'Pricing'},
+  'admin':{zh:'后台管理',en:'Admin Panel'},
+  'points':{zh:'积分',en:'pts'},
+  'balance':{zh:'余额',en:'Balance'},
+  'status':{zh:'状态',en:'Status'},
+  'actions':{zh:'操作',en:'Actions'},
+  'loading':{zh:'加载中...',en:'Loading...'},
+  'empty':{zh:'暂无数据',en:'No data yet'},
+  'confirm':{zh:'确认',en:'Confirm'},
+  'cancel':{zh:'取消',en:'Cancel'},
+  'submit':{zh:'提交',en:'Submit'},
+  'download':{zh:'下载',en:'Download'},
+  'pending':{zh:'待审核',en:'Pending'},
+  'approved':{zh:'已通过',en:'Approved'},
+  'rejected':{zh:'已拒绝',en:'Rejected'},
+  'Waiting':{zh:'待执行',en:'Waiting'},
+  'Ongoing':{zh:'执行中',en:'Ongoing'},
+  'Finish':{zh:'已完成',en:'Finished'},
+  'Fail':{zh:'失败',en:'Failed'},
+  'Close':{zh:'已关闭',en:'Closed'},
+  'Pending':{zh:'排队中',en:'Queued'},
+  'today-tasks':{zh:'今日任务',en:"Today's Tasks"},
+  'today-filter':{zh:'今日筛选',en:"Today's Screenings"},
+  'month-consume':{zh:'本月消耗',en:'Month Consumption'},
+};
+const t=k=>T[k]?T[k][currentLang]||T[k].zh:k;
+
+function toast(msg,type='info'){
+  const d=document.createElement('div');
+  d.className=`toast-item toast-${type}`;
+  d.textContent=msg;
+  document.getElementById('toast').appendChild(d);
+  setTimeout(()=>d.remove(),3500);
+}
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+
+// AUTH
+function switchAuthTab(tab){
+  document.getElementById('tab-login').classList.toggle('active',tab==='login');
+  document.getElementById('tab-register').classList.toggle('active',tab==='register');
+  document.getElementById('login-form').style.display=tab==='login'?'':'none';
+  document.getElementById('register-form').style.display=tab==='register'?'':'none';
+  document.getElementById('auth-err').style.display='none';
+}
+async function doLogin(){
+  const email=document.getElementById('login-email').value.trim();
+  const pwd=document.getElementById('login-pwd').value;
+  if(!email||!pwd){showAuthErr('请填写邮箱和密码 / Please fill in email and password');return;}
+  const btn=document.getElementById('login-btn');
+  btn.textContent='登录中...';btn.disabled=true;
+  try{
+    const{data,error}=await sb.auth.signInWithPassword({email,password:pwd});
+    if(error){showAuthErr(error.message);return;}
+    // 显式写入 session，防止 localStorage 未自动持久化
+    if(data?.session){
+      await sb.auth.setSession({
+        access_token:data.session.access_token,
+        refresh_token:data.session.refresh_token
+      });
+    }
+    if(data?.user){
+      currentUser=data.user;
+      await loadProfile();
+      // 兜底：若 profile 查询失败则构造最小对象并写库
+      if(!currentProfile){
+        currentProfile={id:data.user.id,email:data.user.email,balance:0,role:'user'};
+        try{
+          await sb.from('profiles').upsert({
+            id:data.user.id,
+            email:data.user.email,
+            balance:0,
+            role:'user',
+            created_at:new Date().toISOString()
+          });
+        }catch(ue){console.warn('upsert profile failed:',ue.message);}
+      }
+      document.getElementById('auth-screen').style.display='none';
+      document.getElementById('app').style.display='flex';
+      updateSidebar();
+      navigate('dashboard');
+    }
+  } catch(e){
+    showAuthErr('登录异常，请重试 / Login error: '+e.message);
+  } finally{
+    btn.textContent='登录 Login';btn.disabled=false;
+  }
+}
+async function doRegister(){
+  const email=document.getElementById('reg-email').value.trim();
+  const pwd=document.getElementById('reg-pwd').value;
+  const pwd2=document.getElementById('reg-pwd2').value;
+  if(!email||!pwd){showAuthErr('请填写所有字段 / Please fill all fields');return;}
+  if(pwd!==pwd2){showAuthErr('两次密码不一致 / Passwords do not match');return;}
+  if(pwd.length<6){showAuthErr('密码至少6位 / Password min 6 chars');return;}
+  document.getElementById('reg-btn').textContent='注册中...';
+  const{error}=await sb.auth.signUp({email,password:pwd});
+  document.getElementById('reg-btn').textContent='注册 Register';
+  if(error){showAuthErr(error.message);return;}
+  toast('注册成功！请登录 / Registered! Please log in','success');
+  switchAuthTab('login');
+}
+function showAuthErr(msg){
+  const el=document.getElementById('auth-err');
+  el.textContent=msg;el.style.display='block';
+}
+async function doLogout(){
+  await sb.auth.signOut();
+  currentUser=null;currentProfile=null;
+  document.getElementById('app').style.display='none';
+  document.getElementById('auth-screen').style.display='flex';
+}
+
+// INIT
+sb.auth.onAuthStateChange(async(event,session)=>{
+  if(event==='SIGNED_IN'&&session?.user&&!currentUser){
+    currentUser=session.user;
+    await loadProfile();
+    if(!currentProfile){
+      currentProfile={id:session.user.id,email:session.user.email,balance:0,role:'user'};
+    }
+    document.getElementById('auth-screen').style.display='none';
+    document.getElementById('app').style.display='flex';
+    updateSidebar();
+    navigate('dashboard');
+  }
+});
+sb.auth.getSession().then(({data:{session}})=>{
+  if(!session){
+    document.getElementById('auth-screen').style.display='flex';
+  }
+});
+
+async function loadProfile(){
+  try{
+    const{data,error}=await sb.from('profiles').select('*').eq('id',currentUser.id).single();
+    if(data&&!error){
+      currentProfile=data;
+      currentLang=data.lang||'zh';
+    } else {
+      console.warn('loadProfile warning:',error?.message);
+    }
+  } catch(e){
+    console.warn('loadProfile exception:',e.message);
+  }
+}
+
+function updateSidebar(){
+  if(!currentProfile)return;
+  const initials=(currentProfile.username||currentProfile.email||'?')[0].toUpperCase();
+  document.getElementById('user-avatar-sb').textContent=initials;
+  document.getElementById('user-name-sb').textContent=currentProfile.username||currentProfile.email;
+  document.getElementById('user-bal-sb').textContent=`${parseFloat(currentProfile.balance||0).toFixed(2)} 积分`;
+  document.getElementById('topbar-balance').textContent=`${t('balance')}: ${parseFloat(currentProfile.balance||0).toFixed(2)} ${t('points')}`;
+  if(currentProfile.role==='admin'){
+    document.getElementById('admin-nav').style.display='block';
+  }
+}
+
+async function refreshBalance(){
+  await loadProfile();
+  updateSidebar();
+}
+
+async function syncRemoteBalance(token){
+  // Sync balance from th333.cc API
+  try{
+    const res=await fetch('https://api.th333.cc/api/user/balance',{headers:{token}});
+    const data=await res.json();
+    if(data.code===0&&data.data?.balance!==undefined){
+      const remoteBalance=parseFloat(data.data.balance);
+      await sb.from('profiles').update({balance:remoteBalance}).eq('id',currentUser.id);
+      currentProfile.balance=remoteBalance;
+      updateSidebar();
+      toast((currentLang==='zh'?'余额已同步：':'Balance synced: ')+remoteBalance.toFixed(2)+' '+t('points'),'success');
+    }
+  }catch(e){
+    console.warn('syncRemoteBalance failed:',e.message);
+  }
+}
+
+async function toggleLang(){
+  currentLang=currentLang==='zh'?'en':'zh';
+  document.getElementById('lang-toggle-label').textContent=currentLang==='zh'?'EN':'中';
+  if(currentProfile){
+    await sb.from('profiles').update({lang:currentLang}).eq('id',currentUser.id);
+  }
+  navigate(currentPage);
+  updateSidebar();
+}
+
+function navigate(page){
+  currentPage=page;
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+  const nav=document.getElementById('nav-'+page);
+  if(nav)nav.classList.add('active');
+  document.getElementById('page-title').textContent=t(page);
+  const pages={
+    dashboard:renderDashboard,
+    task:renderNewTask,
+    tasks:renderTasks,
+    recharge:renderRecharge,
+    logs:renderLogs,
+    prices:renderPrices,
+    admin:renderAdmin,
+  };
+  if(pages[page])pages[page]();
+}
+
+function promptSyncBalance(){
+  const token=prompt(currentLang==='zh'?'请输入 API Token 以同步远端余额:':'Enter API Token to sync remote balance:');
+  if(token)syncRemoteBalance(token);
+}
+
+// ─── DASHBOARD ───
+async function renderDashboard(){
+  const c=document.getElementById('content');
+  c.innerHTML=`<div style="color:var(--text3);font-size:13px">${t('loading')}</div>`;
+  const today=new Date().toISOString().split('T')[0];
+  const[{data:tasks},{data:orders},{data:logs}]=await Promise.all([
+    sb.from('tasks').select('*').eq('user_id',currentUser.id),
+    sb.from('recharge_orders').select('*').eq('user_id',currentUser.id),
+    sb.from('balance_logs').select('*').eq('user_id',currentUser.id),
+  ]);
+  const todayTasks=(tasks||[]).filter(t=>t.created_at?.startsWith(today)).length;
+  const todayFilter=(tasks||[]).filter(t=>t.created_at?.startsWith(today)).reduce((a,t)=>a+(t.valid_quantity||0),0);
+  const monthConsume=(logs||[]).filter(l=>l.type==='consume'&&l.created_at?.startsWith(today.slice(0,7))).reduce((a,l)=>a+Math.abs(l.amount),0);
+  const pendingOrders=(orders||[]).filter(o=>o.status==='pending').length;
+  c.innerHTML=`
+  <div class="stat-grid">
+    <div class="stat-card accent-green">
+      <div class="stat-label">${t('balance')} / ${t('points')}</div>
+      <div class="stat-value">${parseFloat(currentProfile?.balance||0).toFixed(2)}</div>
+      <div class="stat-sub">积分 Points</div>
+    </div>
+    <div class="stat-card accent-blue">
+      <div class="stat-label">${t('today-tasks')}</div>
+      <div class="stat-value">${todayTasks}</div>
+      <div class="stat-sub">本月共 ${(tasks||[]).length} 个</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">${t('today-filter')}</div>
+      <div class="stat-value">${todayFilter}</div>
+      <div class="stat-sub">有效号码 Valid numbers</div>
+    </div>
+    <div class="stat-card accent-yellow">
+      <div class="stat-label">${t('month-consume')}</div>
+      <div class="stat-value">${monthConsume.toFixed(2)}</div>
+      <div class="stat-sub">积分 Points this month</div>
+    </div>
+  </div>
+  ${pendingOrders>0?`<div class="info-box" style="margin-bottom:20px">
+    <strong>⏳ ${pendingOrders} 笔充值订单待审核 / pending recharge order(s)</strong>，请等待管理员确认 / awaiting admin approval
+  </div>`:''}
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">${currentLang==='zh'?'最近任务':'Recent Tasks'}</div>
+      <button class="btn btn-secondary btn-sm" onclick="navigate('task')">${currentLang==='zh'?'+ 新建任务':'+ New Task'}</button>
+      <button class="btn btn-secondary btn-sm" onclick="promptSyncBalance()">${currentLang==='zh'?'🔄 同步余额':'🔄 Sync Balance'}</button>
+    </div>
+    <div class="section-body">
+      ${(tasks||[]).length===0?`<div class="empty-state">${t('empty')}</div>`:
+      `<div class="table-wrap"><table>
+        <thead><tr>
+          <th>${currentLang==='zh'?'任务名称':'Task Name'}</th>
+          <th>${currentLang==='zh'?'类型':'Type'}</th>
+          <th>${currentLang==='zh'?'地区':'Country'}</th>
+          <th>${currentLang==='zh'?'总数':'Total'}</th>
+          <th>${currentLang==='zh'?'有效':'Valid'}</th>
+          <th>${t('status')}</th>
+          <th>${t('actions')}</th>
+        </tr></thead>
+        <tbody>
+          ${(tasks||[]).slice(-10).reverse().map(task=>`<tr>
+            <td>${task.task_name||task.remote_task_id||'-'}</td>
+            <td><span class="badge badge-blue">${task.task_type}</span></td>
+            <td>${task.country}</td>
+            <td>${task.task_total||0}</td>
+            <td style="color:var(--green)">${task.valid_quantity||0}</td>
+            <td>${statusBadge(task.status)}</td>
+            <td>${task.status==='Finish'?`<button class="btn btn-success btn-sm" onclick="downloadResult('${task.id}','${task.remote_task_id}')">${t('download')}</button>`:
+            task.status==='Ongoing'||task.status==='Waiting'||task.status==='Pending'?`<button class="btn btn-secondary btn-sm" onclick="refreshTask('${task.id}','${task.remote_task_id}')">${currentLang==='zh'?'刷新':'Refresh'}</button>`:'-'
+            }</td>
+          </tr>`).join('')}
+        </tbody>
+      </table></div>`}
+    </div>
+  </div>`;
+}
+
+function statusBadge(s){
+  const map={Finish:'badge-green',Ongoing:'badge-blue',Waiting:'badge-yellow',Pending:'badge-yellow',Fail:'badge-red',Close:'badge-gray',pending:'badge-yellow',approved:'badge-green',rejected:'badge-red'};
+  return `<span class="badge ${map[s]||'badge-gray'}">${t(s)||s}</span>`;
+}
+
+// ─── NEW TASK ───
+const TASK_TYPES={
+  WhatsApp:[{val:'wsValid',label:'WS筛开通'},{val:'wsActive',label:'WS筛活跃'},{val:'wsGender',label:'WS性别年龄'}],
+  Telegram:[{val:'tgValid',label:'TG筛开通'},{val:'tgActive',label:'TG筛活跃'},{val:'tgGender',label:'TG性别年龄'},{val:'tgNameValid',label:'TG筛用户名'}],
+  Facebook:[{val:'fbValid',label:'FB筛开通'},{val:'fbGender',label:'FB筛性别'},{val:'fbUid',label:'FB筛UID'}],
+  Instagram:[{val:'insValid',label:'INS筛开通'}],
+  TikTok:[{val:'tiktokUser',label:'TK筛用户名'},{val:'tiktokValid',label:'TK筛开通'}],
+  Twitter:[{val:'twitterValid',label:'Twitter筛开通'}],
+  LinkedIn:[{val:'linkedinValid',label:'领英筛开通'},{val:'linkedinGender',label:'领英筛全格式'}],
+  Line:[{val:'lineValid',label:'Line筛开通'},{val:'lineGender',label:'Line性别年龄'}],
+  Viber:[{val:'viberValid',label:'Viber筛开通'},{val:'viberActive',label:'Viber筛活跃'},{val:'viberGender',label:'Viber性别年龄'}],
+  Signal:[{val:'signalValid',label:'Signal筛开通'}],
+  Zalo:[{val:'zaloValid',label:'Zalo筛开通'},{val:'zaloActive',label:'Zalo筛活跃'},{val:'zaloGender',label:'Zalo性别年龄'}],
+  WeChat:[{val:'wxValid',label:'WeChat筛开通'}],
+  IOS:[{val:'iosValid',label:'IOS筛系统'},{val:'iosBlueValid',label:'IOS筛蓝号'}],
+  '手机检测':[{val:'phoneCheck',label:'空号检测'},{val:'operatorStandard',label:'运营商检测'}],
+  '币圈':[{val:'binanceValid',label:'币安筛开通'},{val:'okxValid',label:'OKX筛开通'}],
+  'Amazon/Shopee':[{val:'amazonValid',label:'Amazon筛开通'},{val:'shopeeValid',label:'Shopee筛开通'}],
+  RCS:[{val:'rcsSystem',label:'RCS筛系统'}],
+  Botim:[{val:'botimValid',label:'Botim筛开通'},{val:'botimGender',label:'Botim性别年龄'}],
+};
+const COUNTRIES=['US','CN','DE','GB','IN','BR','JP','KR','SG','MY','TH','VN','PH','ID','AU','CA','FR','RU','MX','AE'];
+
+function renderNewTask(){
+  const c=document.getElementById('content');
+  const typeOpts=Object.entries(TASK_TYPES).map(([grp,items])=>
+    `<optgroup label="${grp}">${items.map(i=>`<option value="${i.val}">${i.label}</option>`).join('')}</optgroup>`
+  ).join('');
+  c.innerHTML=`
+  <div class="two-col">
+    <div class="section">
+      <div class="section-header"><div class="section-title">${currentLang==='zh'?'新建筛选任务':'New Screening Task'}</div></div>
+      <div class="section-body">
+        <div class="info-box">
+          ${currentLang==='zh'?'任务提交后将从余额中扣除积分。文件每行一个号码（含国际区号，不含"+"号）。':'Points will be deducted from your balance after task submission. File format: one number per line with country code, without "+" sign.'}
+          <br>${currentLang==='zh'?'当前余额：':'Current balance: '}<strong>${parseFloat(currentProfile?.balance||0).toFixed(2)} 积分</strong>
+        </div>
+        <div class="form-group">
+          <label class="form-label">${currentLang==='zh'?'任务名称（可选）':'Task Name (optional)'}</label>
+          <input type="text" id="task-name" class="form-input" placeholder="${currentLang==='zh'?'自定义名称...':'Custom name...'}"/>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">${currentLang==='zh'?'筛选类型':'Task Type'}</label>
+            <select id="task-type" class="form-select">${typeOpts}</select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">${currentLang==='zh'?'地区编码':'Country Code'}</label>
+            <select id="task-country" class="form-select">
+              ${COUNTRIES.map(c=>`<option value="${c}">${c}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">${currentLang==='zh'?'API Token (来自 th333.cc)':'API Token (from th333.cc)'}</label>
+          <input type="text" id="task-token" class="form-input" placeholder="${currentLang==='zh'?'请输入您的API Token':'Enter your API Token'}"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">${currentLang==='zh'?'上传号码文件 (.txt)':'Upload Number File (.txt)'}</label>
+          <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleDrop(event)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <p id="upload-label">${currentLang==='zh'?'点击或拖拽上传 .txt 文件':'Click or drag to upload .txt file'}</p>
+          </div>
+          <input type="file" id="file-input" accept=".txt" style="display:none" onchange="handleFileSelect(this)"/>
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="submitTask()" id="submit-task-btn">
+          ${currentLang==='zh'?'提交任务':'Submit Task'}
+        </button>
+        <div id="task-result" style="margin-top:14px"></div>
+      </div>
+    </div>
+    <div>
+      <div class="section" style="margin-bottom:16px">
+        <div class="section-header"><div class="section-title">${currentLang==='zh'?'使用说明':'Instructions'}</div></div>
+        <div class="section-body" style="font-size:13px;color:var(--text2);line-height:1.8">
+          <p>1. ${currentLang==='zh'?'在 th333.cc 申请API Token':'Apply for API Token at th333.cc'}</p>
+          <p>2. ${currentLang==='zh'?'准备.txt格式号码文件，每行一个号码':'Prepare .txt file with one number per line'}</p>
+          <p>3. ${currentLang==='zh'?'号码格式：国际区号+号码，如 13812345678':'Format: country code + number, e.g. 13812345678'}</p>
+          <p>4. ${currentLang==='zh'?'选择筛选类型和地区，提交任务':'Select task type and country, submit'}</p>
+          <p>5. ${currentLang==='zh'?'在任务列表查看进度，完成后下载结果':'Check progress in task list, download when done'}</p>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-header"><div class="section-title">${currentLang==='zh'?'注意事项':'Notes'}</div></div>
+        <div class="section-body" style="font-size:13px;color:var(--text2);line-height:1.8">
+          <p>⚠ ${currentLang==='zh'?'任务提交后立即扣费，请确保余额充足':'Points deducted immediately upon submission'}</p>
+          <p>⚠ ${currentLang==='zh'?'结果文件保留30天':'Result files kept for 30 days'}</p>
+          <p>⚠ ${currentLang==='zh'?'建议并发任务不超过10个':'Max 10 concurrent tasks recommended'}</p>
+          <p>⚠ ${currentLang==='zh'?'单文件建议不超过500万行':'Max 5M lines per file recommended'}</p>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+let selectedFile=null;
+function handleFileSelect(input){
+  if(input.files[0]){
+    selectedFile=input.files[0];
+    const zone=document.getElementById('upload-zone');
+    zone.classList.add('has-file');
+    document.getElementById('upload-label').textContent=`✓ ${selectedFile.name} (${(selectedFile.size/1024).toFixed(1)} KB)`;
+  }
+}
+function handleDrop(e){
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('dragover');
+  const file=e.dataTransfer.files[0];
+  if(file&&file.name.endsWith('.txt')){
+    selectedFile=file;
+    document.getElementById('upload-zone').classList.add('has-file');
+    document.getElementById('upload-label').textContent=`✓ ${file.name}`;
+  } else {
+    toast(currentLang==='zh'?'仅支持.txt文件':'Only .txt files supported','error');
+  }
+}
+
+async function submitTask(){
+  const token=document.getElementById('task-token').value.trim();
+  const taskType=document.getElementById('task-type').value;
+  const country=document.getElementById('task-country').value;
+  const taskName=document.getElementById('task-name').value.trim();
+  if(!token){toast(currentLang==='zh'?'请输入API Token':'Please enter API Token','error');return;}
+  if(!selectedFile){toast(currentLang==='zh'?'请上传号码文件':'Please upload a file','error');return;}
+  const btn=document.getElementById('submit-task-btn');
+  btn.textContent=currentLang==='zh'?'提交中...':'Submitting...';
+  btn.disabled=true;
+  try{
+    const formData=new FormData();
+    formData.append('file',selectedFile);
+    formData.append('country',country);
+    formData.append('taskType',taskType);
+    if(taskName)formData.append('taskName',taskName);
+    const res=await fetch('https://api.th333.cc/api/task/create',{
+      method:'POST',
+      headers:{token},
+      body:formData,
+    });
+    const data=await res.json();
+    if(data.code!==0){
+      toast((currentLang==='zh'?'提交失败: ':'Submit failed: ')+data.message,'error');
+      return;
+    }
+    // Save task to DB
+    await sb.from('tasks').insert({
+      user_id:currentUser.id,
+      remote_task_id:data.data.taskId,
+      task_name:taskName||data.data.taskId,
+      task_type:taskType,
+      country:data.data.country,
+      task_total:data.data.taskTotal,
+      status:data.data.taskState,
+      points_consumed:data.consume?.deduction||0,
+      file_name:selectedFile.name,
+    });
+    // Log consumption
+    if(data.consume?.deduction>0){
+      const balBefore=currentProfile.balance;
+      const balAfter=balBefore - data.consume.deduction;
+      await sb.from('balance_logs').insert({
+        user_id:currentUser.id,
+        type:'consume',
+        amount:-data.consume.deduction,
+        balance_before:balBefore,
+        balance_after:balAfter,
+        note:`任务 ${data.data.taskId}`,
+      });
+      await sb.from('profiles').update({balance:balAfter}).eq('id',currentUser.id);
+      currentProfile.balance=balAfter;
+    }
+    document.getElementById('task-result').innerHTML=`
+      <div class="info-box" style="border-color:var(--green);background:rgba(46,204,122,.08)">
+        <strong style="color:var(--green)">✓ ${currentLang==='zh'?'任务已提交':'Task submitted'}</strong><br>
+        Task ID: <code>${data.data.taskId}</code><br>
+        ${currentLang==='zh'?'总数':'Total'}: ${data.data.taskTotal} | 
+        ${currentLang==='zh'?'扣费':'Deducted'}: ${data.consume?.deduction||0} ${t('points')} | 
+        ${currentLang==='zh'?'余额':'Balance'}: ${data.consume?.balance||0} ${t('points')}
+      </div>`;
+    toast(currentLang==='zh'?'任务提交成功！':'Task submitted successfully!','success');
+    updateSidebar();
+    selectedFile=null;
+  } catch(e){
+    toast((currentLang==='zh'?'网络错误: ':'Network error: ')+e.message,'error');
+  } finally{
+    btn.textContent=currentLang==='zh'?'提交任务':'Submit Task';
+    btn.disabled=false;
+  }
+}
+
+// ─── TASK LIST ───
+async function renderTasks(){
+  const c=document.getElementById('content');
+  c.innerHTML=`<div style="color:var(--text3);font-size:13px">${t('loading')}</div>`;
+  const{data:tasks}=await sb.from('tasks').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false});
+  c.innerHTML=`
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">${currentLang==='zh'?'我的任务':'My Tasks'} (${(tasks||[]).length})</div>
+      <button class="btn btn-primary btn-sm" onclick="navigate('task')">${currentLang==='zh'?'+ 新建':'+ New'}</button>
+    </div>
+    <div class="section-body" style="padding:0">
+      ${(tasks||[]).length===0?`<div class="empty-state">${t('empty')}</div>`:
+      `<div class="table-wrap"><table>
+        <thead><tr>
+          <th>${currentLang==='zh'?'任务ID':'Task ID'}</th>
+          <th>${currentLang==='zh'?'名称':'Name'}</th>
+          <th>${currentLang==='zh'?'类型':'Type'}</th>
+          <th>${currentLang==='zh'?'地区':'Country'}</th>
+          <th>${currentLang==='zh'?'进度':'Progress'}</th>
+          <th>${currentLang==='zh'?'有效':'Valid'}</th>
+          <th>${currentLang==='zh'?'扣费':'Cost'}</th>
+          <th>${t('status')}</th>
+          <th>${t('actions')}</th>
+        </tr></thead>
+        <tbody>
+          ${(tasks||[]).map(task=>`<tr>
+            <td style="font-family:monospace;font-size:11px;color:var(--text3)">${(task.remote_task_id||'-').slice(-12)}</td>
+            <td>${task.task_name||'-'}</td>
+            <td><span class="badge badge-blue" style="font-size:10px">${task.task_type}</span></td>
+            <td>${task.country}</td>
+            <td>
+              <div style="min-width:80px">
+                <div class="progress-bar" style="margin-bottom:3px">
+                  <div class="progress-fill" style="width:${task.task_total?Math.round((task.task_progress||0)/task.task_total*100):0}%"></div>
+                </div>
+                <div style="font-size:10px;color:var(--text3)">${task.task_progress||0}/${task.task_total||0}</div>
+              </div>
+            </td>
+            <td style="color:var(--green);font-weight:600">${task.valid_quantity||0}</td>
+            <td style="font-size:12px;color:var(--yellow)">${task.points_consumed||0}</td>
+            <td>${statusBadge(task.status)}</td>
+            <td style="display:flex;gap:6px;flex-wrap:wrap">
+              ${task.status==='Finish'?`<button class="btn btn-success btn-sm" onclick="downloadResult('${task.id}','${task.remote_task_id}')">${t('download')}</button>`:''}
+              ${['Ongoing','Waiting','Pending'].includes(task.status)?`<button class="btn btn-secondary btn-sm" onclick="refreshTask('${task.id}','${task.remote_task_id}')">${currentLang==='zh'?'刷新':'Refresh'}</button>`:''}
+            </td>
+          </tr>`).join('')}
+        </tbody>
+      </table></div>`}
+    </div>
+  </div>`;
+}
+
+async function refreshTask(taskId,remoteId){
+  if(!remoteId){toast(currentLang==='zh'?'无远程任务ID':'No remote task ID','error');return;}
+  const token=prompt(currentLang==='zh'?'请输入API Token:':'Enter API Token:');
+  if(!token)return;
+  try{
+    const res=await fetch(`https://api.th333.cc/api/task/progress?taskId=${remoteId}`,{headers:{token}});
+    const data=await res.json();
+    if(data.code!==0){toast(data.message,'error');return;}
+    const d=data.data;
+    await sb.from('tasks').update({
+      status:d.taskState,
+      task_progress:d.taskProgress,
+      valid_quantity:d.validQuantity,
+      task_total:d.taskTotal,
+    }).eq('id',taskId);
+    toast(currentLang==='zh'?'状态已更新':'Status updated','success');
+    renderTasks();
+  } catch(e){toast(e.message,'error');}
+}
+
+async function downloadResult(taskId,remoteId){
+  if(!remoteId){toast(currentLang==='zh'?'无远程任务ID':'No remote task ID','error');return;}
+  const token=prompt(currentLang==='zh'?'请输入API Token:':'Enter API Token:');
+  if(!token)return;
+  toast(currentLang==='zh'?'正在下载...':'Downloading...','info');
+  try{
+    const res=await fetch(`https://api.th333.cc/api/task/result?taskId=${remoteId}`,{headers:{token}});
+    if(!res.ok){toast(currentLang==='zh'?'下载失败':'Download failed','error');return;}
+    const blob=await res.blob();
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download=`result_${remoteId}.txt`;a.click();
+    URL.revokeObjectURL(url);
+    toast(currentLang==='zh'?'下载成功':'Downloaded','success');
+  } catch(e){toast(e.message,'error');}
+}
+
+// ─── RECHARGE ───
+async function renderRecharge(){
+  const c=document.getElementById('content');
+  const{data:settings}=await sb.from('site_settings').select('*');
+  const cfg={};(settings||[]).forEach(s=>cfg[s.key]=s.value);
+  const wallet=cfg.usdt_wallet_address||'未配置钱包地址';
+  const rate=cfg.usdt_to_points||'6.8';
+  const{data:orders}=await sb.from('recharge_orders').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false});
+  c.innerHTML=`
+  <div class="two-col">
+    <div>
+      <div class="section" style="margin-bottom:16px">
+        <div class="section-header"><div class="section-title">${currentLang==='zh'?'提交充值申请':'Submit Recharge Request'}</div></div>
+        <div class="section-body">
+          <div class="info-box">
+            ${currentLang==='zh'?'汇率：':'Exchange rate: '}<strong>1 USDT = ${rate} 积分/Points</strong>
+          </div>
+          <div class="steps">
+            <div class="step"><div class="step-num">1</div><div class="step-label">${currentLang==='zh'?'转账USDT':'Send USDT'}</div></div>
+            <div class="step"><div class="step-num">2</div><div class="step-label">${currentLang==='zh'?'填写申请':'Fill Form'}</div></div>
+            <div class="step"><div class="step-num">3</div><div class="step-label">${currentLang==='zh'?'等待审核':'Wait Review'}</div></div>
+            <div class="step"><div class="step-num">4</div><div class="step-label">${currentLang==='zh'?'积分到账':'Credits Added'}</div></div>
+          </div>
+          <div class="form-group" style="margin-top:16px">
+            <label class="form-label">TRC20-USDT ${currentLang==='zh'?'收款地址':'Wallet Address'}</label>
+            <div class="wallet-addr">${wallet}<span class="copy-addr" onclick="copyText('${wallet}')">${currentLang==='zh'?'复制':'Copy'}</span></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">${currentLang==='zh'?'转账USDT金额':'USDT Amount Sent'}</label>
+            <input type="number" id="usdt-amt" class="form-input" placeholder="10" min="1" step="0.01" oninput="calcPoints(this.value,'${rate}')"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">${currentLang==='zh'?'预计获得积分':'Expected Points'}</label>
+            <input type="text" id="pts-preview" class="form-input" readonly placeholder="0" style="color:var(--green)"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">${currentLang==='zh'?'交易哈希 (TXID)':'Transaction Hash (TXID)'}</label>
+            <input type="text" id="tx-hash" class="form-input" placeholder="0x..."/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">${currentLang==='zh'?'备注（可选）':'Remark (optional)'}</label>
+            <textarea id="tx-note" class="form-textarea" placeholder="${currentLang==='zh'?'转账截图说明等...':'Screenshot info etc...'}"></textarea>
+          </div>
+          <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="submitRecharge()">
+            ${currentLang==='zh'?'提交充值申请':'Submit Recharge Request'}
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-header"><div class="section-title">${currentLang==='zh'?'充值记录':'Recharge History'}</div></div>
+      <div class="section-body" style="padding:0">
+        ${(orders||[]).length===0?`<div class="empty-state">${t('empty')}</div>`:
+        `<div class="table-wrap"><table>
+          <thead><tr>
+            <th>USDT</th>
+            <th>${t('points')}</th>
+            <th>TXID</th>
+            <th>${t('status')}</th>
+            <th>${currentLang==='zh'?'时间':'Date'}</th>
+          </tr></thead>
+          <tbody>
+            ${(orders||[]).map(o=>`<tr>
+              <td>${o.usdt_amount}</td>
+              <td style="color:var(--green)">${o.points_amount}</td>
+              <td style="font-family:monospace;font-size:10px;color:var(--text3)">${(o.tx_hash||'-').slice(0,16)}...</td>
+              <td>${statusBadge(o.status)}</td>
+              <td style="font-size:11px;color:var(--text3)">${new Date(o.created_at).toLocaleDateString()}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table></div>`}
+      </div>
+    </div>
+  </div>`;
+}
+
+function calcPoints(val,rate){
+  const pts=(parseFloat(val)||0)*parseFloat(rate);
+  document.getElementById('pts-preview').value=pts.toFixed(2);
+}
+function copyText(text){
+  navigator.clipboard.writeText(text).then(()=>toast(currentLang==='zh'?'已复制':'Copied','success'));
+}
+
+async function submitRecharge(){
+  const usdtAmt=parseFloat(document.getElementById('usdt-amt').value);
+  const txHash=document.getElementById('tx-hash').value.trim();
+  if(!usdtAmt||usdtAmt<=0){toast(currentLang==='zh'?'请输入有效金额':'Enter valid amount','error');return;}
+  if(!txHash){toast(currentLang==='zh'?'请输入交易哈希':'Enter TXID','error');return;}
+  const{data:cfg}=await sb.from('site_settings').select('value').eq('key','usdt_to_points').single();
+  const rate=parseFloat(cfg?.value||'6.8');
+  const ptsAmt=usdtAmt*rate;
+  const{error}=await sb.from('recharge_orders').insert({
+    user_id:currentUser.id,
+    usdt_amount:usdtAmt,
+    points_amount:ptsAmt,
+    tx_hash:txHash,
+    status:'pending',
+  });
+  if(error){toast(error.message,'error');return;}
+  toast(currentLang==='zh'?'充值申请已提交，请等待审核':'Recharge submitted, awaiting review','success');
+  renderRecharge();
+}
+
+// ─── LOGS ───
+async function renderLogs(){
+  const c=document.getElementById('content');
+  c.innerHTML=`<div style="color:var(--text3);font-size:13px">${t('loading')}</div>`;
+  const{data:logs}=await sb.from('balance_logs').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false});
+  const typeMap={recharge:{zh:'充值',en:'Recharge',cls:'badge-green'},consume:{zh:'消耗',en:'Consume',cls:'badge-red'},admin_adjust:{zh:'管理员调整',en:'Admin Adjust',cls:'badge-purple'},refund:{zh:'退款',en:'Refund',cls:'badge-blue'}};
+  c.innerHTML=`
+  <div class="section">
+    <div class="section-header"><div class="section-title">${currentLang==='zh'?'积分变动记录':'Balance Transaction Log'}</div></div>
+    <div class="section-body" style="padding:0">
+      ${(logs||[]).length===0?`<div class="empty-state">${t('empty')}</div>`:
+      `<div class="table-wrap"><table>
+        <thead><tr>
+          <th>${currentLang==='zh'?'类型':'Type'}</th>
+          <th>${currentLang==='zh'?'变动':'Amount'}</th>
+          <th>${currentLang==='zh'?'变前余额':'Before'}</th>
+          <th>${currentLang==='zh'?'变后余额':'After'}</th>
+          <th>${currentLang==='zh'?'备注':'Note'}</th>
+          <th>${currentLang==='zh'?'时间':'Date'}</th>
+        </tr></thead>
+        <tbody>
+          ${(logs||[]).map(l=>{const tp=typeMap[l.type]||{zh:l.type,en:l.type,cls:'badge-gray'};return`<tr>
+            <td><span class="badge ${tp.cls}">${tp[currentLang]||tp.zh}</span></td>
+            <td style="color:${l.amount>0?'var(--green)':'var(--red)'};font-weight:600">${l.amount>0?'+':''}${parseFloat(l.amount).toFixed(2)}</td>
+            <td style="color:var(--text2);font-size:12px">${parseFloat(l.balance_before).toFixed(2)}</td>
+            <td style="font-weight:500">${parseFloat(l.balance_after).toFixed(2)}</td>
+            <td style="font-size:12px;color:var(--text2)">${l.note||'-'}</td>
+            <td style="font-size:11px;color:var(--text3)">${new Date(l.created_at).toLocaleString()}</td>
+          </tr>`;}).join('')}
+        </tbody>
+      </table></div>`}
+    </div>
+  </div>`;
+}
+
+// ─── PRICES ───
+function renderPrices(){
+  const c=document.getElementById('content');
+  const priceData=[
+    {name:'WhatsApp',icon:'💬',items:[{label:'WS筛开通',price:'0.00008/条'},{label:'WS筛活跃',price:'0.00007/条'},{label:'WS性别年龄',price:'0.00013/条'}]},
+    {name:'Telegram',icon:'✈️',items:[{label:'TG筛开通',price:'0.00008/条'},{label:'TG筛活跃',price:'0.001/条'},{label:'TG性别年龄',price:'0.0025/条'},{label:'TG筛用户名',price:'暂时关闭'}]},
+    {name:'IOS',icon:'📱',items:[{label:'IOS蓝号',price:'0.0008/条'},{label:'IOS系统',price:'0.0007/条'}]},
+    {name:'Facebook',icon:'👥',items:[{label:'FB筛开通',price:'0.0004/条'},{label:'FB筛UID',price:'0.006/条'},{label:'FB性别',price:'暂时关闭'}]},
+    {name:'Viber',icon:'📳',items:[{label:'Viber筛开通',price:'0.0009/条'},{label:'Viber筛活跃',price:'0.004/条'},{label:'Viber性别',price:'暂时关闭'}]},
+    {name:'Line',icon:'💚',items:[{label:'Line筛开通',price:'0.002/条'},{label:'Line性别年龄',price:'0.01/条'}]},
+    {name:'Zalo',icon:'🔵',items:[{label:'Zalo筛开通',price:'0.0006/条'},{label:'Zalo筛活跃',price:'暂时关闭'},{label:'Zalo性别',price:'0.0065/条'}]},
+    {name:'WeChat',icon:'🟢',items:[{label:'WeChat筛开通',price:'0.0025/条'}]},
+    {name:'手机检测',icon:'📞',items:[{label:'空号检测',price:'0.0016/条'},{label:'运营商检测',price:'0.002/条'}]},
+    {name:'TikTok',icon:'🎵',items:[{label:'TK筛用户名',price:'0.0055/条'},{label:'TK筛开通',price:'0.0055/条'}]},
+    {name:'币圈',icon:'🪙',items:[{label:'Binance筛开通',price:'0.006/条'},{label:'OKX筛开通',price:'0.008/条'},{label:'Gate筛开通',price:'暂时关闭'},{label:'Kucoin筛开通',price:'0.0015/条'}]},
+    {name:'Instagram',icon:'📸',items:[{label:'INS筛开通',price:'0.0003/条'}]},
+    {name:'Signal',icon:'🔐',items:[{label:'Signal筛开通',price:'暂时关闭'}]},
+    {name:'Twitter/X',icon:'🐦',items:[{label:'Twitter筛开通',price:'0.0008/条'}]},
+    {name:'领英',icon:'💼',items:[{label:'领英筛开通',price:'0.0035/条'},{label:'领英全格式',price:'0.0035/条'}]},
+    {name:'Botim',icon:'📲',items:[{label:'Botim筛开通',price:'暂时关闭'},{label:'Botim性别年龄',price:'暂时关闭'}]},
+  ];
+  c.innerHTML=`
+  <div class="info-box" style="margin-bottom:20px">
+    <strong>💱 ${currentLang==='zh'?'当前汇率':'Current Rate'}: 1 USDT = 6.8 积分/Points</strong>
+    &nbsp;|&nbsp; ${currentLang==='zh'?'以下价格单位为USDT/条':'Prices are in USDT per record'}
+  </div>
+  <div class="price-grid">
+    ${priceData.map(cat=>`<div class="price-card">
+      <div class="price-card-header">
+        <span class="price-card-icon">${cat.icon}</span>
+        <span class="price-card-name">${cat.name}</span>
+      </div>
+      ${cat.items.map(item=>{
+        const closed=item.price==='暂时关闭';
+        return`<div class="price-item">
+          <span class="price-item-label">${item.label}</span>
+          ${closed?`<span class="price-item-status badge badge-gray">${currentLang==='zh'?'关闭':'Closed'}</span>`:
+          `<span class="price-item-val">${item.price}</span>`}
+        </div>`;
+      }).join('')}
+    </div>`).join('')}
+  </div>`;
+}
+
+// ─── NOTE: Run this SQL in Supabase to fix RLS policies ───
+// DROP POLICY IF EXISTS profiles_admin_all ON public.profiles;
+// CREATE POLICY profiles_admin_all ON public.profiles FOR ALL TO authenticated USING (true);
+// ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY tasks_own ON public.tasks FOR ALL USING (auth.uid()=user_id) WITH CHECK (auth.uid()=user_id);
+// ALTER TABLE public.recharge_orders ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY orders_own ON public.recharge_orders FOR ALL USING (auth.uid()=user_id) WITH CHECK (auth.uid()=user_id);
+// ALTER TABLE public.balance_logs ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY logs_own ON public.balance_logs FOR ALL USING (auth.uid()=user_id) WITH CHECK (auth.uid()=user_id);
+// ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY settings_read ON public.site_settings FOR SELECT TO authenticated USING (true);
+// CREATE POLICY settings_write ON public.site_settings FOR ALL USING (EXISTS(SELECT 1 FROM public.profiles WHERE id=auth.uid() AND role='admin'));
+// ─── ADMIN PANEL ───
+let adminTab='orders';
+async function renderAdmin(){
+  if(!currentProfile||currentProfile.role!=='admin'){
+    document.getElementById('content').innerHTML='<div class="empty-state">Access Denied</div>';return;
+  }
+  const c=document.getElementById('content');
+  c.innerHTML=`
+  <div class="admin-tabs">
+    <div class="admin-tab ${adminTab==='orders'?'active':''}" onclick="setAdminTab('orders')">${currentLang==='zh'?'充值审核':'Recharge Review'}</div>
+    <div class="admin-tab ${adminTab==='users'?'active':''}" onclick="setAdminTab('users')">${currentLang==='zh'?'用户管理':'Users'}</div>
+    <div class="admin-tab ${adminTab==='settings'?'active':''}" onclick="setAdminTab('settings')">${currentLang==='zh'?'系统设置':'Settings'}</div>
+  </div>
+  <div id="admin-content"></div>`;
+  loadAdminTab(adminTab);
+}
+function setAdminTab(tab){
+  adminTab=tab;renderAdmin();
+}
+async function loadAdminTab(tab){
+  const c=document.getElementById('admin-content');
+  if(tab==='orders'){
+    const{data:orders}=await sb.from('recharge_orders').select('*,profiles(email,username)').order('created_at',{ascending:false});
+    c.innerHTML=`<div class="section">
+      <div class="section-header"><div class="section-title">${currentLang==='zh'?'充值审核':'Recharge Orders'}</div></div>
+      <div class="section-body" style="padding:0">
+        ${(orders||[]).length===0?`<div class="empty-state">${t('empty')}</div>`:
+        `<div class="table-wrap"><table>
+          <thead><tr>
+            <th>${currentLang==='zh'?'用户':'User'}</th>
+            <th>USDT</th>
+            <th>${t('points')}</th>
+            <th>TXID</th>
+            <th>${t('status')}</th>
+            <th>${currentLang==='zh'?'时间':'Date'}</th>
+            <th>${t('actions')}</th>
+          </tr></thead>
+          <tbody>
+            ${(orders||[]).map(o=>`<tr>
+              <td style="font-size:12px">${o.profiles?.email||o.user_id.slice(0,8)}</td>
+              <td>${o.usdt_amount}</td>
+              <td style="color:var(--green)">${o.points_amount}</td>
+              <td style="font-family:monospace;font-size:10px;color:var(--text3)">${(o.tx_hash||'-').slice(0,14)}...</td>
+              <td>${statusBadge(o.status)}</td>
+              <td style="font-size:11px;color:var(--text3)">${new Date(o.created_at).toLocaleDateString()}</td>
+              <td>${o.status==='pending'?`<div style="display:flex;gap:6px">
+                <button class="btn btn-success btn-sm" onclick="approveOrder('${o.id}','${o.user_id}',${o.points_amount},'${o.usdt_amount}')">${currentLang==='zh'?'通过':'Approve'}</button>
+                <button class="btn btn-danger btn-sm" onclick="rejectOrder('${o.id}')">${currentLang==='zh'?'拒绝':'Reject'}</button>
+              </div>`:'-'}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table></div>`}
+      </div>
+    </div>`;
+  } else if(tab==='users'){
+    const{data:users}=await sb.from('profiles').select('*').order('created_at',{ascending:false});
+    c.innerHTML=`<div class="section">
+      <div class="section-header"><div class="section-title">${currentLang==='zh'?'用户列表':'User List'} (${(users||[]).length})</div></div>
+      <div class="section-body" style="padding:0">
+        <div class="table-wrap"><table>
+          <thead><tr>
+            <th>${currentLang==='zh'?'邮箱':'Email'}</th>
+            <th>${currentLang==='zh'?'用户名':'Username'}</th>
+            <th>${t('balance')}</th>
+            <th>${currentLang==='zh'?'角色':'Role'}</th>
+            <th>${currentLang==='zh'?'注册时间':'Joined'}</th>
+            <th>${t('actions')}</th>
+          </tr></thead>
+          <tbody>
+            ${(users||[]).map(u=>`<tr>
+              <td style="font-size:12px">${u.email}</td>
+              <td>${u.username||'-'}</td>
+              <td style="color:var(--green);font-weight:600">${parseFloat(u.balance||0).toFixed(2)}</td>
+              <td><span class="badge ${u.role==='admin'?'badge-purple':'badge-gray'}">${u.role}</span></td>
+              <td style="font-size:11px;color:var(--text3)">${new Date(u.created_at).toLocaleDateString()}</td>
+              <td><button class="btn btn-secondary btn-sm" onclick="openAdjustModal('${u.id}','${u.email}',${u.balance})">${currentLang==='zh'?'调整积分':'Adjust'}</button></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+        </div>
+      </div>
+    </div>`;
+  } else if(tab==='settings'){
+    const{data:settings}=await sb.from('site_settings').select('*');
+    const cfg={};(settings||[]).forEach(s=>cfg[s.key]=s.value);
+    c.innerHTML=`<div class="section">
+      <div class="section-header"><div class="section-title">${currentLang==='zh'?'系统设置':'System Settings'}</div></div>
+      <div class="section-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">USDT → 积分 汇率 / Exchange Rate</label>
+            <input type="text" id="cfg-rate" class="form-input" value="${cfg.usdt_to_points||'6.8'}"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">${currentLang==='zh'?'网站名称':'Site Name'}</label>
+            <input type="text" id="cfg-sitename" class="form-input" value="${cfg.site_name||'TH DATA'}"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">TRC20-USDT ${currentLang==='zh'?'收款钱包地址':'Wallet Address'}</label>
+          <input type="text" id="cfg-wallet" class="form-input" value="${cfg.usdt_wallet_address||''}"/>
+        </div>
+        <button class="btn btn-primary" onclick="saveSettings()">${currentLang==='zh'?'保存设置':'Save Settings'}</button>
+      </div>
+    </div>`;
+  }
+}
+
+async function approveOrder(orderId,userId,points,usdt){
+  if(!confirm(`${currentLang==='zh'?'确认通过此充值申请？':'Approve this recharge?'}\nUSDT: ${usdt} | ${t('points')}: ${points}`))return;
+  // Get user balance
+  const{data:profile}=await sb.from('profiles').select('balance').eq('id',userId).single();
+  const balBefore=parseFloat(profile?.balance||0);
+  const balAfter=balBefore+parseFloat(points);
+  // Update order
+  await sb.from('recharge_orders').update({status:'approved',reviewed_by:currentUser.id,reviewed_at:new Date().toISOString()}).eq('id',orderId);
+  // Add balance
+  await sb.from('profiles').update({balance:balAfter}).eq('id',userId);
+  // Log
+  await sb.from('balance_logs').insert({user_id:userId,type:'recharge',amount:parseFloat(points),balance_before:balBefore,balance_after:balAfter,note:`充值 ${usdt} USDT`,ref_id:orderId});
+  toast(currentLang==='zh'?'已通过，积分已到账':'Approved, points added','success');
+  loadAdminTab('orders');
+}
+
+async function rejectOrder(orderId){
+  const reason=prompt(currentLang==='zh'?'拒绝原因（可选）:':'Reject reason (optional):');
+  await sb.from('recharge_orders').update({status:'rejected',admin_note:reason||'',reviewed_by:currentUser.id,reviewed_at:new Date().toISOString()}).eq('id',orderId);
+  toast(currentLang==='zh'?'已拒绝':'Rejected','info');
+  loadAdminTab('orders');
+}
+
+function openAdjustModal(userId,email,balance){
+  document.getElementById('modal-adjust-body').innerHTML=`
+    <div class="form-group">
+      <label class="form-label">${currentLang==='zh'?'用户':'User'}: ${email}</label>
+      <label class="form-label">${currentLang==='zh'?'当前余额':'Current Balance'}: <strong>${parseFloat(balance).toFixed(2)} 积分</strong></label>
+    </div>
+    <div class="form-group">
+      <label class="form-label">${currentLang==='zh'?'调整金额（正数增加，负数减少）':'Adjust amount (positive=add, negative=deduct)'}</label>
+      <input type="number" id="adjust-amt" class="form-input" placeholder="e.g. 100 or -50"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">${currentLang==='zh'?'备注':'Note'}</label>
+      <input type="text" id="adjust-note" class="form-input" placeholder="${currentLang==='zh'?'调整原因...':'Reason...'}"/>
+    </div>
+    <button class="btn btn-primary" onclick="doAdjust('${userId}',${balance})">${t('confirm')}</button>`;
+  openModal('modal-adjust');
+}
+
+async function doAdjust(userId,currentBal){
+  const amt=parseFloat(document.getElementById('adjust-amt').value);
+  const note=document.getElementById('adjust-note').value;
+  if(isNaN(amt)||amt===0){toast(currentLang==='zh'?'请输入有效金额':'Enter valid amount','error');return;}
+  const balBefore=parseFloat(currentBal);
+  const balAfter=balBefore+amt;
+  if(balAfter<0){toast(currentLang==='zh'?'余额不能为负':'Balance cannot be negative','error');return;}
+  await sb.from('profiles').update({balance:balAfter}).eq('id',userId);
+  await sb.from('balance_logs').insert({user_id:userId,type:'admin_adjust',amount:amt,balance_before:balBefore,balance_after:balAfter,note:note||'管理员调整'});
+  toast(currentLang==='zh'?'积分已调整':'Balance adjusted','success');
+  closeModal('modal-adjust');
+  loadAdminTab('users');
+}
+
+async function saveSettings(){
+  const rate=document.getElementById('cfg-rate').value.trim();
+  const wallet=document.getElementById('cfg-wallet').value.trim();
+  const siteName=document.getElementById('cfg-sitename').value.trim();
+  await Promise.all([
+    sb.from('site_settings').upsert({key:'usdt_to_points',value:rate,updated_at:new Date().toISOString()}),
+    sb.from('site_settings').upsert({key:'usdt_wallet_address',value:wallet,updated_at:new Date().toISOString()}),
+    sb.from('site_settings').upsert({key:'site_name',value:siteName,updated_at:new Date().toISOString()}),
+  ]);
+  toast(currentLang==='zh'?'设置已保存':'Settings saved','success');
+}
+</script>
+</body>
+</html>
