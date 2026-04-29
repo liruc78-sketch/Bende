@@ -560,8 +560,35 @@ async function syncRemoteBalance(){
   }
 }
 
+async function toggleLang(){
+  currentLang=currentLang==='zh'?'en':'zh';
+  document.getElementById('lang-toggle-label').textContent=currentLang==='zh'?'EN':'中';
+  if(currentProfile){
+    await sb.from('profiles').update({lang:currentLang}).eq('id',currentUser.id);
+  }
+  navigate(currentPage);
+  updateSidebar();
+}
+
+function navigate(page){
+  currentPage=page;
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+  const nav=document.getElementById('nav-'+page);
+  if(nav)nav.classList.add('active');
+  document.getElementById('page-title').textContent=t(page);
+  const pages={
+    dashboard:renderDashboard,
+    task:renderNewTask,
+    tasks:renderTasks,
+    recharge:renderRecharge,
+    logs:renderLogs,
+    prices:renderPrices,
+    admin:renderAdmin,
+  };
+  if(pages[page])pages[page]();
+}
+
 function promptSyncBalance(){
-  // 直接调用同步，不再弹窗询问 Token
   toast(currentLang==='zh'?'正在同步余额...':'Syncing balance...','info');
   syncRemoteBalance();
 }
