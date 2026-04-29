@@ -338,7 +338,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 const SUPABASE_URL='https://tdpavflqliqcxvougcdf.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRkcGF2ZmxxbGlxY3h2b3VnY2RmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMTE3OTUsImV4cCI6MjA5Mjg4Nzc5NX0.qPMFm-qq3B6SkHts0ghqOuBJ07jnfoF6ZB_rWMhpeZE';
 // Supabase Edge Function proxy — avoids direct browser→th333 CORS errors
-const PROXY_URL='https://tdpavflqliqcxvougcdf.supabase.co/functions/v1/th333-proxy';
+const PROXY_URL='https://th333-relay.3rsms.workers.dev';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{
   auth:{
     persistSession:true,
@@ -524,17 +524,14 @@ async function refreshBalance(){
 }
 
 // ─── PROXY HELPER ───
-// All calls to api.th333.cc go through the Supabase Edge Function to avoid CORS.
+// All calls to api.th333.cc go through Cloudflare Worker to avoid CORS.
 async function proxyFetch(apiPath, {method='GET', th333Token, queryParams={}, body}={}){
-  const {data:{session}}=await sb.auth.getSession();
-  const jwt=session?.access_token||'';
   const url=new URL(PROXY_URL);
   url.searchParams.set('path',apiPath);
   Object.entries(queryParams).forEach(([k,v])=>url.searchParams.set(k,v));
   return fetch(url.toString(),{
     method,
     headers:{
-      'Authorization':'Bearer '+jwt,
       'x-th333-token':th333Token,
     },
     ...(body?{body}:{}),
