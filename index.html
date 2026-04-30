@@ -1010,6 +1010,7 @@ const COUNTRIES = [
 
 let selectedFile=null;
 let currentTaskPrice=0; // 用于记录当前选中项目的单价
+let currentEstimatedCost=0; // 新增：用于记录当前任务的预计消耗积分
 
 function handleFileSelect(input){
   if(input.files[0]){
@@ -1040,6 +1041,7 @@ function calculateTaskCost(file) {
   if (!previewEl) return;
   if (!file || !currentTaskPrice) {
     previewEl.value = '0';
+    currentEstimatedCost = 0;
     return;
   }
   previewEl.value = currentLang==='zh'?'计算中...':'Calculating...';
@@ -1050,6 +1052,7 @@ function calculateTaskCost(file) {
     const lines = text.split(/\r\n|\n/).filter(line => line.trim().length > 0);
     const count = lines.length;
     const cost = (count * currentTaskPrice).toFixed(3);
+    currentEstimatedCost = parseFloat(cost); // 记录到全局变量供提交时校验
     previewEl.value = `${cost} (${count} ${currentLang==='zh'?'条':'lines'})`;
   };
   reader.readAsText(file);
@@ -1072,8 +1075,9 @@ async function renderProject(projectId, subTypeVal = null) {
     return;
   }
 
-  // 提取单价数字用于计算
+  // 提取单价数字用于计算，并重置预估消耗
   currentTaskPrice = parseFloat(activeItem.price) || 0;
+  currentEstimatedCost = 0;
 
   c.innerHTML = `<div style="color:var(--text3);font-size:13px">${t('loading')}</div>`;
 
@@ -1205,8 +1209,15 @@ async function submitProjectTask(taskType){
   }
   if(!selectedFile){toast(currentLang==='zh'?'请上传号码文件':'Please upload a file','error');return;}
   
-  if(parseFloat(currentProfile?.balance || 0) <= 0){
-    toast(currentLang==='zh'?'余额不足，请先充值':'Insufficient balance, please recharge','error');
+  // 核心修复：严格校验当前余额是否大于等于预计消耗积分
+  if(currentEstimatedCost === 0) {
+    toast(currentLang==='zh'?'正在计算预计消耗，请稍后再试':'Calculating estimated cost, please wait','info');
+    return;
+  }
+  
+  const currentBal = parseFloat(currentProfile?.balance || 0);
+  if(currentBal < currentEstimatedCost){
+    toast(currentLang==='zh'?`余额不足！预计需要 ${currentEstimatedCost} 积分，当前余额 ${currentBal.toFixed(3)} 积分`:`Insufficient balance! Estimated cost: ${currentEstimatedCost} pts, Current: ${currentBal.toFixed(3)} pts`,'error');
     return;
   }
 
