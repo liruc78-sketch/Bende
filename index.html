@@ -197,6 +197,12 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .price-item-val{color:var(--accent);font-weight:500}
 .price-item-status{padding:2px 6px;border-radius:10px;font-size:10px}
 
+/* HOME SEARCH */
+.home-search-wrap { margin-bottom: 20px; position: relative; }
+.home-search-input { width: 100%; background: var(--bg2); border: 1px solid var(--border); color: var(--text); border-radius: var(--radius2); padding: 14px 20px 14px 48px; font-size: 15px; outline: none; transition: all .2s; }
+.home-search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79,142,247,.15); }
+.home-search-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--text3); width: 18px; height: 18px; pointer-events: none; }
+
 /* HOME GRID */
 .home-stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:24px}
 .home-stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:20px;position:relative;overflow:hidden}
@@ -909,38 +915,74 @@ c.innerHTML=`
     </div>
   </div>
 
-  <div class="info-box" style="margin-bottom:0; border-radius: var(--radius2) var(--radius2) 0 0; border-bottom: none;">
-    <strong>💱 ${currentLang==='zh'?'当前汇率':'Current Rate'}: 1 USDT = 6.8 积分/Points</strong>
-    &nbsp;|&nbsp; ${currentLang==='zh'?'以下价格单位为USDT/条，点击对应项目即可直接提交任务':'Prices are in USDT per record. Click an item to submit a task.'}
+  <!-- 新增搜索框 -->
+  <div class="home-search-wrap">
+    <svg class="home-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+    <input type="text" class="home-search-input" placeholder="${currentLang==='zh'?'搜索筛选项目 (例如: WhatsApp, 空号检测)...':'Search services (e.g. WhatsApp, Phone check)...'}" oninput="renderHomeServices(this.value)">
   </div>
   
-  <div class="section" style="border-top-left-radius: 0; border-top-right-radius: 0;">
-    <div class="section-body" style="background: var(--bg); padding: 20px;">
-      <div class="service-grid">
-        ${PROJECT_DATA.map(cat=>`
-          <div class="service-card">
-            <div class="service-header">
-              <div class="service-icon">${cat.icon}</div>
-              <div>${cat.name}</div>
-            </div>
-            <div>
-              ${cat.items.map(item=>{
-                const isClosed = item.val === 'closed';
-                return `
-                <div class="service-item" onclick="goToTask('${item.val}')">
-                  <span>${item.label}</span>
-                  ${isClosed ? `<span class="service-closed">${item.price}</span>` : `<span class="service-price">${item.price}</span>`}
-                </div>
-                `;
-              }).join('')}
-            </div>
-          </div>
-        `).join('')}
-      </div>
+  <div class="section">
+    <div class="section-body" style="background: var(--bg); padding: 20px;" id="home-service-container">
+      <!-- 项目列表将由 renderHomeServices 动态渲染 -->
     </div>
   </div>
   `;
+
+  // 初始渲染所有项目
+  renderHomeServices('');
 }
+
+// 动态渲染首页项目网格（支持搜索过滤）
+// 动态渲染首页项目网格（支持搜索过滤）
+window.renderHomeServices = function(keyword = '') {
+  const container = document.getElementById('home-service-container');
+  if (!container) return;
+
+  const kw = keyword.toLowerCase().trim();
+  let filteredData = PROJECT_DATA;
+
+  if (kw) {
+    filteredData = PROJECT_DATA.map(cat => {
+      // 如果大类名称匹配，保留整个大类
+      if (cat.name.toLowerCase().includes(kw)) return cat;
+      // 否则过滤子项
+      const matchedItems = cat.items.filter(item => item.label.toLowerCase().includes(kw));
+      if (matchedItems.length > 0) {
+        return { ...cat, items: matchedItems };
+      }
+      return null;
+    }).filter(Boolean);
+  }
+
+  if (filteredData.length === 0) {
+    container.innerHTML = `<div class="empty-state">${currentLang==='zh'?'未找到匹配的项目':'No matching services found'}</div>`;
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="service-grid">
+      ${filteredData.map(cat=>`
+        <div class="service-card">
+          <div class="service-header">
+            <div class="service-icon">${cat.icon}</div>
+            <div>${cat.name}</div>
+          </div>
+          <div>
+            ${cat.items.map(item=>{
+              const isClosed = item.val === 'closed';
+              return `
+              <div class="service-item" onclick="goToTask('${item.val}')">
+                <span>${item.label}</span>
+                ${isClosed ? `<span class="service-closed">${item.price}</span>` : `<span class="service-price">${item.price}</span>`}
+              </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+};
 
 function statusBadge(s){
   const map={Finish:'badge-green',Ongoing:'badge-blue',Waiting:'badge-yellow',Pending:'badge-yellow',Fail:'badge-red',Close:'badge-gray',pending:'badge-yellow',approved:'badge-green',rejected:'badge-red'};
