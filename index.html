@@ -270,14 +270,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
         <span id="nav-label-dashboard">首页 Home</span>
       </div>
-      <div class="nav-item" onclick="navigate('task')" id="nav-task">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
-        <span id="nav-label-task">提交任务 New Task</span>
-      </div>
-      <div class="nav-item" onclick="navigate('tasks')" id="nav-tasks">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-        <span id="nav-label-tasks">任务列表 Tasks</span>
-      </div>
+      <div class="nav-section" style="margin-top:10px">筛选项目 SERVICES</div>
+      <div id="project-nav-container"></div>
       <div class="nav-item" onclick="navigate('recharge')" id="nav-recharge">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
         <span id="nav-label-recharge">充值 Recharge</span>
@@ -369,6 +363,35 @@ let currentUser=null;
 let currentProfile=null;
 let currentLang='zh';
 let currentPage='dashboard';
+
+const PROJECT_DATA = [
+  { id: 'whatsapp', name: 'WhatsApp', icon: '💬', items: [{label:'WS筛开通',price:'0.00008/条',val:'wsValid'},{label:'WS筛活跃',price:'0.00007/条',val:'wsActive'},{label:'WS性别年龄-全格式',price:'0.00013/条',val:'wsGender'}] },
+  { id: 'telegram', name: 'Telegram', icon: '✈️', items: [{label:'TG筛开通',price:'0.00008/条',val:'tgValid'},{label:'TG筛活跃',price:'0.001/条',val:'tgActive'},{label:'TG性别年龄-全格式',price:'0.0025/条',val:'tgGender'},{label:'TG筛用户名',price:'暂时关闭',val:'closed'}] },
+  { id: 'phone', name: '手机检测', icon: '📱', items: [{label:'空号检测',price:'0.0016/条',val:'phoneCheck'},{label:'全球运营商检测',price:'0.0015/条',val:'operatorStandard'}] },
+  { id: 'ios', name: 'IOS', icon: '🍏', items: [{label:'IOS蓝号(iMessage)',price:'0.0008/条',val:'iosBlueValid'},{label:'IOS筛系统',price:'0.0007/条',val:'iosValid'}] },
+  { id: 'facebook', name: 'Facebook', icon: '📘', items: [{label:'Facebook筛开通',price:'0.0004/条',val:'fbValid'},{label:'Facebook筛UID',price:'0.006/条',val:'fbUid'},{label:'FacebookUID性别',price:'暂时关闭',val:'closed'}] },
+  { id: 'tiktok', name: 'TikTok', icon: '🎵', items: [{label:'TikTok筛用户名',price:'0.0055/条',val:'tiktokUser'},{label:'TikTok筛开通',price:'0.0055/条',val:'tiktokValid'}] },
+  { id: 'linkedin', name: '领英', icon: '💼', items: [{label:'领英筛开通',price:'0.0035/条',val:'linkedinValid'},{label:'领英全格式',price:'0.0035/条',val:'linkedinGender'}] },
+  { id: 'wechat', name: 'WeChat', icon: '💬', items: [{label:'WeChat筛开通',price:'0.0025/条',val:'wxValid'}] },
+  { id: 'line', name: 'Line', icon: '📗', items: [{label:'Line筛开通',price:'0.002/条',val:'lineValid'},{label:'Line性别年龄',price:'0.01/条',val:'lineGender'}] },
+  { id: 'viber', name: 'Viber', icon: '📳', items: [{label:'Viber筛开通',price:'0.0009/条',val:'viberValid'},{label:'Viber筛活跃',price:'0.004/条',val:'viberActive'},{label:'Viber性别年龄',price:'暂时关闭',val:'closed'}] },
+  { id: 'signal', name: 'Signal', icon: '🔐', items: [{label:'Signal筛开通',price:'暂时关闭',val:'closed'}] },
+  { id: 'zalo', name: 'Zalo', icon: '🔵', items: [{label:'Zalo筛开通',price:'0.0006/条',val:'zaloValid'},{label:'Zalo筛活跃',price:'暂时关闭',val:'closed'},{label:'Zalo急速筛性别年龄',price:'0.0065/条',val:'zaloGender'}] },
+  { id: 'crypto', name: '币圈交易所', icon: '🪙', items: [{label:'币安筛开通',price:'0.006/条',val:'binanceValid'},{label:'OKX筛开通',price:'0.008/条',val:'okxValid'},{label:'Gate筛开通',price:'暂时关闭',val:'closed'},{label:'Kucoin筛开通',price:'0.0015/条',val:'closed'}] },
+  { id: 'instagram', name: 'Instagram', icon: '📸', items: [{label:'INS筛开通',price:'0.0003/条',val:'insValid'}] },
+  { id: 'twitter', name: 'Twitter/X', icon: '🐦', items: [{label:'Twitter筛开通',price:'0.0008/条',val:'twitterValid'}] }
+];
+
+function renderProjectNav() {
+  const container = document.getElementById('project-nav-container');
+  if(!container) return;
+  container.innerHTML = PROJECT_DATA.map(p => `
+    <div class="nav-item" onclick="navigate('project_${p.id}')" id="nav-project_${p.id}">
+      <span style="font-size:16px;margin-right:6px;width:20px;text-align:center;display:inline-block">${p.icon}</span>
+      <span>${p.name}</span>
+    </div>
+  `).join('');
+}
 
 const T={
   'dashboard':{zh:'首页',en:'Home'},
@@ -502,6 +525,7 @@ async function initApp(session) {
     }
     document.getElementById('auth-screen').style.display='none';
     document.getElementById('app').style.display='flex';
+    renderProjectNav();
     updateSidebar();
     navigate('dashboard');
   }
@@ -588,16 +612,24 @@ async function toggleLang(){
   updateSidebar();
 }
 
-function navigate(page){
+function navigate(page, subType = null){
   currentPage=page;
   document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
   const nav=document.getElementById('nav-'+page);
   if(nav)nav.classList.add('active');
+  
+  // 拦截项目专属路由
+  if(page.startsWith('project_')) {
+    const projectId = page.replace('project_', '');
+    const project = PROJECT_DATA.find(p => p.id === projectId);
+    document.getElementById('page-title').textContent = project ? project.name : '';
+    renderProject(projectId, subType);
+    return;
+  }
+
   document.getElementById('page-title').textContent=t(page);
   const pages={
     dashboard:renderDashboard,
-    task:renderNewTask,
-    tasks:renderTasks,
     recharge:renderRecharge,
     logs:renderLogs,
     prices:renderPrices,
@@ -606,16 +638,16 @@ function navigate(page){
   if(pages[page])pages[page]();
 }
 
-// 已移除 promptSyncBalance
-
-let preselectedTaskType = null;
 function goToTask(typeVal) {
   if(typeVal === 'closed') {
     toast(currentLang==='zh'?'该通道暂时关闭':'Channel temporarily closed', 'info');
     return;
   }
-  preselectedTaskType = typeVal;
-  navigate('task');
+  // 自动寻找所属的大项目并跳转
+  const project = PROJECT_DATA.find(p => p.items.some(i => i.val === typeVal));
+  if(project) {
+    navigate('project_' + project.id, typeVal);
+  }
 }
 
 // ─── DASHBOARD (HOME) ───
@@ -643,25 +675,7 @@ async function renderDashboard(){
   const todayConsume=(logs||[]).filter(l=>l.type==='consume'&&l.created_at?.startsWith(today)).reduce((a,l)=>a+Math.abs(l.amount),0);
   const monthConsume=(logs||[]).filter(l=>l.type==='consume'&&l.created_at?.startsWith(currentMonth)).reduce((a,l)=>a+Math.abs(l.amount),0);
 
-  const serviceData=[
-    {name:'WhatsApp',icon:'💬',items:[{label:'WS筛开通',price:'0.00008/条',val:'wsValid'},{label:'WS筛活跃',price:'0.00007/条',val:'wsActive'},{label:'WS性别年龄-全格式',price:'0.00013/条',val:'wsGender'}]},
-    {name:'Telegram',icon:'✈️',items:[{label:'TG筛开通',price:'0.00008/条',val:'tgValid'},{label:'TG筛活跃',price:'0.001/条',val:'tgActive'},{label:'TG性别年龄-全格式',price:'0.0025/条',val:'tgGender'},{label:'TG筛用户名',price:'暂时关闭',val:'closed'}]},
-    {name:'IOS',icon:'🍏',items:[{label:'IOS蓝号(iMessage)',price:'0.0008/条',val:'iosBlueValid'},{label:'IOS筛系统',price:'0.0007/条',val:'iosValid'}]},
-    {name:'Facebook',icon:'📘',items:[{label:'Facebook筛开通',price:'0.0004/条',val:'fbValid'},{label:'Facebook筛UID',price:'0.006/条',val:'fbUid'},{label:'FacebookUID性别',price:'暂时关闭',val:'closed'}]},
-    {name:'Viber',icon:'📳',items:[{label:'Viber筛开通',price:'0.0009/条',val:'viberValid'},{label:'Viber筛活跃',price:'0.004/条',val:'viberActive'},{label:'Viber性别年龄',price:'暂时关闭',val:'closed'}]},
-    {name:'Line',icon:'📗',items:[{label:'Line筛开通',price:'0.002/条',val:'lineValid'},{label:'Line性别年龄',price:'0.01/条',val:'lineGender'}]},
-    {name:'手机检测',icon:'📱',items:[{label:'空号检测',price:'0.0016/条',val:'phoneCheck'},{label:'全球运营商检测',price:'0.0015/条',val:'operatorStandard'}]},
-    {name:'Zalo',icon:'🔵',items:[{label:'Zalo筛开通',price:'0.0006/条',val:'zaloValid'},{label:'Zalo筛活跃',price:'暂时关闭',val:'closed'},{label:'Zalo急速筛性别年龄',price:'0.0065/条',val:'zaloGender'}]},
-    {name:'TikTok',icon:'🎵',items:[{label:'TikTok筛用户名',price:'0.0055/条',val:'tiktokUser'},{label:'TikTok筛开通',price:'0.0055/条',val:'tiktokValid'}]},
-    {name:'币圈交易所',icon:'🪙',items:[{label:'币安筛开通',price:'0.006/条',val:'binanceValid'},{label:'OKX筛开通',price:'0.008/条',val:'okxValid'},{label:'Gate筛开通',price:'暂时关闭',val:'closed'},{label:'Kucoin筛开通',price:'0.0015/条',val:'closed'}]},
-    {name:'WeChat',icon:'💬',items:[{label:'WeChat筛开通',price:'0.0025/条',val:'wxValid'}]},
-    {name:'Instagram',icon:'📸',items:[{label:'INS筛开通',price:'0.0003/条',val:'insValid'}]},
-    {name:'Signal',icon:'🔐',items:[{label:'Signal筛开通',price:'暂时关闭',val:'closed'}]},
-    {name:'Twitter/X',icon:'🐦',items:[{label:'Twitter筛开通',price:'0.0008/条',val:'twitterValid'}]},
-    {name:'领英',icon:'💼',items:[{label:'领英筛开通',price:'0.0035/条',val:'linkedinValid'},{label:'领英全格式',price:'0.0035/条',val:'linkedinGender'}]}
-  ];
-
-  c.innerHTML=`
+c.innerHTML=`
   <div class="home-stat-grid">
     <div class="home-stat-card">
       <div class="home-stat-title">${currentLang==='zh'?'余额':'Balance'} <span style="color:var(--accent)">💳</span></div>
@@ -705,7 +719,7 @@ async function renderDashboard(){
   <div class="section" style="border-top-left-radius: 0; border-top-right-radius: 0;">
     <div class="section-body" style="background: var(--bg); padding: 20px;">
       <div class="service-grid">
-        ${serviceData.map(cat=>`
+        ${PROJECT_DATA.map(cat=>`
           <div class="service-card">
             <div class="service-header">
               <div class="service-icon">${cat.icon}</div>
@@ -735,106 +749,8 @@ function statusBadge(s){
   return `<span class="badge ${map[s]||'badge-gray'}">${t(s)||s}</span>`;
 }
 
-// ─── NEW TASK ───
-const TASK_TYPES={
-  WhatsApp:[{val:'wsValid',label:'WS筛开通'},{val:'wsActive',label:'WS筛活跃'},{val:'wsGender',label:'WS性别年龄'}],
-  Telegram:[{val:'tgValid',label:'TG筛开通'},{val:'tgActive',label:'TG筛活跃'},{val:'tgGender',label:'TG性别年龄'},{val:'tgNameValid',label:'TG筛用户名'}],
-  Facebook:[{val:'fbValid',label:'FB筛开通'},{val:'fbGender',label:'FB筛性别'},{val:'fbUid',label:'FB筛UID'}],
-  Instagram:[{val:'insValid',label:'INS筛开通'}],
-  TikTok:[{val:'tiktokUser',label:'TK筛用户名'},{val:'tiktokValid',label:'TK筛开通'}],
-  Twitter:[{val:'twitterValid',label:'Twitter筛开通'}],
-  LinkedIn:[{val:'linkedinValid',label:'领英筛开通'},{val:'linkedinGender',label:'领英筛全格式'}],
-  Line:[{val:'lineValid',label:'Line筛开通'},{val:'lineGender',label:'Line性别年龄'}],
-  Viber:[{val:'viberValid',label:'Viber筛开通'},{val:'viberActive',label:'Viber筛活跃'},{val:'viberGender',label:'Viber性别年龄'}],
-  Signal:[{val:'signalValid',label:'Signal筛开通'}],
-  Zalo:[{val:'zaloValid',label:'Zalo筛开通'},{val:'zaloActive',label:'Zalo筛活跃'},{val:'zaloGender',label:'Zalo性别年龄'}],
-  WeChat:[{val:'wxValid',label:'WeChat筛开通'}],
-  IOS:[{val:'iosValid',label:'IOS筛系统'},{val:'iosBlueValid',label:'IOS筛蓝号'}],
-  '手机检测':[{val:'phoneCheck',label:'空号检测'},{val:'operatorStandard',label:'运营商检测'}],
-  '币圈':[{val:'binanceValid',label:'币安筛开通'},{val:'okxValid',label:'OKX筛开通'}],
-  'Amazon/Shopee':[{val:'amazonValid',label:'Amazon筛开通'},{val:'shopeeValid',label:'Shopee筛开通'}],
-  RCS:[{val:'rcsSystem',label:'RCS筛系统'}],
-  Botim:[{val:'botimValid',label:'Botim筛开通'},{val:'botimGender',label:'Botim性别年龄'}],
-};
+// ─── PROJECT & TASKS ───
 const COUNTRIES=['US','CN','DE','GB','IN','BR','JP','KR','SG','MY','TH','VN','PH','ID','AU','CA','FR','RU','MX','AE'];
-
-function renderNewTask(){
-  const c=document.getElementById('content');
-  const typeOpts=Object.entries(TASK_TYPES).map(([grp,items])=>
-    `<optgroup label="${grp}">${items.map(i=>`<option value="${i.val}">${i.label}</option>`).join('')}</optgroup>`
-  ).join('');
-  c.innerHTML=`
-  <div class="two-col">
-    <div class="section">
-      <div class="section-header"><div class="section-title">${currentLang==='zh'?'新建筛选任务':'New Screening Task'}</div></div>
-      <div class="section-body">
-        <div class="info-box">
-          ${currentLang==='zh'?'任务提交后将从余额中扣除积分。文件每行一个号码（含国际区号，不含"+"号）。':'Points will be deducted from your balance after task submission. File format: one number per line with country code, without "+" sign.'}
-          <br>${currentLang==='zh'?'当前余额：':'Current balance: '}<strong>${parseFloat(currentProfile?.balance||0).toFixed(2)} 积分</strong>
-        </div>
-        <div class="form-group">
-          <label class="form-label">${currentLang==='zh'?'任务名称（可选）':'Task Name (optional)'}</label>
-          <input type="text" id="task-name" class="form-input" placeholder="${currentLang==='zh'?'自定义名称...':'Custom name...'}"/>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">${currentLang==='zh'?'筛选类型':'Task Type'}</label>
-            <select id="task-type" class="form-select">${typeOpts}</select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">${currentLang==='zh'?'地区编码':'Country Code'}</label>
-            <select id="task-country" class="form-select">
-              ${COUNTRIES.map(c=>`<option value="${c}">${c}</option>`).join('')}
-            </select>
-          </div>
-        </div>
-        <!-- 移除了 API Token 输入框，由后端统一处理 -->
-        <div class="form-group">
-          <label class="form-label">${currentLang==='zh'?'上传号码文件 (.txt)':'Upload Number File (.txt)'}</label>
-          <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleDrop(event)">
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            <p id="upload-label">${currentLang==='zh'?'点击或拖拽上传 .txt 文件':'Click or drag to upload .txt file'}</p>
-          </div>
-          <input type="file" id="file-input" accept=".txt" style="display:none" onchange="handleFileSelect(this)"/>
-        </div>
-        <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="submitTask()" id="submit-task-btn">
-          ${currentLang==='zh'?'提交任务':'Submit Task'}
-        </button>
-        <div id="task-result" style="margin-top:14px"></div>
-      </div>
-    </div>
-    <div>
-      <div class="section" style="margin-bottom:16px">
-        <div class="section-header"><div class="section-title">${currentLang==='zh'?'使用说明':'Instructions'}</div></div>
-        <div class="section-body" style="font-size:13px;color:var(--text2);line-height:1.8">
-          <p>1. ${currentLang==='zh'?'在 th333.cc 申请API Token':'Apply for API Token at th333.cc'}</p>
-          <p>2. ${currentLang==='zh'?'准备.txt格式号码文件，每行一个号码':'Prepare .txt file with one number per line'}</p>
-          <p>3. ${currentLang==='zh'?'号码格式：国际区号+号码，如 13812345678':'Format: country code + number, e.g. 13812345678'}</p>
-          <p>4. ${currentLang==='zh'?'选择筛选类型和地区，提交任务':'Select task type and country, submit'}</p>
-          <p>5. ${currentLang==='zh'?'在任务列表查看进度，完成后下载结果':'Check progress in task list, download when done'}</p>
-        </div>
-      </div>
-      <div class="section">
-        <div class="section-header"><div class="section-title">${currentLang==='zh'?'注意事项':'Notes'}</div></div>
-        <div class="section-body" style="font-size:13px;color:var(--text2);line-height:1.8">
-          <p>⚠ ${currentLang==='zh'?'任务提交后立即扣费，请确保余额充足':'Points deducted immediately upon submission'}</p>
-          <p>⚠ ${currentLang==='zh'?'结果文件保留30天':'Result files kept for 30 days'}</p>
-          <p>⚠ ${currentLang==='zh'?'建议并发任务不超过10个':'Max 10 concurrent tasks recommended'}</p>
-          <p>⚠ ${currentLang==='zh'?'单文件建议不超过500万行':'Max 5M lines per file recommended'}</p>
-        </div>
-      </div>
-    </div>
-  </div>`;
-
-  // 自动选中从首页跳转过来的任务类型
-  if (preselectedTaskType) {
-    const typeSelect = document.getElementById('task-type');
-    if (typeSelect) {
-      typeSelect.value = preselectedTaskType;
-    }
-    preselectedTaskType = null; // 重置，避免影响后续正常点击
-  }
-}
 
 let selectedFile=null;
 function handleFileSelect(input){
@@ -858,13 +774,131 @@ function handleDrop(e){
   }
 }
 
-async function submitTask(){
-  const taskType=document.getElementById('task-type').value;
+async function renderProject(projectId, subTypeVal = null) {
+  const project = PROJECT_DATA.find(p => p.id === projectId);
+  if(!project) return;
+
+  const c = document.getElementById('content');
+  
+  // 确定当前选中的子类型 Tab
+  let activeItem = project.items.find(i => i.val === subTypeVal);
+  if (!activeItem) {
+    activeItem = project.items.find(i => i.val !== 'closed') || project.items[0];
+  }
+
+  if (activeItem.val === 'closed') {
+    c.innerHTML = `<div class="empty-state">该通道暂时关闭 / Channel closed</div>`;
+    return;
+  }
+
+  c.innerHTML = `<div style="color:var(--text3);font-size:13px">${t('loading')}</div>`;
+
+  // 只查询当前子类型的任务
+  const {data:tasks} = await sb.from('tasks')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .eq('task_type', activeItem.val)
+    .order('created_at', {ascending: false});
+
+  // 顶部 Tabs
+  const tabsHtml = `
+    <div class="admin-tabs" style="margin-bottom: 20px; flex-wrap: wrap;">
+      ${project.items.map(item => `
+        <div class="admin-tab ${item.val === activeItem.val ? 'active' : ''}" 
+             onclick="${item.val === 'closed' ? `toast('通道已关闭','info')` : `renderProject('${projectId}', '${item.val}')`}"
+             style="${item.val === 'closed' ? 'opacity:0.5;cursor:not-allowed' : ''}">
+          ${item.label}
+        </div>
+      `).join('')}
+    </div>
+  `;
+
+  // 提交表单
+  const formHtml = `
+    <div class="section" style="margin-bottom: 20px;">
+      <div class="section-header"><div class="section-title">${currentLang==='zh'?'新建任务':'New Task'} - ${activeItem.label}</div></div>
+      <div class="section-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">${currentLang==='zh'?'任务名称（可选）':'Task Name (optional)'}</label>
+            <input type="text" id="task-name" class="form-input" placeholder="${currentLang==='zh'?'自定义名称...':'Custom name...'}"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">${currentLang==='zh'?'地区编码':'Country Code'}</label>
+            <select id="task-country" class="form-select">
+              ${COUNTRIES.map(c=>`<option value="${c}">${c}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">${currentLang==='zh'?'上传号码文件 (.txt)':'Upload Number File (.txt)'}</label>
+          <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleDrop(event)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <p id="upload-label">${currentLang==='zh'?'点击或拖拽上传 .txt 文件':'Click or drag to upload .txt file'}</p>
+          </div>
+          <input type="file" id="file-input" accept=".txt" style="display:none" onchange="handleFileSelect(this)"/>
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="submitProjectTask('${activeItem.val}')" id="submit-task-btn">
+          ${currentLang==='zh'?'提交任务':'Submit Task'} (单价: ${activeItem.price})
+        </button>
+        <div id="task-result" style="margin-top:14px"></div>
+      </div>
+    </div>
+  `;
+
+  // 专属任务列表
+  const listHtml = `
+    <div class="section">
+      <div class="section-header"><div class="section-title">${currentLang==='zh'?'任务列表':'Task List'} (${(tasks||[]).length})</div></div>
+      <div class="section-body" style="padding:0">
+        ${(tasks||[]).length===0?`<div class="empty-state">${t('empty')}</div>`:
+        `<div class="table-wrap"><table>
+          <thead><tr>
+            <th>${currentLang==='zh'?'任务ID':'Task ID'}</th>
+            <th>${currentLang==='zh'?'名称':'Name'}</th>
+            <th>${currentLang==='zh'?'地区':'Country'}</th>
+            <th>${currentLang==='zh'?'进度':'Progress'}</th>
+            <th>${currentLang==='zh'?'有效':'Valid'}</th>
+            <th>${currentLang==='zh'?'扣费':'Cost'}</th>
+            <th>${t('status')}</th>
+            <th>${t('actions')}</th>
+          </tr></thead>
+          <tbody>
+            ${(tasks||[]).map(task=>`<tr>
+              <td style="font-family:monospace;font-size:11px;color:var(--text3)">${(task.remote_task_id||'-').slice(-12)}</td>
+              <td>${task.task_name||'-'}</td>
+              <td>${task.country}</td>
+              <td>
+                <div style="min-width:80px">
+                  <div class="progress-bar" style="margin-bottom:3px">
+                    <div class="progress-fill" style="width:${task.task_total?Math.round((task.task_progress||0)/task.task_total*100):0}%"></div>
+                  </div>
+                  <div style="font-size:10px;color:var(--text3)">${task.task_progress||0}/${task.task_total||0}</div>
+                </div>
+              </td>
+              <td style="color:var(--green);font-weight:600">${task.valid_quantity||0}</td>
+              <td style="font-size:12px;color:var(--yellow)">${task.points_consumed||0}</td>
+              <td>${statusBadge(task.status)}</td>
+              <td style="display:flex;gap:6px;flex-wrap:wrap">
+                ${task.status==='Finish'?`<button class="btn btn-success btn-sm" onclick="downloadResult('${task.id}','${task.remote_task_id}')">${t('download')}</button>`:''}
+                ${['Ongoing','Waiting','Pending'].includes(task.status)?`<button class="btn btn-secondary btn-sm" onclick="refreshProjectTask('${task.id}','${task.remote_task_id}', '${projectId}', '${activeItem.val}')">${currentLang==='zh'?'刷新':'Refresh'}</button>`:''}
+              </td>
+            </tr>`).join('')}
+          </tbody>
+        </table></div>`}
+      </div>
+    </div>
+  `;
+
+  c.innerHTML = tabsHtml + formHtml + listHtml;
+  selectedFile = null;
+}
+
+async function submitProjectTask(taskType){
   const country=document.getElementById('task-country').value;
   const taskName=document.getElementById('task-name').value.trim();
   if(!selectedFile){toast(currentLang==='zh'?'请上传号码文件':'Please upload a file','error');return;}
   
-  // 新增：提交前检查本地独立积分余额是否充足
   if(parseFloat(currentProfile?.balance || 0) <= 0){
     toast(currentLang==='zh'?'余额不足，请先充值':'Insufficient balance, please recharge','error');
     return;
@@ -885,7 +919,7 @@ async function submitTask(){
       toast((currentLang==='zh'?'提交失败: ':'Submit failed: ')+data.message,'error');
       return;
     }
-    // Save task to DB
+    
     await sb.from('tasks').insert({
       user_id:currentUser.id,
       remote_task_id:data.data.taskId,
@@ -897,7 +931,7 @@ async function submitTask(){
       points_consumed:data.consume?.deduction||0,
       file_name:selectedFile.name,
     });
-    // Log consumption
+    
     if(data.consume?.deduction>0){
       const balBefore=currentProfile.balance;
       const balAfter=balBefore - data.consume.deduction;
@@ -912,79 +946,28 @@ async function submitTask(){
       await sb.from('profiles').update({balance:balAfter}).eq('id',currentUser.id);
       currentProfile.balance=balAfter;
     }
-    document.getElementById('task-result').innerHTML=`
-      <div class="info-box" style="border-color:var(--green);background:rgba(46,204,122,.08)">
-        <strong style="color:var(--green)">✓ ${currentLang==='zh'?'任务已提交':'Task submitted'}</strong><br>
-        Task ID: <code>${data.data.taskId}</code><br>
-        ${currentLang==='zh'?'总数':'Total'}: ${data.data.taskTotal} | 
-        ${currentLang==='zh'?'扣费':'Deducted'}: ${data.consume?.deduction||0} ${t('points')} | 
-        ${currentLang==='zh'?'余额':'Balance'}: ${parseFloat(currentProfile.balance || 0).toFixed(3)} ${t('points')}
-      </div>`;
+    
     toast(currentLang==='zh'?'任务提交成功！':'Task submitted successfully!','success');
     updateSidebar();
     selectedFile=null;
+    
+    // 提交成功后刷新当前项目页面
+    const currentProjectId = PROJECT_DATA.find(p => p.items.some(i => i.val === taskType))?.id;
+    if(currentProjectId) {
+        renderProject(currentProjectId, taskType);
+    }
+
   } catch(e){
     toast((currentLang==='zh'?'网络错误: ':'Network error: ')+e.message,'error');
   } finally{
-    btn.textContent=currentLang==='zh'?'提交任务':'Submit Task';
-    btn.disabled=false;
+    if(btn) {
+        btn.textContent=currentLang==='zh'?'提交任务':'Submit Task';
+        btn.disabled=false;
+    }
   }
 }
 
-// ─── TASK LIST ───
-async function renderTasks(){
-  const c=document.getElementById('content');
-  c.innerHTML=`<div style="color:var(--text3);font-size:13px">${t('loading')}</div>`;
-  const{data:tasks}=await sb.from('tasks').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false});
-  c.innerHTML=`
-  <div class="section">
-    <div class="section-header">
-      <div class="section-title">${currentLang==='zh'?'我的任务':'My Tasks'} (${(tasks||[]).length})</div>
-      <button class="btn btn-primary btn-sm" onclick="navigate('task')">${currentLang==='zh'?'+ 新建':'+ New'}</button>
-    </div>
-    <div class="section-body" style="padding:0">
-      ${(tasks||[]).length===0?`<div class="empty-state">${t('empty')}</div>`:
-      `<div class="table-wrap"><table>
-        <thead><tr>
-          <th>${currentLang==='zh'?'任务ID':'Task ID'}</th>
-          <th>${currentLang==='zh'?'名称':'Name'}</th>
-          <th>${currentLang==='zh'?'类型':'Type'}</th>
-          <th>${currentLang==='zh'?'地区':'Country'}</th>
-          <th>${currentLang==='zh'?'进度':'Progress'}</th>
-          <th>${currentLang==='zh'?'有效':'Valid'}</th>
-          <th>${currentLang==='zh'?'扣费':'Cost'}</th>
-          <th>${t('status')}</th>
-          <th>${t('actions')}</th>
-        </tr></thead>
-        <tbody>
-          ${(tasks||[]).map(task=>`<tr>
-            <td style="font-family:monospace;font-size:11px;color:var(--text3)">${(task.remote_task_id||'-').slice(-12)}</td>
-            <td>${task.task_name||'-'}</td>
-            <td><span class="badge badge-blue" style="font-size:10px">${task.task_type}</span></td>
-            <td>${task.country}</td>
-            <td>
-              <div style="min-width:80px">
-                <div class="progress-bar" style="margin-bottom:3px">
-                  <div class="progress-fill" style="width:${task.task_total?Math.round((task.task_progress||0)/task.task_total*100):0}%"></div>
-                </div>
-                <div style="font-size:10px;color:var(--text3)">${task.task_progress||0}/${task.task_total||0}</div>
-              </div>
-            </td>
-            <td style="color:var(--green);font-weight:600">${task.valid_quantity||0}</td>
-            <td style="font-size:12px;color:var(--yellow)">${task.points_consumed||0}</td>
-            <td>${statusBadge(task.status)}</td>
-            <td style="display:flex;gap:6px;flex-wrap:wrap">
-              ${task.status==='Finish'?`<button class="btn btn-success btn-sm" onclick="downloadResult('${task.id}','${task.remote_task_id}')">${t('download')}</button>`:''}
-              ${['Ongoing','Waiting','Pending'].includes(task.status)?`<button class="btn btn-secondary btn-sm" onclick="refreshTask('${task.id}','${task.remote_task_id}')">${currentLang==='zh'?'刷新':'Refresh'}</button>`:''}
-            </td>
-          </tr>`).join('')}
-        </tbody>
-      </table></div>`}
-    </div>
-  </div>`;
-}
-
-async function refreshTask(taskId,remoteId){
+async function refreshProjectTask(taskId,remoteId, projectId, subTypeVal){
   if(!remoteId){toast(currentLang==='zh'?'无远程任务ID':'No remote task ID','error');return;}
   toast(currentLang==='zh'?'正在刷新...':'Refreshing...','info');
   try{
@@ -999,7 +982,7 @@ async function refreshTask(taskId,remoteId){
       task_total:d.taskTotal,
     }).eq('id',taskId);
     toast(currentLang==='zh'?'状态已更新':'Status updated','success');
-    renderTasks();
+    renderProject(projectId, subTypeVal);
   } catch(e){toast(e.message,'error');}
 }
 
