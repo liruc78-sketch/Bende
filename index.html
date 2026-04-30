@@ -203,6 +203,22 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .brand-icon { width: 18px; height: 18px; object-fit: contain; display: block; }
 .service-icon .brand-icon { width: 22px; height: 22px; }
 
+/* PROJECT SUB TABS */
+.project-sub-tabs { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
+.project-sub-tab { padding: 10px 18px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.15); font-size: 13px; cursor: pointer; border-radius: 8px; transition: all .2s; color: var(--text2); }
+.project-sub-tab:hover { border-color: var(--accent); background: rgba(79,142,247,.08); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.1); color: var(--text); }
+.project-sub-tab.active { border-color: var(--accent); background: rgba(79,142,247,.15); color: var(--accent); font-weight: 600; }
+
+/* AUTO PAY UI */
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.pay-amount-badge { background: rgba(46,204,122,0.1); border: 1px solid var(--green); border-radius: 8px; padding: 16px; text-align: center; margin-bottom: 20px; }
+.pay-amount-badge .amount { font-size: 28px; font-weight: bold; color: var(--green); font-family: monospace; }
+.pay-amount-badge .hint { font-size: 12px; color: var(--red); margin-top: 8px; font-weight: bold; }
+.detect-status { text-align: center; padding: 14px; border-radius: 8px; font-size: 13px; margin-bottom: 15px; font-weight: 500; }
+.detect-pending { background: rgba(245,166,35,0.1); color: var(--yellow); border: 1px solid rgba(245,166,35,0.3); }
+.detect-success { background: rgba(46,204,122,0.1); color: var(--green); border: 1px solid rgba(46,204,122,0.3); }
+.detect-spin { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--yellow); border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 8px; }
+
 /* MISC */
 .empty-state{text-align:center;padding:48px 20px;color:var(--text3)}
 .empty-state svg{width:40px;height:40px;margin:0 auto 12px;opacity:.3;display:block}
@@ -883,9 +899,9 @@ async function renderProject(projectId, subTypeVal = null) {
 
   // 顶部 Tabs
   const tabsHtml = `
-    <div class="admin-tabs" style="margin-bottom: 20px; flex-wrap: wrap;">
+    <div class="project-sub-tabs">
       ${project.items.map(item => `
-        <div class="admin-tab ${item.val === activeItem.val ? 'active' : ''}" 
+        <div class="project-sub-tab ${item.val === activeItem.val ? 'active' : ''}" 
              onclick="${item.val === 'closed' ? `toast('通道已关闭','info')` : `renderProject('${projectId}', '${item.val}')`}"
              style="${item.val === 'closed' ? 'opacity:0.5;cursor:not-allowed' : ''}">
           ${item.label}
@@ -1082,52 +1098,69 @@ async function downloadResult(taskId,remoteId){
   } catch(e){toast(e.message,'error');}
 }
 
-// ─── RECHARGE ───
+// ─── RECHARGE (AUTO DETECT) ───
+let rechargeState = { orderId: null, detectTimer: null };
+
 async function renderRecharge(){
+  if(rechargeState.detectTimer) clearInterval(rechargeState.detectTimer);
   const c=document.getElementById('content');
   const{data:settings}=await sb.from('site_settings').select('*');
   const cfg={};(settings||[]).forEach(s=>cfg[s.key]=s.value);
   const wallet=cfg.usdt_wallet_address||'未配置钱包地址';
+  const qrUrl=cfg.pay_wechat_url||''; // 假设你把二维码存在了这个字段，如果没有可以忽略
   const rate=cfg.usdt_to_points||'6.8';
   const{data:orders}=await sb.from('recharge_orders').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false});
+  
   c.innerHTML=`
   <div class="two-col">
     <div>
       <div class="section" style="margin-bottom:16px">
-        <div class="section-header"><div class="section-title">${currentLang==='zh'?'提交充值申请':'Submit Recharge Request'}</div></div>
+        <div class="section-header"><div class="section-title">${currentLang==='zh'?'自动充值 (USDT-TRC20)':'Auto Recharge (USDT-TRC20)'}</div></div>
         <div class="section-body">
-          <div class="info-box">
-            ${currentLang==='zh'?'汇率：':'Exchange rate: '}<strong>1 USDT = ${rate} 积分/Points</strong>
+          
+          <!-- 步骤1：输入金额 -->
+          <div id="recharge-step1">
+            <div class="info-box">
+              ${currentLang==='zh'?'汇率：':'Exchange rate: '}<strong>1 USDT = ${rate} 积分/Points</strong>
+            </div>
+            <div class="form-group">
+              <label class="form-label">${currentLang==='zh'?'请输入充值 USDT 金额 (整数)':'Enter USDT Amount (Integer)'}</label>
+              <input type="number" id="usdt-amt" class="form-input" placeholder="例如: 10" min="1" step="1" oninput="calcPoints(this.value,'${rate}')"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">${currentLang==='zh'?'预计获得积分':'Expected Points'}</label>
+              <input type="text" id="pts-preview" class="form-input" readonly placeholder="0" style="color:var(--green)"/>
+            </div>
+            <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:10px;" onclick="generateOrder('${wallet}')">
+              ${currentLang==='zh'?'生成付款订单':'Generate Payment Order'}
+            </button>
           </div>
-          <div class="steps">
-            <div class="step"><div class="step-num">1</div><div class="step-label">${currentLang==='zh'?'转账USDT':'Send USDT'}</div></div>
-            <div class="step"><div class="step-num">2</div><div class="step-label">${currentLang==='zh'?'填写申请':'Fill Form'}</div></div>
-            <div class="step"><div class="step-num">3</div><div class="step-label">${currentLang==='zh'?'等待审核':'Wait Review'}</div></div>
-            <div class="step"><div class="step-num">4</div><div class="step-label">${currentLang==='zh'?'积分到账':'Credits Added'}</div></div>
+
+          <!-- 步骤2：扫码付款与自动检测 -->
+          <div id="recharge-step2" style="display:none;">
+            <div class="pay-amount-badge">
+              <div style="font-size:13px; color:var(--text2); margin-bottom:5px;">${currentLang==='zh'?'本次应付金额（精确匹配）':'Exact Amount to Pay'}</div>
+              <div class="amount" id="pay-amount-display">--</div>
+              <div class="hint">🚨 ${currentLang==='zh'?'请务必转账精确金额（包含小数），系统凭此自动识别到账！':'Please transfer the EXACT amount including decimals for auto-detection!'}</div>
+            </div>
+            
+            ${qrUrl ? `<div style="text-align:center; margin-bottom:15px;"><img src="${qrUrl}" style="width:180px;height:180px;border-radius:8px;border:2px solid var(--border);"></div>` : ''}
+            
+            <div class="form-group" style="margin-bottom:20px">
+              <label class="form-label">TRC20-USDT ${currentLang==='zh'?'收款地址':'Wallet Address'}</label>
+              <div class="wallet-addr" style="font-size:14px;padding:12px;">${wallet}<span class="copy-addr" onclick="copyText('${wallet}')">${currentLang==='zh'?'复制':'Copy'}</span></div>
+            </div>
+
+            <div class="detect-status detect-pending" id="detect-status-box">
+              <span class="detect-spin"></span>${currentLang==='zh'?'等待付款到账，自动检测中...':'Waiting for payment, auto-detecting...'}
+            </div>
+            
+            <div style="display:flex; gap:10px;">
+                <button class="btn btn-secondary" style="flex:1;justify-content:center;" onclick="renderRecharge()">${currentLang==='zh'?'取消订单':'Cancel'}</button>
+                <button class="btn btn-primary" style="flex:1;justify-content:center;" onclick="manualCheckPayment()">${currentLang==='zh'?'手动刷新检测':'Manual Check'}</button>
+            </div>
           </div>
-          <div class="form-group" style="margin-top:16px">
-            <label class="form-label">TRC20-USDT ${currentLang==='zh'?'收款地址':'Wallet Address'}</label>
-            <div class="wallet-addr">${wallet}<span class="copy-addr" onclick="copyText('${wallet}')">${currentLang==='zh'?'复制':'Copy'}</span></div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">${currentLang==='zh'?'转账USDT金额':'USDT Amount Sent'}</label>
-            <input type="number" id="usdt-amt" class="form-input" placeholder="10" min="1" step="0.01" oninput="calcPoints(this.value,'${rate}')"/>
-          </div>
-          <div class="form-group">
-            <label class="form-label">${currentLang==='zh'?'预计获得积分':'Expected Points'}</label>
-            <input type="text" id="pts-preview" class="form-input" readonly placeholder="0" style="color:var(--green)"/>
-          </div>
-          <div class="form-group">
-            <label class="form-label">${currentLang==='zh'?'交易哈希 (TXID)':'Transaction Hash (TXID)'}</label>
-            <input type="text" id="tx-hash" class="form-input" placeholder="0x..."/>
-          </div>
-          <div class="form-group">
-            <label class="form-label">${currentLang==='zh'?'备注（可选）':'Remark (optional)'}</label>
-            <textarea id="tx-note" class="form-textarea" placeholder="${currentLang==='zh'?'转账截图说明等...':'Screenshot info etc...'}"></textarea>
-          </div>
-          <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="submitRecharge()">
-            ${currentLang==='zh'?'提交充值申请':'Submit Recharge Request'}
-          </button>
+
         </div>
       </div>
     </div>
@@ -1147,7 +1180,7 @@ async function renderRecharge(){
             ${(orders||[]).map(o=>`<tr>
               <td>${o.usdt_amount}</td>
               <td style="color:var(--green)">${o.points_amount}</td>
-              <td style="font-family:monospace;font-size:10px;color:var(--text3)">${(o.tx_hash||'-').slice(0,16)}...</td>
+              <td style="font-family:monospace;font-size:10px;color:var(--text3)">${o.tx_hash ? o.tx_hash.slice(0,16)+'...' : '-'}</td>
               <td>${statusBadge(o.status)}</td>
               <td style="font-size:11px;color:var(--text3)">${new Date(o.created_at).toLocaleDateString()}</td>
             </tr>`).join('')}
@@ -1166,24 +1199,78 @@ function copyText(text){
   navigator.clipboard.writeText(text).then(()=>toast(currentLang==='zh'?'已复制':'Copied','success'));
 }
 
-async function submitRecharge(){
-  const usdtAmt=parseFloat(document.getElementById('usdt-amt').value);
-  const txHash=document.getElementById('tx-hash').value.trim();
-  if(!usdtAmt||usdtAmt<=0){toast(currentLang==='zh'?'请输入有效金额':'Enter valid amount','error');return;}
-  if(!txHash){toast(currentLang==='zh'?'请输入交易哈希':'Enter TXID','error');return;}
+async function generateOrder(walletAddr) {
+  const baseUsdt = parseInt(document.getElementById('usdt-amt').value);
+  if(!baseUsdt || baseUsdt <= 0){toast(currentLang==='zh'?'请输入有效整数金额':'Enter valid integer amount','error');return;}
+  
+  // 生成唯一金额：基础金额 + 随机3位小数（0.001~0.999）
+  const uniqueFraction = (Math.floor(Math.random() * 998) + 1) / 1000;
+  const uniqueAmount = parseFloat((baseUsdt + uniqueFraction).toFixed(3));
+  
   const{data:cfg}=await sb.from('site_settings').select('value').eq('key','usdt_to_points').single();
   const rate=parseFloat(cfg?.value||'6.8');
-  const ptsAmt=usdtAmt*rate;
-  const{error}=await sb.from('recharge_orders').insert({
-    user_id:currentUser.id,
-    usdt_amount:usdtAmt,
-    points_amount:ptsAmt,
-    tx_hash:txHash,
-    status:'pending',
-  });
+  const ptsAmt = parseFloat((uniqueAmount * rate).toFixed(3));
+
+  // 写入数据库，状态为 pending
+  const{data:order, error}=await sb.from('recharge_orders').insert({
+    user_id: currentUser.id,
+    usdt_amount: uniqueAmount,
+    points_amount: ptsAmt,
+    status: 'pending',
+  }).select().single();
+
   if(error){toast(error.message,'error');return;}
-  toast(currentLang==='zh'?'充值申请已提交，请等待审核':'Recharge submitted, awaiting review','success');
-  renderRecharge();
+  
+  rechargeState.orderId = order.id;
+
+  // 切换 UI 到步骤 2
+  document.getElementById('recharge-step1').style.display = 'none';
+  document.getElementById('recharge-step2').style.display = 'block';
+  document.getElementById('pay-amount-display').textContent = `${uniqueAmount.toFixed(3)} USDT`;
+  
+  // 启动向后端的轮询检测
+  startBackendDetection();
+}
+
+function startBackendDetection() {
+  if (rechargeState.detectTimer) clearInterval(rechargeState.detectTimer);
+  checkPaymentWithBackend(); // 立即查一次
+  rechargeState.detectTimer = setInterval(checkPaymentWithBackend, 15000); // 每15秒查一次后端
+}
+
+async function manualCheckPayment() {
+  document.getElementById('detect-status-box').innerHTML = `<span class="detect-spin"></span>${currentLang==='zh'?'检测中...':'Checking...'}`;
+  await checkPaymentWithBackend();
+}
+
+// 核心安全逻辑：前端不接触区块链 API，只问后端“这个订单支付成功了吗？”
+async function checkPaymentWithBackend() {
+  if (!rechargeState.orderId) return;
+  try {
+    // 调用你的 Edge Function (复用 th333-proxy，我们在后端加一个路由)
+    const res = await proxyFetch('/api/internal/check-payment', { 
+        method: 'POST', 
+        body: JSON.stringify({ orderId: rechargeState.orderId }) 
+    });
+    const data = await res.json();
+    
+    if (data.code === 0 && data.status === 'paid') {
+        // 支付成功！
+        if (rechargeState.detectTimer) clearInterval(rechargeState.detectTimer);
+        document.getElementById('detect-status-box').className = 'detect-status detect-success';
+        document.getElementById('detect-status-box').innerHTML = `✅ ${currentLang==='zh'?'付款已确认，积分已到账！':'Payment confirmed, points added!'}`;
+        
+        // 更新本地余额显示
+        if(data.newBalance) {
+            currentProfile.balance = data.newBalance;
+            updateSidebar();
+        }
+        toast(currentLang==='zh'?'充值成功！':'Recharge successful!','success');
+        setTimeout(() => renderRecharge(), 3000); // 3秒后刷新页面显示记录
+    }
+  } catch (e) {
+    console.warn("Check payment error:", e);
+  }
 }
 
 // ─── LOGS ───
