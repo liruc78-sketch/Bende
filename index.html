@@ -187,6 +187,18 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .service-price{color:var(--accent);font-family:monospace;font-size:12px}
 .service-closed{color:var(--text3);font-size:12px;background:rgba(255,255,255,.05);padding:2px 6px;border-radius:4px}
 
+/* TAB BAR */
+#topbar { border-bottom: none; } /* 移除顶部栏的底边框，让标签栏接管 */
+.tab-bar { display: flex; background: var(--bg2); border-bottom: 1px solid var(--border); padding: 6px 24px 0; gap: 6px; overflow-x: auto; }
+.tab-bar::-webkit-scrollbar { height: 0; display: none; }
+.tab-item { display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: var(--bg3); border: 1px solid var(--border); border-bottom: none; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 13px; color: var(--text2); min-width: max-content; transition: all 0.2s; margin-bottom: -1px; }
+.tab-item:hover { background: var(--bg4); color: var(--text); }
+.tab-item.active { background: var(--bg); color: var(--accent); border-color: var(--border); z-index: 1; }
+.tab-icon { width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; }
+.tab-icon img, .tab-icon svg { width: 100%; height: 100%; object-fit: contain; }
+.tab-close { width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; border-radius: 50%; margin-left: 4px; color: var(--text3); transition: all 0.2s; font-size: 14px; line-height: 1; }
+.tab-close:hover { background: rgba(255,255,255,0.1); color: var(--red); }
+
 /* BRAND ICONS */
 .brand-icon { width: 18px; height: 18px; object-fit: contain; display: block; }
 .service-icon .brand-icon { width: 22px; height: 22px; }
@@ -320,6 +332,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div style="font-size:12px;color:var(--text3)" id="topbar-balance">余额: 0</div>
       </div>
     </div>
+    <!-- 新增的标签栏容器 -->
+    <div id="tab-bar" class="tab-bar"></div>
     <div id="content">
       <!-- Pages rendered here -->
     </div>
@@ -375,7 +389,7 @@ const PROJECT_DATA = [
   { id: 'ios', name: 'IOS', icon: '<img src="https://cdn.simpleicons.org/apple/A3AAAE" class="brand-icon">', items: [{label:'IOS蓝号(iMessage)',price:'0.0008/条',val:'iosBlueValid'},{label:'IOS筛系统',price:'0.0007/条',val:'iosValid'}] },
   { id: 'facebook', name: 'Facebook', icon: '<img src="https://cdn.simpleicons.org/facebook/1877F2" class="brand-icon">', items: [{label:'Facebook筛开通',price:'0.0004/条',val:'fbValid'},{label:'Facebook筛UID',price:'0.006/条',val:'fbUid'},{label:'FacebookUID性别',price:'暂时关闭',val:'closed'}] },
   { id: 'tiktok', name: 'TikTok', icon: '<img src="https://cdn.simpleicons.org/tiktok/FFFFFF" class="brand-icon">', items: [{label:'TikTok筛用户名',price:'0.0055/条',val:'tiktokUser'},{label:'TikTok筛开通',price:'0.0055/条',val:'tiktokValid'}] },
-  { id: 'linkedin', name: '领英', icon: '<img src="https://cdn.simpleicons.org/linkedin/0A66C2" class="brand-icon">', items: [{label:'领英筛开通',price:'0.0035/条',val:'linkedinValid'},{label:'领英全格式',price:'0.0035/条',val:'linkedinGender'}] },
+  { id: 'linkedin', name: '领英', icon: '<svg viewBox="0 0 24 24" fill="#0A66C2" class="brand-icon"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>', items: [{label:'领英筛开通',price:'0.0035/条',val:'linkedinValid'},{label:'领英全格式',price:'0.0035/条',val:'linkedinGender'}] },
   { id: 'wechat', name: 'WeChat', icon: '<img src="https://cdn.simpleicons.org/wechat/07C160" class="brand-icon">', items: [{label:'WeChat筛开通',price:'0.0025/条',val:'wxValid'}] },
   { id: 'line', name: 'Line', icon: '<img src="https://cdn.simpleicons.org/line/00C300" class="brand-icon">', items: [{label:'Line筛开通',price:'0.002/条',val:'lineValid'},{label:'Line性别年龄',price:'0.01/条',val:'lineGender'}] },
   { id: 'viber', name: 'Viber', icon: '<img src="https://cdn.simpleicons.org/viber/7360F2" class="brand-icon">', items: [{label:'Viber筛开通',price:'0.0009/条',val:'viberValid'},{label:'Viber筛活跃',price:'0.004/条',val:'viberActive'},{label:'Viber性别年龄',price:'暂时关闭',val:'closed'}] },
@@ -616,17 +630,80 @@ async function toggleLang(){
   updateSidebar();
 }
 
+// --- 标签页状态管理 ---
+let openTabs = [{ id: 'dashboard', subType: null }]; // 默认保留首页
+const STATIC_ICONS = {
+  dashboard: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>',
+  recharge: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>',
+  logs: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>',
+  prices: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+  admin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>'
+};
+
+function renderTabs() {
+  const bar = document.getElementById('tab-bar');
+  if(!bar) return;
+  bar.innerHTML = openTabs.map(tab => {
+    let title = '';
+    let icon = '';
+    if(tab.id.startsWith('project_')) {
+      const p = PROJECT_DATA.find(p => p.id === tab.id.replace('project_', ''));
+      title = p ? p.name : tab.id;
+      icon = p ? p.icon : '';
+    } else {
+      title = t(tab.id);
+      icon = STATIC_ICONS[tab.id] || '';
+    }
+    return `
+      <div class="tab-item ${tab.id === currentPage ? 'active' : ''}" onclick="navigate('${tab.id}', ${tab.subType ? `'${tab.subType}'` : 'null'})">
+        <div class="tab-icon">${icon}</div>
+        <span>${title}</span>
+        ${tab.id !== 'dashboard' ? `<div class="tab-close" onclick="event.stopPropagation(); closeTab('${tab.id}')">×</div>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function closeTab(id) {
+  const index = openTabs.findIndex(t => t.id === id);
+  if (index > -1) {
+    openTabs.splice(index, 1);
+    if (currentPage === id) {
+      // 如果关闭的是当前页面，则自动跳转到上一个标签（或首页）
+      const nextTab = openTabs[index - 1] || openTabs[0];
+      if (nextTab) {
+        navigate(nextTab.id, nextTab.subType);
+      } else {
+        navigate('dashboard');
+      }
+    } else {
+      renderTabs(); // 如果关闭的是后台标签，仅重新渲染标签栏
+    }
+  }
+}
+// ----------------------
+
 function navigate(page, subType = null){
   currentPage=page;
   document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
   const nav=document.getElementById('nav-'+page);
   if(nav)nav.classList.add('active');
   
+  // --- 记录并渲染标签页 ---
+  const existingTab = openTabs.find(t => t.id === page);
+  if (existingTab) {
+    existingTab.subType = subType; // 更新子类型
+  } else {
+    openTabs.push({ id: page, subType: subType }); // 新增标签
+  }
+  renderTabs();
+  // ------------------------
+
   // 拦截项目专属路由
   if(page.startsWith('project_')) {
     const projectId = page.replace('project_', '');
     const project = PROJECT_DATA.find(p => p.id === projectId);
-    document.getElementById('page-title').textContent = project ? project.name : '';
+    document.getElementById('page-title').innerHTML = project ? `<div style="display:flex;align-items:center;gap:8px">${project.icon} <span>${project.name}</span></div>` : '';
     renderProject(projectId, subType);
     return;
   }
