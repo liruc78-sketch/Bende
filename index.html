@@ -70,7 +70,8 @@ a{color:var(--accent);text-decoration:none}
 .nav-item.active{background:rgba(79,142,247,.15);color:var(--accent);font-weight:500}
 .nav-item svg{width:16px;height:16px;flex-shrink:0}
 .nav-bottom{margin-top:auto;padding:12px;border-top:1px solid var(--border)}
-.user-pill{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius);background:var(--bg3)}
+.user-pill{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius);background:var(--bg3);cursor:pointer;transition:all .2s}
+.user-pill:hover{background:var(--bg4)}
 .user-avatar{width:30px;height:30px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#fff;flex-shrink:0}
 .user-info{flex:1;overflow:hidden}
 .user-name{font-size:12.5px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -388,7 +389,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       </div>
     </div>
     <div class="nav-bottom">
-      <div class="user-pill">
+      <div class="user-pill" onclick="navigate('profile')" title="个人中心">
         <div class="user-avatar" id="user-avatar-sb">?</div>
         <div class="user-info">
           <div class="user-name" id="user-name-sb">Loading...</div>
@@ -463,8 +464,12 @@ let currentLang='zh';
 let currentPage='dashboard';
 
 // --- 主题管理 ---
-let currentTheme = localStorage.getItem('theme') || 'dark';
-if(currentTheme === 'light') document.body.classList.add('light-theme');
+// 如果本地没有存储过主题设置，则默认使用 'light' (白天模式)
+let currentTheme = localStorage.getItem('theme') || 'light'; 
+
+if(currentTheme === 'light') {
+  document.body.classList.add('light-theme');
+}
 
 function toggleTheme() {
   const isLight = document.body.classList.toggle('light-theme');
@@ -517,6 +522,7 @@ const T={
   'logs':{zh:'积分记录',en:'Balance Logs'},
   'prices':{zh:'价格列表',en:'Pricing'},
   'admin':{zh:'后台管理',en:'Admin Panel'},
+  'profile':{zh:'个人中心',en:'Profile'},
   'points':{zh:'积分',en:'pts'},
   'balance':{zh:'余额',en:'Balance'},
   'status':{zh:'状态',en:'Status'},
@@ -735,7 +741,8 @@ const STATIC_ICONS = {
   recharge: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>',
   logs: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>',
   prices: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
-  admin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>'
+  admin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+  profile: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>'
 };
 
 function renderTabs() {
@@ -813,6 +820,7 @@ function navigate(page, subType = null){
     logs:renderLogs,
     prices:renderPrices,
     admin:renderAdmin,
+    profile:renderProfile,
   };
   if(pages[page])pages[page]();
 }
@@ -1715,6 +1723,62 @@ async function saveSettings(){
     sb.from('site_settings').upsert({key:'pay_qr_url',value:qrUrl,updated_at:new Date().toISOString()}),
   ]);
   toast(currentLang==='zh'?'设置已保存':'Settings saved','success');
+}
+
+// ─── PROFILE (个人中心) ───
+function renderProfile() {
+  const c = document.getElementById('content');
+  c.innerHTML = `
+  <div style="max-width: 500px; margin: 0 auto;">
+    <div class="section">
+      <div class="section-header"><div class="section-title">${currentLang==='zh'?'账户安全':'Account Security'}</div></div>
+      <div class="section-body">
+        <div class="form-group">
+          <label class="form-label">${currentLang==='zh'?'登录邮箱':'Email'}</label>
+          <input type="text" class="form-input" value="${currentUser?.email || ''}" disabled style="opacity:0.6; cursor:not-allowed;"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">${currentLang==='zh'?'新密码 (至少6位)':'New Password (min 6 chars)'}</label>
+          <input type="password" id="prof-pwd1" class="form-input" placeholder="••••••••"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">${currentLang==='zh'?'确认新密码':'Confirm New Password'}</label>
+          <input type="password" id="prof-pwd2" class="form-input" placeholder="••••••••"/>
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:10px;padding:10px;" onclick="updatePassword()" id="btn-update-pwd">
+          ${currentLang==='zh'?'修改密码':'Update Password'}
+        </button>
+      </div>
+    </div>
+  </div>
+  `;
+}
+
+async function updatePassword() {
+  const p1 = document.getElementById('prof-pwd1').value;
+  const p2 = document.getElementById('prof-pwd2').value;
+  
+  if(!p1 || !p2) { toast(currentLang==='zh'?'请输入新密码':'Please enter new password', 'error'); return; }
+  if(p1 !== p2) { toast(currentLang==='zh'?'两次密码不一致':'Passwords do not match', 'error'); return; }
+  if(p1.length < 6) { toast(currentLang==='zh'?'密码至少6位':'Password min 6 chars', 'error'); return; }
+
+  const btn = document.getElementById('btn-update-pwd');
+  btn.disabled = true;
+  btn.textContent = currentLang==='zh'?'提交中...':'Updating...';
+
+  // 调用 Supabase Auth API 更新密码
+  const { error } = await sb.auth.updateUser({ password: p1 });
+  
+  btn.disabled = false;
+  btn.textContent = currentLang==='zh'?'修改密码':'Update Password';
+
+  if(error) {
+    toast(error.message, 'error');
+  } else {
+    toast(currentLang==='zh'?'密码修改成功！下次请使用新密码登录。':'Password updated successfully!', 'success');
+    document.getElementById('prof-pwd1').value = '';
+    document.getElementById('prof-pwd2').value = '';
+  }
 }
 </script>
 </body>
