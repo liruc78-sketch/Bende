@@ -1209,12 +1209,11 @@ async function submitProjectTask(taskType){
   }
   if(!selectedFile){toast(currentLang==='zh'?'请上传号码文件':'Please upload a file','error');return;}
   
-  // 核心修复：严格校验当前余额是否大于等于预计消耗积分
+  // 前端仅做基础拦截（防误触），真正的安全校验在后端
   if(currentEstimatedCost === 0) {
     toast(currentLang==='zh'?'正在计算预计消耗，请稍后再试':'Calculating estimated cost, please wait','info');
     return;
   }
-  
   const currentBal = parseFloat(currentProfile?.balance || 0);
   if(currentBal < currentEstimatedCost){
     toast(currentLang==='zh'?`余额不足！预计需要 ${currentEstimatedCost} 积分，当前余额 ${currentBal.toFixed(3)} 积分`:`Insufficient balance! Estimated cost: ${currentEstimatedCost} pts, Current: ${currentBal.toFixed(3)} pts`,'error');
@@ -1230,46 +1229,26 @@ async function submitProjectTask(taskType){
     formData.append('country',country);
     formData.append('taskType',taskType);
     if(taskName)formData.append('taskName',taskName);
-    const res=await proxyFetch('/api/task/create',{method:'POST',body:formData});
+    
+    // 🚀 核心修改：调用后端的安全创建接口
+    const res=await proxyFetch('/api/internal/create-task',{method:'POST',body:formData});
     const data=await res.json();
+    
     if(data.code!==0){
       toast((currentLang==='zh'?'提交失败: ':'Submit failed: ')+data.message,'error');
       return;
     }
     
-    await sb.from('tasks').insert({
-      user_id:currentUser.id,
-      remote_task_id:data.data.taskId,
-      task_name:taskName||data.data.taskId,
-      task_type:taskType,
-      country:data.data.country,
-      task_total:data.data.taskTotal,
-      status:data.data.taskState,
-      points_consumed:data.consume?.deduction||0,
-      file_name:selectedFile.name,
-    });
-    
-    if(data.consume?.deduction>0){
-      const balBefore=currentProfile.balance;
-      const balAfter=balBefore - data.consume.deduction;
-      await sb.from('balance_logs').insert({
-        user_id:currentUser.id,
-        type:'consume',
-        amount:-data.consume.deduction,
-        balance_before:balBefore,
-        balance_after:balAfter,
-        note:`任务 ${data.data.taskId}`,
-      });
-      await sb.from('profiles').update({balance:balAfter}).eq('id',currentUser.id);
-      currentProfile.balance=balAfter;
+    // 提交成功，更新本地显示的余额（真实的扣费已经在后端完成了）
+    if(data.newBalance !== undefined) {
+        currentProfile.balance = data.newBalance;
     }
     
     toast(currentLang==='zh'?'任务提交成功！':'Task submitted successfully!','success');
-    closeModal('modal-new-task'); // 提交成功后关闭弹窗
+    closeModal('modal-new-task');
     updateSidebar();
     selectedFile=null;
     
-    // 提交成功后刷新当前项目页面
     const currentProjectId = PROJECT_DATA.find(p => p.items.some(i => i.val === taskType))?.id;
     if(currentProjectId) {
         renderProject(currentProjectId, taskType);
