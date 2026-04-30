@@ -1150,11 +1150,8 @@ async function renderRecharge(){
   const{data:settings}=await sb.from('site_settings').select('*');
   const cfg={};(settings||[]).forEach(s=>cfg[s.key]=s.value);
   const wallet=cfg.usdt_wallet_address||'未配置钱包地址';
-  const qrUrl=cfg.pay_wechat_url||''; 
+  const qrUrl=cfg.pay_qr_url||''; // 改为读取 pay_qr_url
   const rate=cfg.usdt_to_points||'6.8';
-  
-  // 过滤掉已取消的订单，保持列表干净
-  const{data:orders}=await sb.from('recharge_orders').select('*').eq('user_id',currentUser.id).neq('status', 'cancelled').order('created_at',{ascending:false});
   
   c.innerHTML=`
   <div id="recharge-view">
@@ -1166,7 +1163,7 @@ async function renderRecharge(){
             <div class="r-step"><div class="r-step-num">2</div><div>${currentLang==='zh'?'充值订单信息':'Order Info'}</div></div>
         </div>
         
-        <div class="two-col">
+        <div style="max-width: 600px; margin: 0 auto;">
             <div class="section">
                 <div class="section-header"><div class="section-title">${currentLang==='zh'?'自动充值 (USDT-TRC20)':'Auto Recharge (USDT-TRC20)'}</div></div>
                 <div class="section-body">
@@ -1186,31 +1183,6 @@ async function renderRecharge(){
                         ${currentLang==='zh'?'生成付款订单':'Generate Payment Order'}
                     </button>
                 </div>
-            </div>
-            
-            <div class="section">
-              <div class="section-header"><div class="section-title">${currentLang==='zh'?'充值记录':'Recharge History'}</div></div>
-              <div class="section-body" style="padding:0">
-                ${(orders||[]).length===0?`<div class="empty-state">${t('empty')}</div>`:
-                `<div class="table-wrap"><table>
-                  <thead><tr>
-                    <th>USDT</th>
-                    <th>${t('points')}</th>
-                    <th>TXID</th>
-                    <th>${t('status')}</th>
-                    <th>${currentLang==='zh'?'时间':'Date'}</th>
-                  </tr></thead>
-                  <tbody>
-                    ${(orders||[]).map(o=>`<tr>
-                      <td>${o.usdt_amount}</td>
-                      <td style="color:var(--green)">${o.points_amount}</td>
-                      <td style="font-family:monospace;font-size:10px;color:var(--text3)">${o.tx_hash ? o.tx_hash.slice(0,16)+'...' : '-'}</td>
-                      <td>${statusBadge(o.status)}</td>
-                      <td style="font-size:11px;color:var(--text3)">${new Date(o.created_at).toLocaleDateString()}</td>
-                    </tr>`).join('')}
-                  </tbody>
-                </table></div>`}
-              </div>
             </div>
         </div>
       </div>
@@ -1315,7 +1287,10 @@ async function generateOrder(walletAddr, qrUrl) {
   rechargeState.expireTime = Date.now() + 60 * 60 * 1000; // 60分钟
 
   // 赋值 UI
-  document.getElementById('r-qr-img').src = qrUrl || `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${walletAddr}`;
+  const qrImg = document.getElementById('r-qr-img');
+  qrImg.src = qrUrl || `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${walletAddr}`;
+  qrImg.style.display = 'inline-block'; // 确保图片可见
+  
   document.getElementById('r-wallet-addr').innerText = walletAddr;
   document.getElementById('r-pay-amount').innerText = uniqueAmount.toFixed(3);
   document.getElementById('r-order-id').innerText = order.id.replace(/-/g, '').toUpperCase();
@@ -1622,6 +1597,10 @@ async function loadAdminTab(tab){
           <label class="form-label">TRC20-USDT ${currentLang==='zh'?'收款钱包地址':'Wallet Address'}</label>
           <input type="text" id="cfg-wallet" class="form-input" value="${cfg.usdt_wallet_address||''}"/>
         </div>
+        <div class="form-group">
+          <label class="form-label">${currentLang==='zh'?'自定义收款二维码 URL (可选)':'Custom QR Code URL (Optional)'}</label>
+          <input type="text" id="cfg-qr" class="form-input" value="${cfg.pay_qr_url||''}" placeholder="http://... (留空则自动根据钱包地址生成)"/>
+        </div>
         <button class="btn btn-primary" onclick="saveSettings()">${currentLang==='zh'?'保存设置':'Save Settings'}</button>
       </div>
     </div>`;
@@ -1687,10 +1666,12 @@ async function saveSettings(){
   const rate=document.getElementById('cfg-rate').value.trim();
   const wallet=document.getElementById('cfg-wallet').value.trim();
   const siteName=document.getElementById('cfg-sitename').value.trim();
+  const qrUrl=document.getElementById('cfg-qr').value.trim();
   await Promise.all([
     sb.from('site_settings').upsert({key:'usdt_to_points',value:rate,updated_at:new Date().toISOString()}),
     sb.from('site_settings').upsert({key:'usdt_wallet_address',value:wallet,updated_at:new Date().toISOString()}),
     sb.from('site_settings').upsert({key:'site_name',value:siteName,updated_at:new Date().toISOString()}),
+    sb.from('site_settings').upsert({key:'pay_qr_url',value:qrUrl,updated_at:new Date().toISOString()}),
   ]);
   toast(currentLang==='zh'?'设置已保存':'Settings saved','success');
 }
