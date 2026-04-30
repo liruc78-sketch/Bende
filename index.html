@@ -170,6 +170,23 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .price-item-val{color:var(--accent);font-weight:500}
 .price-item-status{padding:2px 6px;border-radius:10px;font-size:10px}
 
+/* HOME GRID */
+.home-stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:24px}
+.home-stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:20px;position:relative;overflow:hidden}
+.home-stat-title{font-size:14px;color:var(--text);font-weight:600;margin-bottom:12px;display:flex;justify-content:space-between}
+.home-stat-value{font-size:28px;font-weight:700;color:var(--text);margin-bottom:16px}
+.home-stat-bottom{display:flex;justify-content:space-between;font-size:12px;color:var(--text3);border-top:1px solid var(--border);padding-top:12px}
+.home-stat-bottom span{color:var(--text2)}
+.service-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:16px}
+.service-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:16px}
+.service-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:15px;font-weight:600;color:var(--text)}
+.service-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;background:var(--bg3)}
+.service-item{display:flex;justify-content:space-between;align-items:center;padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.03);font-size:13px;cursor:pointer;border-radius:6px;transition:all .2s}
+.service-item:last-child{border-bottom:none}
+.service-item:hover{background:rgba(79,142,247,.1);transform:translateX(4px)}
+.service-price{color:var(--accent);font-family:monospace;font-size:12px}
+.service-closed{color:var(--text3);font-size:12px;background:rgba(255,255,255,.05);padding:2px 6px;border-radius:4px}
+
 /* MISC */
 .empty-state{text-align:center;padding:48px 20px;color:var(--text3)}
 .empty-state svg{width:40px;height:40px;margin:0 auto 12px;opacity:.3;display:block}
@@ -250,8 +267,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <div style="overflow-y:auto;flex:1">
       <div class="nav-section" id="nav-sec1">主菜单 MENU</div>
       <div class="nav-item active" onclick="navigate('dashboard')" id="nav-dashboard">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-        <span id="nav-label-dashboard">控制台 Dashboard</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+        <span id="nav-label-dashboard">首页 Home</span>
       </div>
       <div class="nav-item" onclick="navigate('task')" id="nav-task">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
@@ -354,7 +371,7 @@ let currentLang='zh';
 let currentPage='dashboard';
 
 const T={
-  'dashboard':{zh:'控制台',en:'Dashboard'},
+  'dashboard':{zh:'首页',en:'Home'},
   'task':{zh:'提交任务',en:'New Task'},
   'tasks':{zh:'任务列表',en:'My Tasks'},
   'recharge':{zh:'充值',en:'Recharge'},
@@ -591,79 +608,126 @@ function navigate(page){
 
 // 已移除 promptSyncBalance
 
-// ─── DASHBOARD ───
+let preselectedTaskType = null;
+function goToTask(typeVal) {
+  if(typeVal === 'closed') {
+    toast(currentLang==='zh'?'该通道暂时关闭':'Channel temporarily closed', 'info');
+    return;
+  }
+  preselectedTaskType = typeVal;
+  navigate('task');
+}
+
+// ─── DASHBOARD (HOME) ───
 async function renderDashboard(){
   const c=document.getElementById('content');
   c.innerHTML=`<div style="color:var(--text3);font-size:13px">${t('loading')}</div>`;
+  
   const today=new Date().toISOString().split('T')[0];
-  const[{data:tasks},{data:orders},{data:logs}]=await Promise.all([
+  const currentMonth=today.slice(0,7);
+  
+  const[{data:tasks},{data:logs}]=await Promise.all([
     sb.from('tasks').select('*').eq('user_id',currentUser.id),
-    sb.from('recharge_orders').select('*').eq('user_id',currentUser.id),
     sb.from('balance_logs').select('*').eq('user_id',currentUser.id),
   ]);
-  const todayTasks=(tasks||[]).filter(t=>t.created_at?.startsWith(today)).length;
-  const todayFilter=(tasks||[]).filter(t=>t.created_at?.startsWith(today)).reduce((a,t)=>a+(t.valid_quantity||0),0);
-  const monthConsume=(logs||[]).filter(l=>l.type==='consume'&&l.created_at?.startsWith(today.slice(0,7))).reduce((a,l)=>a+Math.abs(l.amount),0);
-  const pendingOrders=(orders||[]).filter(o=>o.status==='pending').length;
+  
+  const todayTasks=(tasks||[]).filter(t=>t.created_at?.startsWith(today));
+  const monthTasks=(tasks||[]).filter(t=>t.created_at?.startsWith(currentMonth));
+  
+  const todayTaskCount=todayTasks.length;
+  const monthTaskCount=monthTasks.length;
+  
+  const todayScreened=todayTasks.reduce((a,t)=>a+(t.task_total||0),0);
+  const monthScreened=monthTasks.reduce((a,t)=>a+(t.task_total||0),0);
+  
+  const todayConsume=(logs||[]).filter(l=>l.type==='consume'&&l.created_at?.startsWith(today)).reduce((a,l)=>a+Math.abs(l.amount),0);
+  const monthConsume=(logs||[]).filter(l=>l.type==='consume'&&l.created_at?.startsWith(currentMonth)).reduce((a,l)=>a+Math.abs(l.amount),0);
+
+  const serviceData=[
+    {name:'WhatsApp',icon:'💬',items:[{label:'WS筛开通',price:'0.00008/条',val:'wsValid'},{label:'WS筛活跃',price:'0.00007/条',val:'wsActive'},{label:'WS性别年龄-全格式',price:'0.00013/条',val:'wsGender'}]},
+    {name:'Telegram',icon:'✈️',items:[{label:'TG筛开通',price:'0.00008/条',val:'tgValid'},{label:'TG筛活跃',price:'0.001/条',val:'tgActive'},{label:'TG性别年龄-全格式',price:'0.0025/条',val:'tgGender'},{label:'TG筛用户名',price:'暂时关闭',val:'closed'}]},
+    {name:'IOS',icon:'🍏',items:[{label:'IOS蓝号(iMessage)',price:'0.0008/条',val:'iosBlueValid'},{label:'IOS筛系统',price:'0.0007/条',val:'iosValid'}]},
+    {name:'Facebook',icon:'📘',items:[{label:'Facebook筛开通',price:'0.0004/条',val:'fbValid'},{label:'Facebook筛UID',price:'0.006/条',val:'fbUid'},{label:'FacebookUID性别',price:'暂时关闭',val:'closed'}]},
+    {name:'Viber',icon:'📳',items:[{label:'Viber筛开通',price:'0.0009/条',val:'viberValid'},{label:'Viber筛活跃',price:'0.004/条',val:'viberActive'},{label:'Viber性别年龄',price:'暂时关闭',val:'closed'}]},
+    {name:'Line',icon:'📗',items:[{label:'Line筛开通',price:'0.002/条',val:'lineValid'},{label:'Line性别年龄',price:'0.01/条',val:'lineGender'}]},
+    {name:'手机检测',icon:'📱',items:[{label:'空号检测',price:'0.0016/条',val:'phoneCheck'},{label:'全球运营商检测',price:'0.0015/条',val:'operatorStandard'}]},
+    {name:'Zalo',icon:'🔵',items:[{label:'Zalo筛开通',price:'0.0006/条',val:'zaloValid'},{label:'Zalo筛活跃',price:'暂时关闭',val:'closed'},{label:'Zalo急速筛性别年龄',price:'0.0065/条',val:'zaloGender'}]},
+    {name:'TikTok',icon:'🎵',items:[{label:'TikTok筛用户名',price:'0.0055/条',val:'tiktokUser'},{label:'TikTok筛开通',price:'0.0055/条',val:'tiktokValid'}]},
+    {name:'币圈交易所',icon:'🪙',items:[{label:'币安筛开通',price:'0.006/条',val:'binanceValid'},{label:'OKX筛开通',price:'0.008/条',val:'okxValid'},{label:'Gate筛开通',price:'暂时关闭',val:'closed'},{label:'Kucoin筛开通',price:'0.0015/条',val:'closed'}]},
+    {name:'WeChat',icon:'💬',items:[{label:'WeChat筛开通',price:'0.0025/条',val:'wxValid'}]},
+    {name:'Instagram',icon:'📸',items:[{label:'INS筛开通',price:'0.0003/条',val:'insValid'}]},
+    {name:'Signal',icon:'🔐',items:[{label:'Signal筛开通',price:'暂时关闭',val:'closed'}]},
+    {name:'Twitter/X',icon:'🐦',items:[{label:'Twitter筛开通',price:'0.0008/条',val:'twitterValid'}]},
+    {name:'领英',icon:'💼',items:[{label:'领英筛开通',price:'0.0035/条',val:'linkedinValid'},{label:'领英全格式',price:'0.0035/条',val:'linkedinGender'}]}
+  ];
+
   c.innerHTML=`
-  <div class="stat-grid">
-    <div class="stat-card accent-green">
-      <div class="stat-label">${t('balance')} / ${t('points')}</div>
-      <div class="stat-value">${parseFloat(currentProfile?.balance||0).toFixed(2)}</div>
-      <div class="stat-sub">积分 Points</div>
+  <div class="home-stat-grid">
+    <div class="home-stat-card">
+      <div class="home-stat-title">${currentLang==='zh'?'余额':'Balance'} <span style="color:var(--accent)">💳</span></div>
+      <div class="home-stat-value">${parseFloat(currentProfile?.balance||0).toFixed(3)} <span style="font-size:14px;font-weight:normal;color:var(--text3)">积分</span></div>
+      <div class="home-stat-bottom">
+        <div>${currentLang==='zh'?'可用余额':'Available'}</div>
+        <span>${parseFloat(currentProfile?.balance||0).toFixed(3)}</span>
+      </div>
     </div>
-    <div class="stat-card accent-blue">
-      <div class="stat-label">${t('today-tasks')}</div>
-      <div class="stat-value">${todayTasks}</div>
-      <div class="stat-sub">本月共 ${(tasks||[]).length} 个</div>
+    <div class="home-stat-card">
+      <div class="home-stat-title">${currentLang==='zh'?'今日消耗积分':'Today Consumption'} <span style="color:var(--red)">📉</span></div>
+      <div class="home-stat-value">${todayConsume.toFixed(3)} <span style="font-size:14px;font-weight:normal;color:var(--text3)">积分</span></div>
+      <div class="home-stat-bottom">
+        <div>${currentLang==='zh'?'本月消耗积分':'Month Consumption'}</div>
+        <span>${monthConsume.toFixed(3)} 积分</span>
+      </div>
     </div>
-    <div class="stat-card">
-      <div class="stat-label">${t('today-filter')}</div>
-      <div class="stat-value">${todayFilter}</div>
-      <div class="stat-sub">有效号码 Valid numbers</div>
+    <div class="home-stat-card">
+      <div class="home-stat-title">${currentLang==='zh'?'今日筛选数量':'Today Screened'} <span style="color:var(--yellow)">📥</span></div>
+      <div class="home-stat-value">${todayScreened.toLocaleString()} <span style="font-size:14px;font-weight:normal;color:var(--text3)">条</span></div>
+      <div class="home-stat-bottom">
+        <div>${currentLang==='zh'?'本月筛选数量':'Month Screened'}</div>
+        <span>${monthScreened.toLocaleString()} 条</span>
+      </div>
     </div>
-    <div class="stat-card accent-yellow">
-      <div class="stat-label">${t('month-consume')}</div>
-      <div class="stat-value">${monthConsume.toFixed(2)}</div>
-      <div class="stat-sub">积分 Points this month</div>
+    <div class="home-stat-card">
+      <div class="home-stat-title">${currentLang==='zh'?'今日任务数量':'Today Tasks'} <span style="color:var(--green)">⏱️</span></div>
+      <div class="home-stat-value">${todayTaskCount} <span style="font-size:14px;font-weight:normal;color:var(--text3)">个</span></div>
+      <div class="home-stat-bottom">
+        <div>${currentLang==='zh'?'本月任务数量':'Month Tasks'}</div>
+        <span>${monthTaskCount} 个</span>
+      </div>
     </div>
   </div>
-  ${pendingOrders>0?`<div class="info-box" style="margin-bottom:20px">
-    <strong>⏳ ${pendingOrders} 笔充值订单待审核 / pending recharge order(s)</strong>，请等待管理员确认 / awaiting admin approval
-  </div>`:''}
-  <div class="section">
-    <div class="section-header">
-      <div class="section-title">${currentLang==='zh'?'最近任务':'Recent Tasks'}</div>
-      <button class="btn btn-secondary btn-sm" onclick="navigate('task')">${currentLang==='zh'?'+ 新建任务':'+ New Task'}</button>
+
+  <div class="info-box" style="margin-bottom:0; border-radius: var(--radius2) var(--radius2) 0 0; border-bottom: none;">
+    <strong>💱 ${currentLang==='zh'?'当前汇率':'Current Rate'}: 1 USDT = 6.8 积分/Points</strong>
+    &nbsp;|&nbsp; ${currentLang==='zh'?'以下价格单位为USDT/条，点击对应项目即可直接提交任务':'Prices are in USDT per record. Click an item to submit a task.'}
+  </div>
+  
+  <div class="section" style="border-top-left-radius: 0; border-top-right-radius: 0;">
+    <div class="section-body" style="background: var(--bg); padding: 20px;">
+      <div class="service-grid">
+        ${serviceData.map(cat=>`
+          <div class="service-card">
+            <div class="service-header">
+              <div class="service-icon">${cat.icon}</div>
+              <div>${cat.name}</div>
+            </div>
+            <div>
+              ${cat.items.map(item=>{
+                const isClosed = item.val === 'closed';
+                return `
+                <div class="service-item" onclick="goToTask('${item.val}')">
+                  <span>${item.label}</span>
+                  ${isClosed ? `<span class="service-closed">${item.price}</span>` : `<span class="service-price">${item.price}</span>`}
+                </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `).join('')}
+      </div>
     </div>
-    <div class="section-body">
-      ${(tasks||[]).length===0?`<div class="empty-state">${t('empty')}</div>`:
-      `<div class="table-wrap"><table>
-        <thead><tr>
-          <th>${currentLang==='zh'?'任务名称':'Task Name'}</th>
-          <th>${currentLang==='zh'?'类型':'Type'}</th>
-          <th>${currentLang==='zh'?'地区':'Country'}</th>
-          <th>${currentLang==='zh'?'总数':'Total'}</th>
-          <th>${currentLang==='zh'?'有效':'Valid'}</th>
-          <th>${t('status')}</th>
-          <th>${t('actions')}</th>
-        </tr></thead>
-        <tbody>
-          ${(tasks||[]).slice(-10).reverse().map(task=>`<tr>
-            <td>${task.task_name||task.remote_task_id||'-'}</td>
-            <td><span class="badge badge-blue">${task.task_type}</span></td>
-            <td>${task.country}</td>
-            <td>${task.task_total||0}</td>
-            <td style="color:var(--green)">${task.valid_quantity||0}</td>
-            <td>${statusBadge(task.status)}</td>
-            <td>${task.status==='Finish'?`<button class="btn btn-success btn-sm" onclick="downloadResult('${task.id}','${task.remote_task_id}')">${t('download')}</button>`:
-            task.status==='Ongoing'||task.status==='Waiting'||task.status==='Pending'?`<button class="btn btn-secondary btn-sm" onclick="refreshTask('${task.id}','${task.remote_task_id}')">${currentLang==='zh'?'刷新':'Refresh'}</button>`:'-'
-            }</td>
-          </tr>`).join('')}
-        </tbody>
-      </table></div>`}
-    </div>
-  </div>`;
+  </div>
+  `;
 }
 
 function statusBadge(s){
@@ -761,6 +825,15 @@ function renderNewTask(){
       </div>
     </div>
   </div>`;
+
+  // 自动选中从首页跳转过来的任务类型
+  if (preselectedTaskType) {
+    const typeSelect = document.getElementById('task-type');
+    if (typeSelect) {
+      typeSelect.value = preselectedTaskType;
+    }
+    preselectedTaskType = null; // 重置，避免影响后续正常点击
+  }
 }
 
 let selectedFile=null;
