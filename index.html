@@ -990,7 +990,15 @@ function statusBadge(s){
 }
 
 // ─── PROJECT & TASKS ───
-const COUNTRIES=['US','CN','DE','GB','IN','BR','JP','KR','SG','MY','TH','VN','PH','ID','AU','CA','FR','RU','MX','AE'];
+const COUNTRIES = [
+  { code: 'US', name: '美国' }, { code: 'CN', name: '中国' }, { code: 'DE', name: '德国' },
+  { code: 'GB', name: '英国' }, { code: 'IN', name: '印度' }, { code: 'BR', name: '巴西' },
+  { code: 'JP', name: '日本' }, { code: 'KR', name: '韩国' }, { code: 'SG', name: '新加坡' },
+  { code: 'MY', name: '马来西亚' }, { code: 'TH', name: '泰国' }, { code: 'VN', name: '越南' },
+  { code: 'PH', name: '菲律宾' }, { code: 'ID', name: '印尼' }, { code: 'AU', name: '澳大利亚' },
+  { code: 'CA', name: '加拿大' }, { code: 'FR', name: '法国' }, { code: 'RU', name: '俄罗斯' },
+  { code: 'MX', name: '墨西哥' }, { code: 'AE', name: '阿联酋' }
+];
 
 let selectedFile=null;
 let currentTaskPrice=0; // 用于记录当前选中项目的单价
@@ -1081,48 +1089,57 @@ async function renderProject(projectId, subTypeVal = null) {
     </div>
   `;
 
-  // 提交表单
-  const formHtml = `
-    <div class="section" style="margin-bottom: 20px;">
-      <div class="section-header"><div class="section-title">${currentLang==='zh'?'新建任务':'New Task'} - ${activeItem.label}</div></div>
-      <div class="section-body">
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">${currentLang==='zh'?'任务名称（可选）':'Task Name (optional)'}</label>
-            <input type="text" id="task-name" class="form-input" placeholder="${currentLang==='zh'?'自定义名称...':'Custom name...'}"/>
+  // 提交表单 (改为隐藏的 Modal 弹窗)
+  const modalHtml = `
+    <div class="modal-overlay" id="modal-new-task">
+      <div class="modal-box" style="max-width: 550px;">
+        <div class="modal-header">
+          <div class="modal-title">${currentLang==='zh'?'新建任务':'New Task'} - ${activeItem.label}</div>
+          <div class="modal-close" onclick="closeModal('modal-new-task')">×</div>
+        </div>
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">${currentLang==='zh'?'任务名称（可选）':'Task Name (optional)'}</label>
+              <input type="text" id="task-name" class="form-input" placeholder="${currentLang==='zh'?'自定义名称...':'Custom name...'}"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label" id="label-task-country"><span id="star-task-country" style="display:none;color:var(--red)">* </span>${currentLang==='zh'?'国家':'Country'}</label>
+              <select id="task-country" class="form-select" onchange="this.style.borderColor=''; document.getElementById('label-task-country').style.color=''; document.getElementById('star-task-country').style.display='none';">
+                <option value="" disabled selected>${currentLang==='zh'?'请选择国家':'Select Country'}</option>
+                ${COUNTRIES.map(c=>`<option value="${c.code}">${c.name} (${c.code})</option>`).join('')}
+              </select>
+            </div>
           </div>
           <div class="form-group">
-            <label class="form-label" style="color:var(--red)">* ${currentLang==='zh'?'国家':'Country'}</label>
-            <select id="task-country" class="form-select" style="border-color:var(--red)">
-              <option value="" disabled selected>${currentLang==='zh'?'请选择国家':'Select Country'}</option>
-              ${COUNTRIES.map(c=>`<option value="${c}">${c}</option>`).join('')}
-            </select>
+            <label class="form-label">${currentLang==='zh'?'上传号码文件 (.txt)':'Upload Number File (.txt)'}</label>
+            <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleDrop(event)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <p id="upload-label">${currentLang==='zh'?'点击或拖拽上传 .txt 文件':'Click or drag to upload .txt file'}</p>
+            </div>
+            <input type="file" id="file-input" accept=".txt" style="display:none" onchange="handleFileSelect(this)"/>
           </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">${currentLang==='zh'?'上传号码文件 (.txt)':'Upload Number File (.txt)'}</label>
-          <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleDrop(event)">
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            <p id="upload-label">${currentLang==='zh'?'点击或拖拽上传 .txt 文件':'Click or drag to upload .txt file'}</p>
+          <div class="form-group">
+            <label class="form-label">${currentLang==='zh'?'预计消耗积分':'Estimated Cost (Points)'}</label>
+            <input type="text" id="task-cost-preview" class="form-input" readonly placeholder="0" style="color:var(--yellow); font-weight:bold; background:rgba(245,166,35,0.05); border-color:rgba(245,166,35,0.3);"/>
           </div>
-          <input type="file" id="file-input" accept=".txt" style="display:none" onchange="handleFileSelect(this)"/>
+          <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:10px;" onclick="submitProjectTask('${activeItem.val}')" id="submit-task-btn">
+            ${currentLang==='zh'?'提交任务':'Submit Task'}
+          </button>
         </div>
-        <div class="form-group">
-          <label class="form-label">${currentLang==='zh'?'预计消耗积分':'Estimated Cost (Points)'}</label>
-          <input type="text" id="task-cost-preview" class="form-input" readonly placeholder="0" style="color:var(--yellow); font-weight:bold; background:rgba(245,166,35,0.05); border-color:rgba(245,166,35,0.3);"/>
-        </div>
-        <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:10px;" onclick="submitProjectTask('${activeItem.val}')" id="submit-task-btn">
-          ${currentLang==='zh'?'提交任务':'Submit Task'} (单价: ${activeItem.price})
-        </button>
-        <div id="task-result" style="margin-top:14px"></div>
       </div>
     </div>
   `;
 
-  // 专属任务列表
+  // 专属任务列表 (在头部增加显眼的“新增”按钮)
   const listHtml = `
     <div class="section">
-      <div class="section-header"><div class="section-title">${currentLang==='zh'?'任务列表':'Task List'} (${(tasks||[]).length})</div></div>
+      <div class="section-header">
+        <div class="section-title">${currentLang==='zh'?'任务列表':'Task List'} (${(tasks||[]).length})</div>
+        <button class="btn btn-primary" style="background: var(--purple); border: none; padding: 8px 20px; font-size: 13px; box-shadow: 0 4px 12px rgba(139,92,246,0.3);" onclick="openModal('modal-new-task')">
+          + ${currentLang==='zh'?'新增':'New'} - ${activeItem.label}
+        </button>
+      </div>
       <div class="section-body" style="padding:0">
         ${(tasks||[]).length===0?`<div class="empty-state">${t('empty')}</div>`:
         `<div class="table-wrap"><table>
@@ -1163,7 +1180,7 @@ async function renderProject(projectId, subTypeVal = null) {
     </div>
   `;
 
-  c.innerHTML = tabsHtml + formHtml + listHtml;
+  c.innerHTML = tabsHtml + listHtml + modalHtml;
   selectedFile = null;
 }
 
@@ -1171,7 +1188,13 @@ async function submitProjectTask(taskType){
   const country=document.getElementById('task-country').value;
   const taskName=document.getElementById('task-name').value.trim();
   
-  if(!country){toast(currentLang==='zh'?'请选择国家':'Please select a country','error');return;}
+  if(!country){
+    document.getElementById('task-country').style.borderColor = 'var(--red)';
+    document.getElementById('label-task-country').style.color = 'var(--red)';
+    document.getElementById('star-task-country').style.display = 'inline';
+    toast(currentLang==='zh'?'请选择国家':'Please select a country','error');
+    return;
+  }
   if(!selectedFile){toast(currentLang==='zh'?'请上传号码文件':'Please upload a file','error');return;}
   
   if(parseFloat(currentProfile?.balance || 0) <= 0){
@@ -1223,6 +1246,7 @@ async function submitProjectTask(taskType){
     }
     
     toast(currentLang==='zh'?'任务提交成功！':'Task submitted successfully!','success');
+    closeModal('modal-new-task'); // 提交成功后关闭弹窗
     updateSidebar();
     selectedFile=null;
     
