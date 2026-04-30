@@ -993,12 +993,15 @@ function statusBadge(s){
 const COUNTRIES=['US','CN','DE','GB','IN','BR','JP','KR','SG','MY','TH','VN','PH','ID','AU','CA','FR','RU','MX','AE'];
 
 let selectedFile=null;
+let currentTaskPrice=0; // 用于记录当前选中项目的单价
+
 function handleFileSelect(input){
   if(input.files[0]){
     selectedFile=input.files[0];
     const zone=document.getElementById('upload-zone');
     zone.classList.add('has-file');
     document.getElementById('upload-label').textContent=`✓ ${selectedFile.name} (${(selectedFile.size/1024).toFixed(1)} KB)`;
+    calculateTaskCost(selectedFile);
   }
 }
 function handleDrop(e){
@@ -1009,9 +1012,31 @@ function handleDrop(e){
     selectedFile=file;
     document.getElementById('upload-zone').classList.add('has-file');
     document.getElementById('upload-label').textContent=`✓ ${file.name}`;
+    calculateTaskCost(selectedFile);
   } else {
     toast(currentLang==='zh'?'仅支持.txt文件':'Only .txt files supported','error');
   }
+}
+
+// 自动计算预计消耗积分
+function calculateTaskCost(file) {
+  const previewEl = document.getElementById('task-cost-preview');
+  if (!previewEl) return;
+  if (!file || !currentTaskPrice) {
+    previewEl.value = '0';
+    return;
+  }
+  previewEl.value = currentLang==='zh'?'计算中...':'Calculating...';
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const text = e.target.result;
+    // 按换行符分割并过滤空行
+    const lines = text.split(/\r\n|\n/).filter(line => line.trim().length > 0);
+    const count = lines.length;
+    const cost = (count * currentTaskPrice).toFixed(3);
+    previewEl.value = `${cost} (${count} ${currentLang==='zh'?'条':'lines'})`;
+  };
+  reader.readAsText(file);
 }
 
 async function renderProject(projectId, subTypeVal = null) {
@@ -1030,6 +1055,9 @@ async function renderProject(projectId, subTypeVal = null) {
     c.innerHTML = `<div class="empty-state">该通道暂时关闭 / Channel closed</div>`;
     return;
   }
+
+  // 提取单价数字用于计算
+  currentTaskPrice = parseFloat(activeItem.price) || 0;
 
   c.innerHTML = `<div style="color:var(--text3);font-size:13px">${t('loading')}</div>`;
 
@@ -1064,8 +1092,9 @@ async function renderProject(projectId, subTypeVal = null) {
             <input type="text" id="task-name" class="form-input" placeholder="${currentLang==='zh'?'自定义名称...':'Custom name...'}"/>
           </div>
           <div class="form-group">
-            <label class="form-label">${currentLang==='zh'?'地区编码':'Country Code'}</label>
-            <select id="task-country" class="form-select">
+            <label class="form-label" style="color:var(--red)">* ${currentLang==='zh'?'国家':'Country'}</label>
+            <select id="task-country" class="form-select" style="border-color:var(--red)">
+              <option value="" disabled selected>${currentLang==='zh'?'请选择国家':'Select Country'}</option>
               ${COUNTRIES.map(c=>`<option value="${c}">${c}</option>`).join('')}
             </select>
           </div>
@@ -1078,7 +1107,11 @@ async function renderProject(projectId, subTypeVal = null) {
           </div>
           <input type="file" id="file-input" accept=".txt" style="display:none" onchange="handleFileSelect(this)"/>
         </div>
-        <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="submitProjectTask('${activeItem.val}')" id="submit-task-btn">
+        <div class="form-group">
+          <label class="form-label">${currentLang==='zh'?'预计消耗积分':'Estimated Cost (Points)'}</label>
+          <input type="text" id="task-cost-preview" class="form-input" readonly placeholder="0" style="color:var(--yellow); font-weight:bold; background:rgba(245,166,35,0.05); border-color:rgba(245,166,35,0.3);"/>
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:10px;" onclick="submitProjectTask('${activeItem.val}')" id="submit-task-btn">
           ${currentLang==='zh'?'提交任务':'Submit Task'} (单价: ${activeItem.price})
         </button>
         <div id="task-result" style="margin-top:14px"></div>
@@ -1096,7 +1129,7 @@ async function renderProject(projectId, subTypeVal = null) {
           <thead><tr>
             <th>${currentLang==='zh'?'任务ID':'Task ID'}</th>
             <th>${currentLang==='zh'?'名称':'Name'}</th>
-            <th>${currentLang==='zh'?'地区':'Country'}</th>
+            <th>${currentLang==='zh'?'国家':'Country'}</th>
             <th>${currentLang==='zh'?'进度':'Progress'}</th>
             <th>${currentLang==='zh'?'有效':'Valid'}</th>
             <th>${currentLang==='zh'?'扣费':'Cost'}</th>
@@ -1137,6 +1170,8 @@ async function renderProject(projectId, subTypeVal = null) {
 async function submitProjectTask(taskType){
   const country=document.getElementById('task-country').value;
   const taskName=document.getElementById('task-name').value.trim();
+  
+  if(!country){toast(currentLang==='zh'?'请选择国家':'Please select a country','error');return;}
   if(!selectedFile){toast(currentLang==='zh'?'请上传号码文件':'Please upload a file','error');return;}
   
   if(parseFloat(currentProfile?.balance || 0) <= 0){
