@@ -26,6 +26,28 @@
   --radius:10px;
   --radius2:14px;
 }
+
+/* LIGHT THEME */
+.light-theme {
+  --bg: #f4f6f8;
+  --bg2: #ffffff;
+  --bg3: #eef1f5;
+  --bg4: #e4e8ee;
+  --border: #e0e4eb;
+  --border2: #cdd3df;
+  --text: #1e232d;
+  --text2: #525c6e;
+  --text3: #8a94a6;
+}
+.light-theme .service-item, .light-theme .project-sub-tab { background: var(--bg2); border-color: var(--border); }
+.light-theme .service-item:hover, .light-theme .project-sub-tab:hover { background: var(--bg); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.light-theme .project-sub-tab.active { background: rgba(79,142,247,0.1); }
+.light-theme .service-closed { background: var(--bg3); color: var(--text3); }
+.light-theme .auth-box, .light-theme .modal-box { box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+.light-theme .tab-item { background: var(--bg3); }
+.light-theme .tab-item.active { background: var(--bg2); }
+.light-theme .tab-bar { background: var(--bg); }
+
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;min-height:100vh;overflow-x:hidden}
 a{color:var(--accent);text-decoration:none}
@@ -385,6 +407,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <div id="topbar">
       <div class="page-title" id="page-title">控制台</div>
       <div class="topbar-actions">
+        <button class="lang-btn" onclick="toggleTheme()" id="theme-btn" style="font-size:14px;padding:4px 8px;" title="切换主题">🌙</button>
         <button class="lang-btn" onclick="toggleLang()">🌐 <span id="lang-toggle-label">EN</span></button>
         <div style="font-size:12px;color:var(--text3)" id="topbar-balance">余额: 0</div>
       </div>
@@ -438,6 +461,24 @@ let currentUser=null;
 let currentProfile=null;
 let currentLang='zh';
 let currentPage='dashboard';
+
+// --- 主题管理 ---
+let currentTheme = localStorage.getItem('theme') || 'dark';
+if(currentTheme === 'light') document.body.classList.add('light-theme');
+
+function toggleTheme() {
+  const isLight = document.body.classList.toggle('light-theme');
+  currentTheme = isLight ? 'light' : 'dark';
+  localStorage.setItem('theme', currentTheme);
+  const btn = document.getElementById('theme-btn');
+  if(btn) btn.textContent = isLight ? '☀️' : '🌙';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('theme-btn');
+  if(btn) btn.textContent = currentTheme === 'light' ? '☀️' : '🌙';
+});
+// --------------
 
 const PROJECT_DATA = [
   { id: 'whatsapp', name: 'WhatsApp', icon: '<img src="https://cdn.simpleicons.org/whatsapp/25D366" class="brand-icon">', items: [{label:'WS筛开通',price:'0.00008/条',val:'wsValid'},{label:'WS筛活跃',price:'0.00007/条',val:'wsActive'},{label:'WS性别年龄-全格式',price:'0.00013/条',val:'wsGender'}] },
