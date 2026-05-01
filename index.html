@@ -1270,8 +1270,14 @@ async function renderProject(projectId, subTypeVal = null) {
               <td style="color:var(--green);font-weight:600">${task.valid_quantity||0}</td>
               <td style="font-size:12px;color:var(--yellow)">${task.points_consumed||0}</td>
               <td>${statusBadge(task.status)}</td>
-              <td style="display:flex;gap:6px;flex-wrap:wrap">
-                ${task.status==='Finish'?`<button class="btn btn-success btn-sm" onclick="downloadResult('${task.id}','${task.remote_task_id}')">${t('download')}</button>`:''}
+              <td>
+                ${task.status==='Finish'?`
+                  <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start;">
+                    <a href="javascript:void(0)" onclick="downloadResult('${task.id}','${task.remote_task_id}')" style="color:var(--accent);font-size:12px;font-weight:500;">${currentLang==='zh'?'有效TXT':'Valid TXT'}</a>
+                    <a href="javascript:void(0)" onclick="downloadInvalid('${task.remote_task_id}')" style="color:var(--purple);font-size:12px;font-weight:500;">${currentLang==='zh'?'无效TXT':'Invalid TXT'}</a>
+                    <a href="javascript:void(0)" onclick="downloadSource('${task.remote_task_id}')" style="color:var(--text2);font-size:12px;">${currentLang==='zh'?'源文件':'Source File'}</a>
+                  </div>
+                `:''}
                 ${['Ongoing','Waiting','Pending'].includes(task.status)?`<button class="btn btn-secondary btn-sm" onclick="refreshProjectTask('${task.id}','${task.remote_task_id}', '${projectId}', '${activeItem.val}')">${currentLang==='zh'?'刷新':'Refresh'}</button>`:''}
               </td>
             </tr>`).join('')}
@@ -1337,6 +1343,19 @@ async function submitProjectTask(taskType, ruleStr){
         currentProfile.balance = data.newBalance;
     }
     
+    // 🚀 新增：将源文件内容异步存入数据库，供后续下载和比对使用
+    try {
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+            await sb.from('task_files').insert({
+                task_id: data.data.taskId,
+                user_id: currentUser.id,
+                file_content: e.target.result
+            });
+        };
+        reader.readAsText(selectedFile);
+    } catch (err) { console.warn('Save source file failed', err); }
+    
     toast(currentLang==='zh'?'任务提交成功！':'Task submitted successfully!','success');
     closeModal('modal-new-task');
     updateSidebar();
@@ -1385,10 +1404,63 @@ async function downloadResult(taskId,remoteId){
     const blob=await res.blob();
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
-    a.href=url;a.download=`result_${remoteId}.txt`;a.click();
+    a.href=url;a.download=`valid_${remoteId}.txt`;a.click();
     URL.revokeObjectURL(url);
     toast(currentLang==='zh'?'下载成功':'Downloaded','success');
   } catch(e){toast(e.message,'error');}
+}
+
+// 🚀 新增：下载源文件
+async function downloadSource(remoteId) {
+  toast(currentLang==='zh'?'正在获取源文件...':'Fetching source file...','info');
+  try {
+    const { data, error } = await sb.from('task_files').select('file_content').eq('task_id', remoteId).single();
+    if (error || !data) throw new Error(currentLang==='zh'?'源文件已过期或不存在':'Source file not found or expired');
+    
+    const blob = new Blob([data.file_content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `source_${remoteId}.txt`; a.click();
+    URL.revokeObjectURL(url);
+    toast(currentLang==='zh'?'下载成功':'Downloaded','success');
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+// 🚀 新增：自动比对并下载无效号码
+async function downloadInvalid(remoteId) {
+  toast(currentLang==='zh'?'正在比对生成无效号码...':'Generating invalid numbers...','info');
+  try {
+    // 1. 从数据库获取源文件
+    const { data: srcData, error: srcErr } = await sb.from('task_files').select('file_content').eq('task_id', remoteId).single();
+    if (srcErr || !srcData) throw new Error(currentLang==='zh'?'源文件已过期，无法生成无效号码':'Source file missing, cannot generate invalid list');
+    const srcLines = srcData.file_content.split(/\r\n|\n/).map(l => l.trim()).filter(l => l);
+
+    // 2. 从官方 API 获取有效号码
+    const resValid = await proxyFetch('/api/task/result', { queryParams: { taskId: remoteId } });
+    let validLines = [];
+    if (resValid.ok) {
+        const blob = await resValid.blob();
+        const validText = await blob.text();
+        validLines = validText.split(/\r\n|\n/).map(l => l.trim()).filter(l => l);
+    }
+
+    // 3. 集合差集计算 (源文件 - 有效文件 = 无效文件)
+    const validSet = new Set(validLines);
+    const invalidLines = srcLines.filter(l => !validSet.has(l));
+
+    if (invalidLines.length === 0) {
+        toast(currentLang==='zh'?'该任务没有无效号码':'No invalid numbers found', 'info');
+        return;
+    }
+
+    // 4. 生成并下载无效文件
+    const blob = new Blob([invalidLines.join('\n')], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `invalid_${remoteId}.txt`; a.click();
+    URL.revokeObjectURL(url);
+    toast(currentLang==='zh'?'无效号码下载成功':'Invalid numbers downloaded','success');
+  } catch(e) { toast(e.message, 'error'); }
 }
 
 // ─── RECHARGE (AUTO DETECT) ───
