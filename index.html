@@ -212,13 +212,16 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .home-search-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--text3); width: 18px; height: 18px; pointer-events: none; }
 
 /* HOME GRID */
-.home-stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:24px}
+/* 核心修复：将 minmax 的最小值改小，让卡片在窄屏幕下能自动缩小而不是溢出 */
+.home-stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
 .home-stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:20px;position:relative;overflow:hidden}
 .home-stat-title{font-size:14px;color:var(--text);font-weight:600;margin-bottom:12px;display:flex;justify-content:space-between}
 .home-stat-value{font-size:28px;font-weight:700;color:var(--text);margin-bottom:16px}
 .home-stat-bottom{display:flex;justify-content:space-between;font-size:12px;color:var(--text3);border-top:1px solid var(--border);padding-top:12px}
 .home-stat-bottom span{color:var(--text2)}
-.service-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:16px}
+
+/* 核心修复：将 260px 改为 220px，适应更窄的屏幕 */
+.service-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-top:16px}
 .service-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:16px}
 .service-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:15px;font-weight:600;color:var(--text)}
 .service-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;background:var(--bg3)}
@@ -227,6 +230,13 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .service-item:hover{border-color:var(--accent);background:rgba(79,142,247,.08);transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.1)}
 .service-price{color:var(--accent);font-family:monospace;font-size:12px}
 .service-closed{color:var(--text3);font-size:12px;background:rgba(255,255,255,.05);padding:2px 6px;border-radius:4px}
+
+/* 针对极小屏幕（如手机）的终极适配 */
+@media(max-width: 500px) {
+  .home-stat-grid { grid-template-columns: 1fr; }
+  .service-grid { grid-template-columns: 1fr; }
+  #content { padding: 15px; }
+}
 
 /* TAB BAR */
 #topbar { border-bottom: none; } /* 移除顶部栏的底边框，让标签栏接管 */
