@@ -1424,8 +1424,8 @@ async function renderRecharge(){
                         <input type="text" class="form-input" readonly value="1 USDT = ${rate} 积分/Points" style="background:var(--bg); border-color:transparent; color:var(--accent); font-weight:bold;"/>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">${currentLang==='zh'?'请输入充值 USDT 金额 (整数)':'Enter USDT Amount (Integer)'}</label>
-                        <input type="number" id="usdt-amt" class="form-input" placeholder="例如: 10" min="1" step="1" oninput="calcPoints(this.value,'${rate}')"/>
+                        <label class="form-label">${currentLang==='zh'?'请输入充值 USDT 金额 (最低 10 USDT)':'Enter USDT Amount (Min 10 USDT)'}</label>
+                        <input type="number" id="usdt-amt" class="form-input" placeholder="例如: 10" min="10" step="1" oninput="calcPoints(this.value,'${rate}')"/>
                     </div>
                     <div class="form-group">
                         <label class="form-label">${currentLang==='zh'?'预计获得积分':'Expected Points'}</label>
@@ -1517,7 +1517,7 @@ function copyText(text){
 
 async function generateOrder(walletAddr, qrUrl) {
   const baseUsdt = parseInt(document.getElementById('usdt-amt').value);
-  if(!baseUsdt || baseUsdt <= 0){toast(currentLang==='zh'?'请输入有效整数金额':'Enter valid integer amount','error');return;}
+  if(!baseUsdt || baseUsdt < 10){toast(currentLang==='zh'?'最低充值金额为 10 USDT':'Minimum recharge amount is 10 USDT','error');return;}
   
   const uniqueFraction = (Math.floor(Math.random() * 998) + 1) / 1000;
   const uniqueAmount = parseFloat((baseUsdt + uniqueFraction).toFixed(3));
