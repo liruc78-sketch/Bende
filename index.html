@@ -1123,7 +1123,10 @@ async function renderProject(projectId, subTypeVal = null) {
     <div class="modal-overlay" id="modal-new-task">
       <div class="modal-box" style="max-width: 550px;">
         <div class="modal-header">
-          <div class="modal-title">${currentLang==='zh'?'新建任务':'New Task'} - ${activeItem.label}</div>
+          <div class="modal-title" style="display:flex;align-items:center;gap:8px;">
+            ${project.icon}
+            <span>${currentLang==='zh'?'新建任务':'New Task'} - ${activeItem.label}</span>
+          </div>
           <div class="modal-close" onclick="closeModal('modal-new-task')">×</div>
         </div>
         <div class="modal-body">
