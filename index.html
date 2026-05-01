@@ -402,13 +402,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         <span id="nav-label-prices">价格列表</span>
       </div>
-      <div id="admin-nav" style="display:none">
-        <div class="nav-section" id="nav-sec2">管理员</div>
-        <div class="nav-item" onclick="navigate('admin')" id="nav-admin">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          <span id="nav-label-admin">后台管理</span>
-        </div>
-      </div>
+      
     </div>
     <div class="nav-bottom">
       <div class="user-pill" onclick="navigate('profile')" title="个人中心">
@@ -733,11 +727,35 @@ async function doLogout(){
   document.getElementById('auth-screen').style.display='flex';
 }
 
-// INIT
+// 🚀 新增：从数据库加载动态价格并覆盖本地配置
+async function loadDynamicPrices() {
+  try {
+    const { data } = await sb.from('site_settings').select('value').eq('key', 'project_prices').single();
+    if (data && data.value) {
+      const prices = JSON.parse(data.value);
+      PROJECT_DATA.forEach(cat => {
+        cat.items.forEach(item => {
+          if (prices[item.val] !== undefined) {
+            const newPrice = parseFloat(prices[item.val]);
+            // 如果后台设置的价格为 0，则显示为“暂时关闭”
+            if (newPrice === 0) {
+              item.price = '暂时关闭';
+              item.val = 'closed'; // 强制将 val 改为 closed，阻断提交
+            } else {
+              item.price = newPrice + '/条';
+            }
+          }
+        });
+      });
+    }
+  } catch (e) { console.warn("Load prices failed", e); }
+}
+
 async function initApp(session) {
   if(session?.user && !currentUser){
     currentUser=session.user;
     await loadProfile();
+    await loadDynamicPrices(); // 登录后立即加载最新价格
     if(!currentProfile){
       currentProfile={id:session.user.id,email:session.user.email,balance:0,role:'user'};
     }
