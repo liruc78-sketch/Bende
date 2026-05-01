@@ -1195,7 +1195,6 @@ async function renderProject(projectId, subTypeVal = null) {
         <div class="modal-body">
           ${activeItem.rule ? `
           <div class="modal-rule-banner">
-            <span style="color:#8b5cf6">ℹ️</span>
             <div><span style="color:#e05252">📌</span> ${activeItem.rule.replace('📌 ', '')}</div>
           </div>` : ''}
           <div class="form-row">
@@ -1224,7 +1223,7 @@ async function renderProject(projectId, subTypeVal = null) {
             <input type="text" id="task-cost-preview" class="form-input" readonly placeholder="0" style="color:var(--yellow); font-weight:bold; background:rgba(245,166,35,0.05); border-color:rgba(245,166,35,0.3);"/>
           </div>
           <div class="modal-hint-banner">
-            <span style="font-weight:bold">! 💡</span> 提示：支持最大文件上传数量为500万，将自动分割为100万一个任务
+            <span style="font-weight:bold">💡</span> 提示：支持最大文件上传数量为500万，将自动分割为100万一个任务
           </div>
           <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:10px;" onclick="submitProjectTask('${activeItem.val}', '${activeItem.rule}')" id="submit-task-btn">
             ${currentLang==='zh'?'提交任务':'Submit Task'}
@@ -1694,37 +1693,56 @@ async function renderLogs(){
 // ─── PRICES ───
 function renderPrices(){
   const c=document.getElementById('content');
-  const priceData=[
-    {name:'WhatsApp',icon:'💬',items:[{label:'WS筛开通',price:'0.00008/条'},{label:'WS筛活跃',price:'0.00007/条'},{label:'WS性别年龄',price:'0.00013/条'}]},
-    {name:'Telegram',icon:'✈️',items:[{label:'TG筛开通',price:'0.00008/条'},{label:'TG筛活跃',price:'0.001/条'},{label:'TG性别年龄',price:'0.0025/条'},{label:'TG筛用户名',price:'暂时关闭'}]},
-    {name:'IOS',icon:'📱',items:[{label:'IOS蓝号',price:'0.0008/条'},{label:'IOS系统',price:'0.0007/条'}]},
-    {name:'Facebook',icon:'👥',items:[{label:'FB筛开通',price:'0.0004/条'},{label:'FB筛UID',price:'0.006/条'},{label:'FB性别',price:'暂时关闭'}]},
-    {name:'Viber',icon:'📳',items:[{label:'Viber筛开通',price:'0.0009/条'},{label:'Viber筛活跃',price:'0.004/条'},{label:'Viber性别',price:'暂时关闭'}]},
-    {name:'Line',icon:'💚',items:[{label:'Line筛开通',price:'0.002/条'},{label:'Line性别年龄',price:'0.01/条'}]},
-    {name:'Zalo',icon:'🔵',items:[{label:'Zalo筛开通',price:'0.0006/条'},{label:'Zalo筛活跃',price:'暂时关闭'},{label:'Zalo性别',price:'0.0065/条'}]},
-    {name:'WeChat',icon:'🟢',items:[{label:'WeChat筛开通',price:'0.0025/条'}]},
-    {name:'手机检测',icon:'📞',items:[{label:'空号检测',price:'0.0016/条'},{label:'运营商检测',price:'0.002/条'}]},
-    {name:'TikTok',icon:'🎵',items:[{label:'TK筛用户名',price:'0.0055/条'},{label:'TK筛开通',price:'0.0055/条'}]},
-    {name:'币圈',icon:'🪙',items:[{label:'Binance筛开通',price:'0.006/条'},{label:'OKX筛开通',price:'0.008/条'},{label:'Gate筛开通',price:'暂时关闭'},{label:'Kucoin筛开通',price:'0.0015/条'}]},
-    {name:'Instagram',icon:'📸',items:[{label:'INS筛开通',price:'0.0003/条'}]},
-    {name:'Signal',icon:'🔐',items:[{label:'Signal筛开通',price:'暂时关闭'}]},
-    {name:'Twitter/X',icon:'🐦',items:[{label:'Twitter筛开通',price:'0.0008/条'}]},
-    {name:'领英',icon:'💼',items:[{label:'领英筛开通',price:'0.0035/条'},{label:'领英全格式',price:'0.0035/条'}]},
-    {name:'Botim',icon:'📲',items:[{label:'Botim筛开通',price:'暂时关闭'},{label:'Botim性别年龄',price:'暂时关闭'}]},
-  ];
   c.innerHTML=`
   <div class="info-box" style="margin-bottom:20px">
     <strong>💱 ${currentLang==='zh'?'当前汇率':'Current Rate'}: 1 USDT = 6.8 积分/Points</strong>
     &nbsp;|&nbsp; ${currentLang==='zh'?'以下价格单位为USDT/条':'Prices are in USDT per record'}
   </div>
+  
+  <!-- 新增搜索框 -->
+  <div class="home-search-wrap">
+    <svg class="home-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+    <input type="text" class="home-search-input" placeholder="${currentLang==='zh'?'搜索价格项目 (例如: WhatsApp, 空号检测)...':'Search prices (e.g. WhatsApp, Phone check)...'}" oninput="renderPriceList(this.value)">
+  </div>
+
+  <div id="price-list-container"></div>
+  `;
+  
+  renderPriceList('');
+}
+
+window.renderPriceList = function(keyword = '') {
+  const container = document.getElementById('price-list-container');
+  if (!container) return;
+
+  const kw = keyword.toLowerCase().trim();
+  let filteredData = PROJECT_DATA;
+
+  if (kw) {
+    filteredData = PROJECT_DATA.map(cat => {
+      if (cat.name.zh.toLowerCase().includes(kw) || cat.name.en.toLowerCase().includes(kw)) return cat;
+      const matchedItems = cat.items.filter(item => item.label.toLowerCase().includes(kw));
+      if (matchedItems.length > 0) {
+        return { ...cat, items: matchedItems };
+      }
+      return null;
+    }).filter(Boolean);
+  }
+
+  if (filteredData.length === 0) {
+    container.innerHTML = `<div class="empty-state">${currentLang==='zh'?'未找到匹配的项目':'No matching services found'}</div>`;
+    return;
+  }
+
+  container.innerHTML = `
   <div class="price-grid">
-    ${priceData.map(cat=>`<div class="price-card">
+    ${filteredData.map(cat=>`<div class="price-card">
       <div class="price-card-header">
-        <span class="price-card-icon">${cat.icon}</span>
-        <span class="price-card-name">${cat.name}</span>
+        <span class="service-icon" style="width:24px;height:24px;font-size:14px;background:transparent;">${cat.icon}</span>
+        <span class="price-card-name">${cat.name[currentLang]}</span>
       </div>
       ${cat.items.map(item=>{
-        const closed=item.price==='暂时关闭';
+        const closed = item.val === 'closed';
         return`<div class="price-item">
           <span class="price-item-label">${item.label}</span>
           ${closed?`<span class="price-item-status badge badge-gray">${currentLang==='zh'?'关闭':'Closed'}</span>`:
@@ -1733,7 +1751,7 @@ function renderPrices(){
       }).join('')}
     </div>`).join('')}
   </div>`;
-}
+};
 
 // ─── NOTE: Run this SQL in Supabase to fix RLS policies ───
 // DROP POLICY IF EXISTS profiles_admin_all ON public.profiles;
