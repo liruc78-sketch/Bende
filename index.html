@@ -794,7 +794,7 @@ function renderTabs() {
     let icon = '';
     if(tab.id.startsWith('project_')) {
       const p = PROJECT_DATA.find(p => p.id === tab.id.replace('project_', ''));
-      title = p ? p.name : tab.id;
+      title = p ? p.name[currentLang] : tab.id; // 修复：加上 [currentLang]
       icon = p ? p.icon : '';
     } else {
       title = t(tab.id);
@@ -849,7 +849,8 @@ function navigate(page, subType = null){
   if(page.startsWith('project_')) {
     const projectId = page.replace('project_', '');
     const project = PROJECT_DATA.find(p => p.id === projectId);
-    document.getElementById('page-title').innerHTML = project ? `<div style="display:flex;align-items:center;gap:8px">${project.icon} <span>${project.name}</span></div>` : '';
+    // 修复：加上 [currentLang]，并且这里已经包含了 project.icon
+    document.getElementById('page-title').innerHTML = project ? `<div style="display:flex;align-items:center;gap:8px">${project.icon} <span>${project.name[currentLang]}</span></div>` : '';
     renderProject(projectId, subType);
     return;
   }
