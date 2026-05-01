@@ -379,30 +379,30 @@ tr:hover td{background:rgba(255,255,255,.02)}
       </div>
     </div>
     <div style="overflow-y:auto;flex:1">
-      <div class="nav-section" id="nav-sec1">主菜单 MENU</div>
+      <div class="nav-section" id="nav-sec1">主菜单</div>
       <div class="nav-item active" onclick="navigate('dashboard')" id="nav-dashboard">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-        <span id="nav-label-dashboard">首页 Home</span>
+        <span id="nav-label-dashboard">首页</span>
       </div>
-      <div class="nav-section" style="margin-top:10px">筛选项目 SERVICES</div>
-      <div id="project-nav-container"></div>
       <div class="nav-item" onclick="navigate('recharge')" id="nav-recharge">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
-        <span id="nav-label-recharge">充值 Recharge</span>
+        <span id="nav-label-recharge">充值</span>
       </div>
+      <div class="nav-section" style="margin-top:10px" id="nav-sec-services">筛选项目</div>
+      <div id="project-nav-container"></div>
       <div class="nav-item" onclick="navigate('logs')" id="nav-logs">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>
-        <span id="nav-label-logs">积分记录 Balance Logs</span>
+        <span id="nav-label-logs">积分记录</span>
       </div>
       <div class="nav-item" onclick="navigate('prices')" id="nav-prices">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <span id="nav-label-prices">价格列表 Pricing</span>
+        <span id="nav-label-prices">价格列表</span>
       </div>
       <div id="admin-nav" style="display:none">
-        <div class="nav-section" id="nav-sec2">管理员 ADMIN</div>
+        <div class="nav-section" id="nav-sec2">管理员</div>
         <div class="nav-item" onclick="navigate('admin')" id="nav-admin">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          <span id="nav-label-admin">后台管理 Admin</span>
+          <span id="nav-label-admin">后台管理</span>
         </div>
       </div>
     </div>
@@ -416,7 +416,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       </div>
       <button class="btn btn-secondary btn-sm" style="width:100%;margin-top:8px;justify-content:center" onclick="doLogout()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        <span id="logout-label">退出 Logout</span>
+        <span id="logout-label">退出</span>
       </button>
     </div>
   </div>
@@ -504,28 +504,28 @@ document.addEventListener('DOMContentLoaded', () => {
 // --------------
 
 const PROJECT_DATA = [
-  { id: 'whatsapp', name: 'WhatsApp', icon: '<img src="https://cdn.simpleicons.org/whatsapp/25D366" class="brand-icon">', items: [{label:'WS筛开通',price:'0.00008/条',val:'wsValid'},{label:'WS筛活跃',price:'0.0008/条',val:'wsActive'},{label:'WS性别年龄-全格式',price:'0.002/条',val:'wsGender'}] },
-  { id: 'telegram', name: 'Telegram/电报', icon: '<img src="https://cdn.simpleicons.org/telegram/26A5E4" class="brand-icon">', items: [{label:'TG筛开通',price:'0.0013/条',val:'tgValid'},{label:'TG筛活跃',price:'0.0018/条',val:'tgActive'},{label:'TG性别年龄-全格式',price:'0.003/条',val:'tgGender'},{label:'TG筛用户名',price:'0.001/条',val:'closed'}] },
-  { id: 'ios', name: 'IOS/苹果', icon: '<img src="https://cdn.simpleicons.org/apple/A3AAAE" class="brand-icon">', items: [{label:'IOS蓝号(iMessage)',price:'0.0015/条',val:'iosBlueValid'},{label:'IOS筛系统',price:'0.0006/条',val:'iosValid'}] },
-  { id: 'facebook', name: 'Facebook/脸书', icon: '<img src="https://cdn.simpleicons.org/facebook/1877F2" class="brand-icon">', items: [{label:'Facebook筛开通',price:'0.0004/条',val:'fbValid'},{label:'Facebook筛UID',price:'0.006/条',val:'fbUid'},{label:'FacebookUID性别',price:'暂时关闭',val:'closed'}] },
-  { id: 'viber', name: 'Viber', icon: '<img src="https://cdn.simpleicons.org/viber/7360F2" class="brand-icon">', items: [{label:'Viber筛开通',price:'0.0003/条',val:'viberValid'},{label:'Viber筛活跃',price:'0.002/条',val:'viberActive'},{label:'Viber性别年龄',price:'暂时关闭',val:'closed'}] },
-  { id: 'line', name: 'Line', icon: '<img src="https://cdn.simpleicons.org/line/00C300" class="brand-icon">', items: [{label:'Line筛开通',price:'0.004/条',val:'lineValid'},{label:'Line性别年龄',price:'0.006/条',val:'lineGender'}] },
-  { id: 'phone', name: '手机检测', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#9199b8" stroke-width="2" class="brand-icon"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>', items: [{label:'空号检测',price:'0.002/条',val:'phoneCheck'},{label:'手机型号检测',price:'0.003/条',val:'phoneModel'},{label:'全球运营商检测',price:'0.0015/条',val:'operatorStandard'},{label:'号码活跃检测',price:'0.005/条',val:'phoneActive'}] },
-  { id: 'zalo', name: 'Zalo', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#0068ff" stroke-width="2" class="brand-icon"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>', items: [{label:'Zalo筛开通',price:'0.0005/条',val:'zaloValid'},{label:'Zalo筛性别年龄',price:'0.006/条',val:'closed'},{label:'Zalo筛活跃',price:'0.0055/条',val:'closed'},{label:'Zalo急速筛性别年龄',price:'0.0065/条',val:'zaloGender'}] },
-  { id: 'tiktok', name: 'TikTok/抖音', icon: '<svg viewBox="0 0 24 24" class="brand-icon theme-adaptive-icon"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 2.25-.71 4.46-2.01 6.26-1.21 1.68-2.9 2.9-4.85 3.45-2.03.57-4.23.5-6.18-.31-1.95-.81-3.54-2.26-4.45-4.11-.91-1.85-1.1-4.01-.55-5.96.55-1.95 1.85-3.6 3.55-4.61 1.7-.99 3.75-1.35 5.68-1.02.12.02.24.04.36.06v4.06c-.1-.02-.2-.04-.3-.06-1.1-.2-2.25-.1-3.25.3-1 .4-1.85 1.1-2.4 2.01-.55.9-.75 2.01-.55 3.06.2 1.05.8 1.95 1.65 2.55.85.6 1.95.9 3 .8 1.05-.1 2.05-.6 2.75-1.4.7-.8 1.1-1.9 1.1-3.01V.02z"/></svg>', items: [{label:'TikTok筛用户名',price:'0.0055/条',val:'tiktokUser'},{label:'TikTok筛开通',price:'0.0055/条',val:'tiktokValid'}] },
-  { id: 'crypto', name: '币圈交易所', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="2" class="brand-icon"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v8"></path><path d="M8 12h8"></path></svg>', items: [{label:'币安筛开通',price:'0.007/条',val:'binanceValid'},{label:'Htx筛开通',price:'0.0065/条',val:'htxValid'},{label:'Gate筛开通',price:'0.007/条',val:'closed'},{label:'Kucoin筛开通',price:'0.002/条',val:'closed'},{label:'OKX筛开通',price:'0.008/条',val:'okxValid'},{label:'CoinW筛开通',price:'0.001/条',val:'coinwValid'}] },
-  { id: 'wechat', name: 'WeChat/微信', icon: '<img src="https://cdn.simpleicons.org/wechat/07C160" class="brand-icon">', items: [{label:'WeChat筛开通',price:'0.001/条',val:'wxValid'}] },
-  { id: 'rcs', name: 'RCS', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#4285F4" stroke-width="2" class="brand-icon"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>', items: [{label:'RCS筛开通',price:'0.0008/条',val:'closed'},{label:'RCS筛开通+系统',price:'0.001/条',val:'rcsSystem'}] },
-  { id: 'amazon', name: '亚马逊', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#FF9900" stroke-width="2" class="brand-icon"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>', items: [{label:'亚马逊筛开通',price:'0.0015/条',val:'amazonValid'}] },
-  { id: 'teams', name: 'Teams', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#6264A7" stroke-width="2" class="brand-icon"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>', items: [{label:'Teams筛开通',price:'0.0012/条',val:'teamsValid'}] },
-  { id: 'linkedin', name: '领英', icon: '<svg viewBox="0 0 24 24" fill="#0A66C2" class="brand-icon"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>', items: [{label:'领英筛开通',price:'0.0035/条',val:'linkedinValid'},{label:'领英全格式',price:'0.0035/条',val:'linkedinGender'}] },
-  { id: 'instagram', name: 'Instagram', icon: '<img src="https://cdn.simpleicons.org/instagram/E4405F" class="brand-icon">', items: [{label:'INS筛开通',price:'0.0004/条',val:'insValid'}] },
-  { id: 'signal', name: 'Signal/信号', icon: '<img src="https://cdn.simpleicons.org/signal/3A76F0" class="brand-icon">', items: [{label:'Signal筛开通',price:'0.001/条',val:'closed'}] },
-  { id: 'twitter', name: 'Twitter/推特', icon: '<svg viewBox="0 0 24 24" class="brand-icon theme-adaptive-icon"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg>', items: [{label:'Twitter筛开通',price:'0.001/条',val:'twitterValid'}] },
-  { id: 'sideline', name: 'Sideline', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#00b894" stroke-width="2" class="brand-icon"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>', items: [{label:'Sideline筛开通',price:'0.0009/条',val:'sidelineValid'}] },
-  { id: 'shopee', name: 'Shopee', icon: '<img src="https://cdn.simpleicons.org/shopee/EE4D2D" class="brand-icon">', items: [{label:'Shopee筛开通',price:'0.001/条',val:'closed'}] },
-  { id: 'dhl', name: 'DHL', icon: '<img src="https://cdn.simpleicons.org/dhl/D40511" class="brand-icon">', items: [{label:'DHL筛开通',price:'0.0004/条',val:'dhlValid'}] },
-  { id: 'botim', name: 'Botim', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#00a8ff" stroke-width="2" class="brand-icon"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>', items: [{label:'Botim筛开通',price:'0.005/条',val:'botimValid'},{label:'Botim筛性别年龄',price:'0.005/条',val:'botimGender'}] }
+  { id: 'whatsapp', name: {zh:'WhatsApp', en:'WhatsApp'}, icon: '<img src="https://cdn.simpleicons.org/whatsapp/25D366" class="brand-icon">', items: [{label:'WS筛开通',price:'0.00008/条',val:'wsValid'},{label:'WS筛活跃',price:'0.0008/条',val:'wsActive'},{label:'WS性别年龄-全格式',price:'0.002/条',val:'wsGender'}] },
+  { id: 'telegram', name: {zh:'电报', en:'Telegram'}, icon: '<img src="https://cdn.simpleicons.org/telegram/26A5E4" class="brand-icon">', items: [{label:'TG筛开通',price:'0.0013/条',val:'tgValid'},{label:'TG筛活跃',price:'0.0018/条',val:'tgActive'},{label:'TG性别年龄-全格式',price:'0.003/条',val:'tgGender'},{label:'TG筛用户名',price:'0.001/条',val:'closed'}] },
+  { id: 'ios', name: {zh:'苹果', en:'IOS'}, icon: '<img src="https://cdn.simpleicons.org/apple/A3AAAE" class="brand-icon">', items: [{label:'IOS蓝号(iMessage)',price:'0.0015/条',val:'iosBlueValid'},{label:'IOS筛系统',price:'0.0006/条',val:'iosValid'}] },
+  { id: 'facebook', name: {zh:'脸书', en:'Facebook'}, icon: '<img src="https://cdn.simpleicons.org/facebook/1877F2" class="brand-icon">', items: [{label:'Facebook筛开通',price:'0.0004/条',val:'fbValid'},{label:'Facebook筛UID',price:'0.006/条',val:'fbUid'},{label:'FacebookUID性别',price:'暂时关闭',val:'closed'}] },
+  { id: 'viber', name: {zh:'Viber', en:'Viber'}, icon: '<img src="https://cdn.simpleicons.org/viber/7360F2" class="brand-icon">', items: [{label:'Viber筛开通',price:'0.0003/条',val:'viberValid'},{label:'Viber筛活跃',price:'0.002/条',val:'viberActive'},{label:'Viber性别年龄',price:'暂时关闭',val:'closed'}] },
+  { id: 'line', name: {zh:'Line', en:'Line'}, icon: '<img src="https://cdn.simpleicons.org/line/00C300" class="brand-icon">', items: [{label:'Line筛开通',price:'0.004/条',val:'lineValid'},{label:'Line性别年龄',price:'0.006/条',val:'lineGender'}] },
+  { id: 'phone', name: {zh:'手机检测', en:'Phone Check'}, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#9199b8" stroke-width="2" class="brand-icon"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>', items: [{label:'空号检测',price:'0.002/条',val:'phoneCheck'},{label:'手机型号检测',price:'0.003/条',val:'phoneModel'},{label:'全球运营商检测',price:'0.0015/条',val:'operatorStandard'},{label:'号码活跃检测',price:'0.005/条',val:'phoneActive'}] },
+  { id: 'zalo', name: {zh:'Zalo', en:'Zalo'}, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#0068ff" stroke-width="2" class="brand-icon"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>', items: [{label:'Zalo筛开通',price:'0.0005/条',val:'zaloValid'},{label:'Zalo筛性别年龄',price:'0.006/条',val:'closed'},{label:'Zalo筛活跃',price:'0.0055/条',val:'closed'},{label:'Zalo急速筛性别年龄',price:'0.0065/条',val:'zaloGender'}] },
+  { id: 'tiktok', name: {zh:'抖音', en:'TikTok'}, icon: '<svg viewBox="0 0 24 24" class="brand-icon theme-adaptive-icon"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 2.25-.71 4.46-2.01 6.26-1.21 1.68-2.9 2.9-4.85 3.45-2.03.57-4.23.5-6.18-.31-1.95-.81-3.54-2.26-4.45-4.11-.91-1.85-1.1-4.01-.55-5.96.55-1.95 1.85-3.6 3.55-4.61 1.7-.99 3.75-1.35 5.68-1.02.12.02.24.04.36.06v4.06c-.1-.02-.2-.04-.3-.06-1.1-.2-2.25-.1-3.25.3-1 .4-1.85 1.1-2.4 2.01-.55.9-.75 2.01-.55 3.06.2 1.05.8 1.95 1.65 2.55.85.6 1.95.9 3 .8 1.05-.1 2.05-.6 2.75-1.4.7-.8 1.1-1.9 1.1-3.01V.02z"/></svg>', items: [{label:'TikTok筛用户名',price:'0.0055/条',val:'tiktokUser'},{label:'TikTok筛开通',price:'0.0055/条',val:'tiktokValid'}] },
+  { id: 'crypto', name: {zh:'币圈交易所', en:'Crypto Exchange'}, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="2" class="brand-icon"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v8"></path><path d="M8 12h8"></path></svg>', items: [{label:'币安筛开通',price:'0.007/条',val:'binanceValid'},{label:'Htx筛开通',price:'0.0065/条',val:'htxValid'},{label:'Gate筛开通',price:'0.007/条',val:'closed'},{label:'Kucoin筛开通',price:'0.002/条',val:'closed'},{label:'OKX筛开通',price:'0.008/条',val:'okxValid'},{label:'CoinW筛开通',price:'0.001/条',val:'coinwValid'}] },
+  { id: 'wechat', name: {zh:'微信', en:'WeChat'}, icon: '<img src="https://cdn.simpleicons.org/wechat/07C160" class="brand-icon">', items: [{label:'WeChat筛开通',price:'0.001/条',val:'wxValid'}] },
+  { id: 'rcs', name: {zh:'RCS', en:'RCS'}, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#4285F4" stroke-width="2" class="brand-icon"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>', items: [{label:'RCS筛开通',price:'0.0008/条',val:'closed'},{label:'RCS筛开通+系统',price:'0.001/条',val:'rcsSystem'}] },
+  { id: 'amazon', name: {zh:'亚马逊', en:'Amazon'}, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#FF9900" stroke-width="2" class="brand-icon"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>', items: [{label:'亚马逊筛开通',price:'0.0015/条',val:'amazonValid'}] },
+  { id: 'teams', name: {zh:'Teams', en:'Teams'}, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#6264A7" stroke-width="2" class="brand-icon"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>', items: [{label:'Teams筛开通',price:'0.0012/条',val:'teamsValid'}] },
+  { id: 'linkedin', name: {zh:'领英', en:'LinkedIn'}, icon: '<svg viewBox="0 0 24 24" fill="#0A66C2" class="brand-icon"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>', items: [{label:'领英筛开通',price:'0.0035/条',val:'linkedinValid'},{label:'领英全格式',price:'0.0035/条',val:'linkedinGender'}] },
+  { id: 'instagram', name: {zh:'Instagram', en:'Instagram'}, icon: '<img src="https://cdn.simpleicons.org/instagram/E4405F" class="brand-icon">', items: [{label:'INS筛开通',price:'0.0004/条',val:'insValid'}] },
+  { id: 'signal', name: {zh:'信号', en:'Signal'}, icon: '<img src="https://cdn.simpleicons.org/signal/3A76F0" class="brand-icon">', items: [{label:'Signal筛开通',price:'0.001/条',val:'closed'}] },
+  { id: 'twitter', name: {zh:'推特', en:'Twitter/X'}, icon: '<svg viewBox="0 0 24 24" class="brand-icon theme-adaptive-icon"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg>', items: [{label:'Twitter筛开通',price:'0.001/条',val:'twitterValid'}] },
+  { id: 'sideline', name: {zh:'Sideline', en:'Sideline'}, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#00b894" stroke-width="2" class="brand-icon"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>', items: [{label:'Sideline筛开通',price:'0.0009/条',val:'sidelineValid'}] },
+  { id: 'shopee', name: {zh:'Shopee', en:'Shopee'}, icon: '<img src="https://cdn.simpleicons.org/shopee/EE4D2D" class="brand-icon">', items: [{label:'Shopee筛开通',price:'0.001/条',val:'closed'}] },
+  { id: 'dhl', name: {zh:'DHL', en:'DHL'}, icon: '<img src="https://cdn.simpleicons.org/dhl/D40511" class="brand-icon">', items: [{label:'DHL筛开通',price:'0.0004/条',val:'dhlValid'}] },
+  { id: 'botim', name: {zh:'Botim', en:'Botim'}, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#00a8ff" stroke-width="2" class="brand-icon"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>', items: [{label:'Botim筛开通',price:'0.005/条',val:'botimValid'},{label:'Botim筛性别年龄',price:'0.005/条',val:'botimGender'}] }
 ];
 
 function renderProjectNav() {
@@ -534,7 +534,7 @@ function renderProjectNav() {
   container.innerHTML = PROJECT_DATA.map(p => `
     <div class="nav-item" onclick="navigate('project_${p.id}')" id="nav-project_${p.id}">
       <span style="margin-right:10px;display:flex;align-items:center;justify-content:center;width:20px">${p.icon}</span>
-      <span>${p.name}</span>
+      <span>${p.name[currentLang]}</span>
     </div>
   `).join('');
 }
@@ -704,6 +704,7 @@ async function loadProfile(){
     if(data&&!error){
       currentProfile=data;
       currentLang=data.lang||'zh';
+      updateStaticText(); // 确保加载完配置后更新静态文本
     } else {
       console.warn('loadProfile warning:',error?.message);
     }
@@ -749,12 +750,27 @@ async function proxyFetch(apiPath, {method='GET', queryParams={}, body}={}){
 
 // 已移除 syncRemoteBalance，启用本地独立积分系统
 
+function updateStaticText() {
+  document.getElementById('nav-sec1').textContent = currentLang==='zh'?'主菜单':'MENU';
+  document.getElementById('nav-label-dashboard').textContent = t('dashboard');
+  document.getElementById('nav-label-recharge').textContent = t('recharge');
+  document.getElementById('nav-sec-services').textContent = currentLang==='zh'?'筛选项目':'SERVICES';
+  document.getElementById('nav-label-logs').textContent = t('logs');
+  document.getElementById('nav-label-prices').textContent = t('prices');
+  if(document.getElementById('nav-sec2')) document.getElementById('nav-sec2').textContent = currentLang==='zh'?'管理员':'ADMIN';
+  if(document.getElementById('nav-label-admin')) document.getElementById('nav-label-admin').textContent = t('admin');
+  document.getElementById('logout-label').textContent = currentLang==='zh'?'退出':'Logout';
+}
+
 async function toggleLang(){
   currentLang=currentLang==='zh'?'en':'zh';
   document.getElementById('lang-toggle-label').textContent=currentLang==='zh'?'EN':'中';
   if(currentProfile){
     await sb.from('profiles').update({lang:currentLang}).eq('id',currentUser.id);
   }
+  updateStaticText();
+  renderProjectNav();
+  renderTabs();
   navigate(currentPage);
   updateSidebar();
 }
