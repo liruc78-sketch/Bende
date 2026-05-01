@@ -694,7 +694,12 @@ async function doLogin(){
       document.getElementById('auth-screen').style.display='none';
       document.getElementById('app').style.display='flex';
       updateSidebar();
-      navigate('dashboard');
+      
+      // 登录成功后也根据 URL 恢复页面
+      const urlParams = new URLSearchParams(window.location.search);
+      const page = urlParams.get('page') || 'dashboard';
+      const sub = urlParams.get('sub');
+      navigate(page, sub, true);
     }
   } catch(e){
     showAuthErr('登录异常，请重试 / Login error: '+e.message);
@@ -755,7 +760,6 @@ async function initApp(session) {
   if(session?.user && !currentUser){
     currentUser=session.user;
     await loadProfile();
-    await loadDynamicPrices(); // 登录后立即加载最新价格
     if(!currentProfile){
       currentProfile={id:session.user.id,email:session.user.email,balance:0,role:'user'};
     }
@@ -763,7 +767,12 @@ async function initApp(session) {
     document.getElementById('app').style.display='flex';
     renderProjectNav();
     updateSidebar();
-    navigate('dashboard');
+    
+    // 🚀 核心修改：登录成功后，读取 URL 参数恢复之前的页面，而不是死板地跳回首页
+    const urlParams = new URLSearchParams(window.location.search);
+    const page = urlParams.get('page') || 'dashboard';
+    const sub = urlParams.get('sub');
+    navigate(page, sub, true); 
   }
 }
 
@@ -909,12 +918,14 @@ function closeTab(id) {
   }
 }
 
-function navigate(page, subType = null){
+// 增加 isPopState 参数，防止浏览器后退时产生死循环
+function navigate(page, subType = null, isPopState = false){
   currentPage=page;
   document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
   const nav=document.getElementById('nav-'+page);
   if(nav)nav.classList.add('active');
   
+  // --- 记录并渲染标签页 ---
   const existingTab = openTabs.find(t => t.id === page);
   if (existingTab) {
     existingTab.subType = subType; 
@@ -922,7 +933,22 @@ function navigate(page, subType = null){
     openTabs.push({ id: page, subType: subType }); 
   }
   renderTabs();
+  // ------------------------
 
+  // 🚀 新增：动态修改浏览器地址栏 URL
+  if (!isPopState) {
+    const url = new URL(window.location);
+    if (page === 'dashboard') {
+      url.search = ''; // 首页保持干净的 URL
+    } else {
+      url.searchParams.set('page', page);
+      if (subType) url.searchParams.set('sub', subType);
+      else url.searchParams.delete('sub');
+    }
+    window.history.pushState({ page, subType }, '', url);
+  }
+
+  // 拦截项目专属路由
   if(page.startsWith('project_')) {
     const projectId = page.replace('project_', '');
     const project = PROJECT_DATA.find(p => p.id === projectId);
@@ -942,6 +968,18 @@ function navigate(page, subType = null){
   };
   if(pages[page])pages[page]();
 }
+
+// 🚀 新增：监听浏览器的“前进/后退”按钮事件
+window.addEventListener('popstate', (event) => {
+  if (event.state) {
+    navigate(event.state.page, event.state.subType, true);
+  } else {
+    const urlParams = new URLSearchParams(window.location.search);
+    const page = urlParams.get('page') || 'dashboard';
+    const sub = urlParams.get('sub');
+    navigate(page, sub, true);
+  }
+});
 
 function goToTask(typeVal) {
   if(typeVal === 'closed') {
