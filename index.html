@@ -289,6 +289,10 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .r-inst-list { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 13px; color: var(--text2); line-height: 1.6; }
 @media(max-width: 768px) { .r-inst-list { grid-template-columns: 1fr; } }
 
+/* MODAL BANNERS */
+.modal-rule-banner { background: rgba(139,92,246,0.08); border: 1px solid rgba(139,92,246,0.2); border-radius: 8px; padding: 12px 16px; font-size: 12px; color: var(--text2); margin-bottom: 20px; line-height: 1.5; display: flex; gap: 8px; align-items: flex-start; }
+.modal-hint-banner { background: rgba(245,166,35,0.08); border: 1px solid rgba(245,166,35,0.2); border-radius: 8px; padding: 12px 16px; font-size: 12px; color: var(--yellow); margin-top: 20px; display: flex; gap: 8px; align-items: center; }
+
 /* CUSTOM CONFIRM MODAL */
 .confirm-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; display: flex; align-items: center; justify-content: center; }
 .confirm-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 24px; width: 320px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
@@ -504,28 +508,98 @@ document.addEventListener('DOMContentLoaded', () => {
 // --------------
 
 const PROJECT_DATA = [
-  { id: 'whatsapp', name: {zh:'WhatsApp', en:'WhatsApp'}, icon: '<img src="https://cdn.simpleicons.org/whatsapp/25D366" class="brand-icon">', items: [{label:'WS筛开通',price:'0.00008/条',val:'wsValid'},{label:'WS筛活跃',price:'0.0008/条',val:'wsActive'},{label:'WS性别年龄-全格式',price:'0.002/条',val:'wsGender'}] },
-  { id: 'telegram', name: {zh:'电报', en:'Telegram'}, icon: '<img src="https://cdn.simpleicons.org/telegram/26A5E4" class="brand-icon">', items: [{label:'TG筛开通',price:'0.0013/条',val:'tgValid'},{label:'TG筛活跃',price:'0.0018/条',val:'tgActive'},{label:'TG性别年龄-全格式',price:'0.003/条',val:'tgGender'},{label:'TG筛用户名',price:'0.001/条',val:'closed'}] },
-  { id: 'ios', name: {zh:'苹果', en:'IOS'}, icon: '<img src="https://cdn.simpleicons.org/apple/A3AAAE" class="brand-icon">', items: [{label:'IOS蓝号(iMessage)',price:'0.0015/条',val:'iosBlueValid'},{label:'IOS筛系统',price:'0.0006/条',val:'iosValid'}] },
-  { id: 'facebook', name: {zh:'脸书', en:'Facebook'}, icon: '<img src="https://cdn.simpleicons.org/facebook/1877F2" class="brand-icon">', items: [{label:'Facebook筛开通',price:'0.0004/条',val:'fbValid'},{label:'Facebook筛UID',price:'0.006/条',val:'fbUid'},{label:'FacebookUID性别',price:'暂时关闭',val:'closed'}] },
-  { id: 'viber', name: {zh:'Viber', en:'Viber'}, icon: '<img src="https://cdn.simpleicons.org/viber/7360F2" class="brand-icon">', items: [{label:'Viber筛开通',price:'0.0003/条',val:'viberValid'},{label:'Viber筛活跃',price:'0.002/条',val:'viberActive'},{label:'Viber性别年龄',price:'暂时关闭',val:'closed'}] },
-  { id: 'line', name: {zh:'Line', en:'Line'}, icon: '<img src="https://cdn.simpleicons.org/line/00C300" class="brand-icon">', items: [{label:'Line筛开通',price:'0.004/条',val:'lineValid'},{label:'Line性别年龄',price:'0.006/条',val:'lineGender'}] },
-  { id: 'phone', name: {zh:'手机检测', en:'Phone Check'}, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#9199b8" stroke-width="2" class="brand-icon"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>', items: [{label:'空号检测',price:'0.002/条',val:'phoneCheck'},{label:'手机型号检测',price:'0.003/条',val:'phoneModel'},{label:'全球运营商检测',price:'0.0015/条',val:'operatorStandard'},{label:'号码活跃检测',price:'0.005/条',val:'phoneActive'}] },
-  { id: 'zalo', name: {zh:'Zalo', en:'Zalo'}, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#0068ff" stroke-width="2" class="brand-icon"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>', items: [{label:'Zalo筛开通',price:'0.0005/条',val:'zaloValid'},{label:'Zalo筛性别年龄',price:'0.006/条',val:'closed'},{label:'Zalo筛活跃',price:'0.0055/条',val:'closed'},{label:'Zalo急速筛性别年龄',price:'0.0065/条',val:'zaloGender'}] },
-  { id: 'tiktok', name: {zh:'抖音', en:'TikTok'}, icon: '<svg viewBox="0 0 24 24" class="brand-icon theme-adaptive-icon"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 2.25-.71 4.46-2.01 6.26-1.21 1.68-2.9 2.9-4.85 3.45-2.03.57-4.23.5-6.18-.31-1.95-.81-3.54-2.26-4.45-4.11-.91-1.85-1.1-4.01-.55-5.96.55-1.95 1.85-3.6 3.55-4.61 1.7-.99 3.75-1.35 5.68-1.02.12.02.24.04.36.06v4.06c-.1-.02-.2-.04-.3-.06-1.1-.2-2.25-.1-3.25.3-1 .4-1.85 1.1-2.4 2.01-.55.9-.75 2.01-.55 3.06.2 1.05.8 1.95 1.65 2.55.85.6 1.95.9 3 .8 1.05-.1 2.05-.6 2.75-1.4.7-.8 1.1-1.9 1.1-3.01V.02z"/></svg>', items: [{label:'TikTok筛用户名',price:'0.0055/条',val:'tiktokUser'},{label:'TikTok筛开通',price:'0.0055/条',val:'tiktokValid'}] },
-  { id: 'crypto', name: {zh:'币圈交易所', en:'Crypto Exchange'}, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="2" class="brand-icon"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v8"></path><path d="M8 12h8"></path></svg>', items: [{label:'币安筛开通',price:'0.007/条',val:'binanceValid'},{label:'Htx筛开通',price:'0.0065/条',val:'htxValid'},{label:'Gate筛开通',price:'0.007/条',val:'closed'},{label:'Kucoin筛开通',price:'0.002/条',val:'closed'},{label:'OKX筛开通',price:'0.008/条',val:'okxValid'},{label:'CoinW筛开通',price:'0.001/条',val:'coinwValid'}] },
-  { id: 'wechat', name: {zh:'微信', en:'WeChat'}, icon: '<img src="https://cdn.simpleicons.org/wechat/07C160" class="brand-icon">', items: [{label:'WeChat筛开通',price:'0.001/条',val:'wxValid'}] },
-  { id: 'rcs', name: {zh:'RCS', en:'RCS'}, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#4285F4" stroke-width="2" class="brand-icon"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>', items: [{label:'RCS筛开通',price:'0.0008/条',val:'closed'},{label:'RCS筛开通+系统',price:'0.001/条',val:'rcsSystem'}] },
-  { id: 'amazon', name: {zh:'亚马逊', en:'Amazon'}, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#FF9900" stroke-width="2" class="brand-icon"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>', items: [{label:'亚马逊筛开通',price:'0.0015/条',val:'amazonValid'}] },
-  { id: 'teams', name: {zh:'Teams', en:'Teams'}, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#6264A7" stroke-width="2" class="brand-icon"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>', items: [{label:'Teams筛开通',price:'0.0012/条',val:'teamsValid'}] },
-  { id: 'linkedin', name: {zh:'领英', en:'LinkedIn'}, icon: '<svg viewBox="0 0 24 24" fill="#0A66C2" class="brand-icon"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>', items: [{label:'领英筛开通',price:'0.0035/条',val:'linkedinValid'},{label:'领英全格式',price:'0.0035/条',val:'linkedinGender'}] },
-  { id: 'instagram', name: {zh:'Instagram', en:'Instagram'}, icon: '<img src="https://cdn.simpleicons.org/instagram/E4405F" class="brand-icon">', items: [{label:'INS筛开通',price:'0.0004/条',val:'insValid'}] },
-  { id: 'signal', name: {zh:'信号', en:'Signal'}, icon: '<img src="https://cdn.simpleicons.org/signal/3A76F0" class="brand-icon">', items: [{label:'Signal筛开通',price:'0.001/条',val:'closed'}] },
-  { id: 'twitter', name: {zh:'推特', en:'Twitter/X'}, icon: '<svg viewBox="0 0 24 24" class="brand-icon theme-adaptive-icon"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg>', items: [{label:'Twitter筛开通',price:'0.001/条',val:'twitterValid'}] },
-  { id: 'sideline', name: {zh:'Sideline', en:'Sideline'}, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#00b894" stroke-width="2" class="brand-icon"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>', items: [{label:'Sideline筛开通',price:'0.0009/条',val:'sidelineValid'}] },
-  { id: 'shopee', name: {zh:'Shopee', en:'Shopee'}, icon: '<img src="https://cdn.simpleicons.org/shopee/EE4D2D" class="brand-icon">', items: [{label:'Shopee筛开通',price:'0.001/条',val:'closed'}] },
-  { id: 'dhl', name: {zh:'DHL', en:'DHL'}, icon: '<img src="https://cdn.simpleicons.org/dhl/D40511" class="brand-icon">', items: [{label:'DHL筛开通',price:'0.0004/条',val:'dhlValid'}] },
-  { id: 'botim', name: {zh:'Botim', en:'Botim'}, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#00a8ff" stroke-width="2" class="brand-icon"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>', items: [{label:'Botim筛开通',price:'0.005/条',val:'botimValid'},{label:'Botim筛性别年龄',price:'0.005/条',val:'botimGender'}] }
+  { id: 'whatsapp', name: {zh:'WhatsApp', en:'WhatsApp'}, icon: '<img src="https://cdn.simpleicons.org/whatsapp/25D366" class="brand-icon">', items: [
+    {label:'WS筛开通',price:'0.00008/条',val:'wsValid', rule:'📌 数量范围: 1,000-5,000,000 | 不支持国家: 中国'},
+    {label:'WS筛活跃',price:'0.0008/条',val:'wsActive', rule:'📌 数量范围: 500-1,000,000 | 不支持国家: 中国'},
+    {label:'WS性别年龄-全格式',price:'0.002/条',val:'wsGender', rule:'📌 数量范围: 100-1,000,000 | 不支持国家: 中国'}
+  ]},
+  { id: 'telegram', name: {zh:'电报', en:'Telegram'}, icon: '<img src="https://cdn.simpleicons.org/telegram/26A5E4" class="brand-icon">', items: [
+    {label:'TG筛开通',price:'0.0013/条',val:'tgValid', rule:'📌 数量范围: 500-1,000,000 | 不支持国家: 中国'},
+    {label:'TG筛活跃',price:'0.0018/条',val:'tgActive', rule:'📌 数量范围: 500-1,000,000 | 不支持国家: 中国'},
+    {label:'TG性别年龄-全格式',price:'0.003/条',val:'tgGender', rule:'📌 数量范围: 100-1,000,000 | 不支持国家: 中国'},
+    {label:'TG筛用户名',price:'0.001/条',val:'closed', rule:'📌 数量范围: 500-1,000,000'}
+  ]},
+  { id: 'ios', name: {zh:'苹果', en:'IOS'}, icon: '<img src="https://cdn.simpleicons.org/apple/A3AAAE" class="brand-icon">', items: [
+    {label:'IOS蓝号(iMessage)',price:'0.0015/条',val:'iosBlueValid', rule:'📌 数量范围: 1,000-1,000,000 | 不支持国家: 中国'},
+    {label:'IOS筛系统',price:'0.0006/条',val:'iosValid', rule:'📌 数量范围: 500-1,000,000 | 不支持国家: 中国'}
+  ]},
+  { id: 'facebook', name: {zh:'脸书', en:'Facebook'}, icon: '<img src="https://cdn.simpleicons.org/facebook/1877F2" class="brand-icon">', items: [
+    {label:'Facebook筛开通',price:'0.0004/条',val:'fbValid', rule:'📌 数量范围: 100-1,000,000 | 不支持国家: 中国'},
+    {label:'Facebook筛UID',price:'0.006/条',val:'fbUid', rule:'📌 数量范围: 1,100-1,000,000 | 支持国家: 美国、阿尔及利亚、阿拉伯联合酋长国、埃及、澳大利亚、巴西、德国、俄罗斯、法国、哥伦比亚、荷兰、马来西亚、秘鲁、摩洛哥、墨西哥、南非、尼日利亚、沙特阿拉伯、土耳其、西班牙、以色列、意大利、印度、英国、智利'},
+    {label:'FacebookUID性别',price:'暂时关闭',val:'closed', rule:'📌 数量范围: 1,100-1,000,000 | 支持国家: 智利、英国、印度、意大利、以色列、西班牙、土耳其、沙特阿拉伯、尼日利亚、南非、墨西哥、摩洛哥、秘鲁、美国、马来西亚、荷兰、哥伦比亚、法国、俄罗斯、德国、巴西、澳大利亚、埃及、阿拉伯联合酋长国、阿尔及利亚'}
+  ]},
+  { id: 'viber', name: {zh:'Viber', en:'Viber'}, icon: '<img src="https://cdn.simpleicons.org/viber/7360F2" class="brand-icon">', items: [
+    {label:'Viber筛开通',price:'0.0003/条',val:'viberValid', rule:'📌 数量范围: 500-1,000,000 | 不支持国家: 中国、台湾、香港、澳门'},
+    {label:'Viber筛活跃',price:'0.002/条',val:'viberActive', rule:'📌 数量范围: 500-1,000,000 | 不支持国家: 中国、澳门、香港、台湾'},
+    {label:'Viber性别年龄',price:'暂时关闭',val:'closed', rule:'📌 数量范围: 500-1,000,000 | 不支持国家: 中国'}
+  ]},
+  { id: 'line', name: {zh:'Line', en:'Line'}, icon: '<img src="https://cdn.simpleicons.org/line/00C300" class="brand-icon">', items: [
+    {label:'Line筛开通',price:'0.004/条',val:'lineValid', rule:'📌 数量范围: 2,000-1,000,000 | 支持国家: 加拿大、日本、韩国、美国、香港、台湾、泰国'},
+    {label:'Line性别年龄',price:'0.006/条',val:'lineGender', rule:'📌 数量范围: 2,000-1,000,000 | 支持国家: 泰国、日本、韩国、美国、香港、台湾、加拿大'}
+  ]},
+  { id: 'phone', name: {zh:'手机检测', en:'Phone Check'}, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#9199b8" stroke-width="2" class="brand-icon"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>', items: [
+    {label:'空号检测',price:'0.002/条',val:'phoneCheck', rule:'📌 数量范围: 2,000-1,000,000 | 不支持国家: 中国、台湾、香港、澳门'},
+    {label:'手机型号检测',price:'0.003/条',val:'phoneModel', rule:'📌 数量范围: 500-500,000 | 不支持国家: 中国'},
+    {label:'全球运营商检测',price:'0.0015/条',val:'operatorStandard', rule:'📌 数量范围: 500-1,000,000 | 不支持国家: 中国、澳门'},
+    {label:'号码活跃检测',price:'0.005/条',val:'phoneActive', rule:'📌 数量范围: 2,000-1,000,000 | 不支持国家: 中国、台湾、澳门、香港'}
+  ]},
+  { id: 'zalo', name: {zh:'Zalo', en:'Zalo'}, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#0068ff" stroke-width="2" class="brand-icon"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>', items: [
+    {label:'Zalo筛开通',price:'0.0005/条',val:'zaloValid', rule:'📌 数量范围: 2,000-1,000,000 | 不支持国家: 中国、香港、澳门、台湾'},
+    {label:'Zalo筛性别年龄',price:'0.006/条',val:'closed', rule:'📌 数量范围: 500-1,000,000 | 不支持国家: 中国、香港、澳门、台湾'},
+    {label:'Zalo筛活跃',price:'0.0055/条',val:'closed', rule:'📌 数量范围: 500-1,000,000 | 不支持国家: 中国'},
+    {label:'Zalo急速筛性别年龄',price:'0.0065/条',val:'zaloGender', rule:'📌 数量范围: 500-1,000,000 | 不支持国家: 中国、香港、澳门、台湾'}
+  ]},
+  { id: 'tiktok', name: {zh:'抖音', en:'TikTok'}, icon: '<svg viewBox="0 0 24 24" class="brand-icon theme-adaptive-icon"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 2.25-.71 4.46-2.01 6.26-1.21 1.68-2.9 2.9-4.85 3.45-2.03.57-4.23.5-6.18-.31-1.95-.81-3.54-2.26-4.45-4.11-.91-1.85-1.1-4.01-.55-5.96.55-1.95 1.85-3.6 3.55-4.61 1.7-.99 3.75-1.35 5.68-1.02.12.02.24.04.36.06v4.06c-.1-.02-.2-.04-.3-.06-1.1-.2-2.25-.1-3.25.3-1 .4-1.85 1.1-2.4 2.01-.55.9-.75 2.01-.55 3.06.2 1.05.8 1.95 1.65 2.55.85.6 1.95.9 3 .8 1.05-.1 2.05-.6 2.75-1.4.7-.8 1.1-1.9 1.1-3.01V.02z"/></svg>', items: [
+    {label:'TikTok筛用户名',price:'0.0055/条',val:'tiktokUser', rule:'📌 数量范围: 2,000-1,000,000 | 不支持国家: 中国、澳门、香港、台湾'},
+    {label:'TikTok筛开通',price:'0.0055/条',val:'tiktokValid', rule:'📌 数量范围: 2,000-1,000,000 | 不支持国家: 中国、澳门、香港、台湾'}
+  ]},
+  { id: 'crypto', name: {zh:'币圈交易所', en:'Crypto Exchange'}, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="2" class="brand-icon"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v8"></path><path d="M8 12h8"></path></svg>', items: [
+    {label:'币安筛开通',price:'0.007/条',val:'binanceValid', rule:'📌 数量范围: 1,000-400,000 | 不支持国家: 中国'},
+    {label:'Htx筛开通',price:'0.0065/条',val:'htxValid', rule:'📌 数量范围: 1,000-1,000,000 | 不支持国家: 中国、香港、澳门、台湾'},
+    {label:'Gate筛开通',price:'0.007/条',val:'closed', rule:'📌 数量范围: 500-1,000,000 | 不支持国家: 美国、香港、中国、台湾、澳门'},
+    {label:'Kucoin筛开通',price:'0.002/条',val:'closed', rule:'📌 数量范围: 500-1,000,000 | 不支持国家: 美国、香港、澳门、中国、美属萨摩亚（美国）、新加坡、泰国、伊朗、朝鲜、叙利亚、苏丹、古巴、巴拿马、萨摩亚'},
+    {label:'OKX筛开通',price:'0.008/条',val:'okxValid', rule:'📌 数量范围: 2,000-1,000,000 | 支持国家: 瑞士、澳大利亚、阿拉伯联合酋长国、以色列'},
+    {label:'CoinW筛开通',price:'0.001/条',val:'coinwValid', rule:'📌 数量范围: 2,000-1,000,000 | 不支持国家: 中国'}
+  ]},
+  { id: 'wechat', name: {zh:'微信', en:'WeChat'}, icon: '<img src="https://cdn.simpleicons.org/wechat/07C160" class="brand-icon">', items: [
+    {label:'WeChat筛开通',price:'0.001/条',val:'wxValid', rule:'📌 数量范围: 100-1,000,000 | 不支持国家: 中国、香港、澳门'}
+  ]},
+  { id: 'rcs', name: {zh:'RCS', en:'RCS'}, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#4285F4" stroke-width="2" class="brand-icon"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>', items: [
+    {label:'RCS筛开通',price:'0.0008/条',val:'closed', rule:'📌 数量范围: 1,000-1,000,000 | 不支持国家: 中国、澳门、香港、台湾、俄罗斯、古巴、伊朗、朝鲜、苏丹、叙利亚、摩洛哥、托克劳、沃利斯和富图纳群岛、阿曼、巴基斯坦、肯尼亚、孟加拉国、阿拉伯联合酋长国、柬埔寨、吉尔吉斯斯坦、韩国、埃及、哈萨克斯坦、亚美尼亚、科威特、阿塞拜疆、菲律宾、尼日尔、尼日利亚'},
+    {label:'RCS筛开通+系统',price:'0.001/条',val:'rcsSystem', rule:'📌 数量范围: 1,000-1,000,000 | 不支持国家: 中国'}
+  ]},
+  { id: 'amazon', name: {zh:'亚马逊', en:'Amazon'}, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#FF9900" stroke-width="2" class="brand-icon"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>', items: [
+    {label:'亚马逊筛开通',price:'0.0015/条',val:'amazonValid', rule:'📌 数量范围: 500-1,000,000 | 不支持国家: 中国'}
+  ]},
+  { id: 'teams', name: {zh:'Teams', en:'Teams'}, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#6264A7" stroke-width="2" class="brand-icon"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>', items: [
+    {label:'Teams筛开通',price:'0.0012/条',val:'teamsValid', rule:'📌 数量范围: 500-1,000,000 | 不支持国家: 中国、澳门、香港、台湾'}
+  ]},
+  { id: 'linkedin', name: {zh:'领英', en:'LinkedIn'}, icon: '<svg viewBox="0 0 24 24" fill="#0A66C2" class="brand-icon"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>', items: [
+    {label:'领英筛开通',price:'0.0035/条',val:'linkedinValid', rule:'📌 数量范围: 2,000-1,000,000 | 支持国家: 美国'},
+    {label:'领英全格式',price:'0.0035/条',val:'linkedinGender', rule:'📌 数量范围: 1,000-1,000,000 | 支持国家: 美国'}
+  ]},
+  { id: 'instagram', name: {zh:'Instagram', en:'Instagram'}, icon: '<img src="https://cdn.simpleicons.org/instagram/E4405F" class="brand-icon">', items: [
+    {label:'INS筛开通',price:'0.0004/条',val:'insValid', rule:'📌 数量范围: 500-1,000,000 | 不支持国家: 中国'}
+  ]},
+  { id: 'signal', name: {zh:'信号', en:'Signal'}, icon: '<img src="https://cdn.simpleicons.org/signal/3A76F0" class="brand-icon">', items: [
+    {label:'Signal筛开通',price:'0.001/条',val:'closed', rule:'📌 数量范围: 500-1,000,000 | 不支持国家: 中国'}
+  ]},
+  { id: 'twitter', name: {zh:'推特', en:'Twitter/X'}, icon: '<svg viewBox="0 0 24 24" class="brand-icon theme-adaptive-icon"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg>', items: [
+    {label:'Twitter筛开通',price:'0.001/条',val:'twitterValid', rule:'📌 数量范围: 500-1,000,000 | 不支持国家: 中国、香港、澳门、台湾'}
+  ]},
+  { id: 'sideline', name: {zh:'Sideline', en:'Sideline'}, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#00b894" stroke-width="2" class="brand-icon"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>', items: [
+    {label:'Sideline筛开通',price:'0.0009/条',val:'sidelineValid', rule:'📌 数量范围: 500-1,000,000 | 不支持国家: 中国、香港、澳门、台湾'}
+  ]},
+  { id: 'shopee', name: {zh:'Shopee', en:'Shopee'}, icon: '<img src="https://cdn.simpleicons.org/shopee/EE4D2D" class="brand-icon">', items: [
+    {label:'Shopee筛开通',price:'0.001/条',val:'closed', rule:'📌 数量范围: 500-1,000,000 | 支持国家: 新加坡、马来西亚、泰国、印度尼西亚、越南、菲律宾、墨西哥、巴西、哥伦比亚、智利'}
+  ]},
+  { id: 'dhl', name: {zh:'DHL', en:'DHL'}, icon: '<img src="https://cdn.simpleicons.org/dhl/D40511" class="brand-icon">', items: [
+    {label:'DHL筛开通',price:'0.0004/条',val:'dhlValid', rule:'📌 数量范围: 500-1,000,000 | 不支持国家: 中国、香港、澳门、台湾'}
+  ]},
+  { id: 'botim', name: {zh:'Botim', en:'Botim'}, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#00a8ff" stroke-width="2" class="brand-icon"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>', items: [
+    {label:'Botim筛开通',price:'0.005/条',val:'botimValid', rule:'📌 数量范围: 500-1,000,000 | 不支持国家: 中国、香港、澳门、台湾'},
+    {label:'Botim筛性别年龄',price:'0.005/条',val:'botimGender', rule:'📌 数量范围: 500-1,000,000 | 不支持国家: 中国、香港、澳门、台湾'}
+  ]}
 ];
 
 function renderProjectNav() {
@@ -598,12 +672,10 @@ async function doLogin(){
   const btn=document.getElementById('login-btn');
   btn.textContent='登录中...';btn.disabled=true;
   try{
-    // 修复BUG核心：登录前强制清除本地可能损坏的旧会话状态
     await sb.auth.signOut();
     
     const{data,error}=await sb.auth.signInWithPassword({email,password:pwd});
     if(error){showAuthErr(error.message);return;}
-    // 显式写入 session，防止 localStorage 未自动持久化
     if(data?.session){
       await sb.auth.setSession({
         access_token:data.session.access_token,
@@ -613,7 +685,6 @@ async function doLogin(){
     if(data?.user){
       currentUser=data.user;
       await loadProfile();
-      // 兜底：若 profile 查询失败则构造最小对象并写库
       if(!currentProfile){
         currentProfile={id:data.user.id,email:data.user.email,balance:0,role:'user'};
         try{
@@ -691,10 +762,10 @@ sb.auth.onAuthStateChange(async(event,session)=>{
 
 sb.auth.getSession().then(({data:{session}, error})=>{
   if(error || !session){
-    if(error) sb.auth.signOut(); // 如果 Token 损坏则自动清理
+    if(error) sb.auth.signOut(); 
     document.getElementById('auth-screen').style.display='flex';
   } else {
-    initApp(session); // 刷新页面时自动恢复登录状态
+    initApp(session); 
   }
 });
 
@@ -704,7 +775,7 @@ async function loadProfile(){
     if(data&&!error){
       currentProfile=data;
       currentLang=data.lang||'zh';
-      updateStaticText(); // 确保加载完配置后更新静态文本
+      updateStaticText(); 
     } else {
       console.warn('loadProfile warning:',error?.message);
     }
@@ -731,7 +802,6 @@ async function refreshBalance(){
 }
 
 // ─── PROXY HELPER ───
-// All calls to api.th333.cc go through the Supabase Edge Function to avoid CORS.
 async function proxyFetch(apiPath, {method='GET', queryParams={}, body}={}){
   const {data:{session}}=await sb.auth.getSession();
   const jwt=session?.access_token||'';
@@ -742,13 +812,10 @@ async function proxyFetch(apiPath, {method='GET', queryParams={}, body}={}){
     method,
     headers:{
       'Authorization':'Bearer '+jwt,
-      // 移除前端传递的 x-th333-token，改由 Supabase Edge Function 后端自动注入
     },
     ...(body?{body}:{}),
   });
 }
-
-// 已移除 syncRemoteBalance，启用本地独立积分系统
 
 function updateStaticText() {
   document.getElementById('nav-sec1').textContent = currentLang==='zh'?'主菜单':'MENU';
@@ -776,7 +843,7 @@ async function toggleLang(){
 }
 
 // --- 标签页状态管理 ---
-let openTabs = [{ id: 'dashboard', subType: null }]; // 默认保留首页
+let openTabs = [{ id: 'dashboard', subType: null }]; 
 const STATIC_ICONS = {
   dashboard: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>',
   recharge: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>',
@@ -794,7 +861,7 @@ function renderTabs() {
     let icon = '';
     if(tab.id.startsWith('project_')) {
       const p = PROJECT_DATA.find(p => p.id === tab.id.replace('project_', ''));
-      title = p ? p.name[currentLang] : tab.id; // 修复：加上 [currentLang]
+      title = p ? p.name[currentLang] : tab.id; 
       icon = p ? p.icon : '';
     } else {
       title = t(tab.id);
@@ -815,7 +882,6 @@ function closeTab(id) {
   if (index > -1) {
     openTabs.splice(index, 1);
     if (currentPage === id) {
-      // 如果关闭的是当前页面，则自动跳转到上一个标签（或首页）
       const nextTab = openTabs[index - 1] || openTabs[0];
       if (nextTab) {
         navigate(nextTab.id, nextTab.subType);
@@ -823,11 +889,10 @@ function closeTab(id) {
         navigate('dashboard');
       }
     } else {
-      renderTabs(); // 如果关闭的是后台标签，仅重新渲染标签栏
+      renderTabs(); 
     }
   }
 }
-// ----------------------
 
 function navigate(page, subType = null){
   currentPage=page;
@@ -835,21 +900,17 @@ function navigate(page, subType = null){
   const nav=document.getElementById('nav-'+page);
   if(nav)nav.classList.add('active');
   
-  // --- 记录并渲染标签页 ---
   const existingTab = openTabs.find(t => t.id === page);
   if (existingTab) {
-    existingTab.subType = subType; // 更新子类型
+    existingTab.subType = subType; 
   } else {
-    openTabs.push({ id: page, subType: subType }); // 新增标签
+    openTabs.push({ id: page, subType: subType }); 
   }
   renderTabs();
-  // ------------------------
 
-  // 拦截项目专属路由
   if(page.startsWith('project_')) {
     const projectId = page.replace('project_', '');
     const project = PROJECT_DATA.find(p => p.id === projectId);
-    // 修复：加上 [currentLang]，并且这里已经包含了 project.icon
     document.getElementById('page-title').innerHTML = project ? `<div style="display:flex;align-items:center;gap:8px">${project.icon} <span>${project.name[currentLang]}</span></div>` : '';
     renderProject(projectId, subType);
     return;
@@ -872,7 +933,6 @@ function goToTask(typeVal) {
     toast(currentLang==='zh'?'该通道暂时关闭':'Channel temporarily closed', 'info');
     return;
   }
-  // 自动寻找所属的大项目并跳转
   const project = PROJECT_DATA.find(p => p.items.some(i => i.val === typeVal));
   if(project) {
     navigate('project_' + project.id, typeVal);
@@ -940,7 +1000,6 @@ c.innerHTML=`
     </div>
   </div>
 
-  <!-- 新增搜索框 -->
   <div class="home-search-wrap">
     <svg class="home-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
     <input type="text" class="home-search-input" placeholder="${currentLang==='zh'?'搜索筛选项目 (例如: WhatsApp, 空号检测)...':'Search services (e.g. WhatsApp, Phone check)...'}" oninput="renderHomeServices(this.value)">
@@ -948,17 +1007,13 @@ c.innerHTML=`
   
   <div class="section">
     <div class="section-body" style="background: var(--bg); padding: 20px;" id="home-service-container">
-      <!-- 项目列表将由 renderHomeServices 动态渲染 -->
     </div>
   </div>
   `;
 
-  // 初始渲染所有项目
   renderHomeServices('');
 }
 
-// 动态渲染首页项目网格（支持搜索过滤）
-// 动态渲染首页项目网格（支持搜索过滤）
 window.renderHomeServices = function(keyword = '') {
   const container = document.getElementById('home-service-container');
   if (!container) return;
@@ -968,9 +1023,7 @@ window.renderHomeServices = function(keyword = '') {
 
   if (kw) {
     filteredData = PROJECT_DATA.map(cat => {
-      // 如果大类名称匹配，保留整个大类
-      if (cat.name.toLowerCase().includes(kw)) return cat;
-      // 否则过滤子项
+      if (cat.name.zh.toLowerCase().includes(kw) || cat.name.en.toLowerCase().includes(kw)) return cat;
       const matchedItems = cat.items.filter(item => item.label.toLowerCase().includes(kw));
       if (matchedItems.length > 0) {
         return { ...cat, items: matchedItems };
@@ -1026,8 +1079,8 @@ const COUNTRIES = [
 ];
 
 let selectedFile=null;
-let currentTaskPrice=0; // 用于记录当前选中项目的单价
-let currentEstimatedCost=0; // 新增：用于记录当前任务的预计消耗积分
+let currentTaskPrice=0; 
+let currentEstimatedCost=0; 
 
 function handleFileSelect(input){
   if(input.files[0]){
@@ -1052,25 +1105,39 @@ function handleDrop(e){
   }
 }
 
-// 自动计算预计消耗积分
+// 解析规则中的最小和最大数量
+function parseRuleLimits(ruleStr) {
+    if(!ruleStr) return {min: 0, max: Infinity};
+    const match = ruleStr.match(/数量范围:\s*([\d,]+)-([\d,]+)/);
+    if(match) {
+        return {
+            min: parseInt(match[1].replace(/,/g, '')),
+            max: parseInt(match[2].replace(/,/g, ''))
+        };
+    }
+    return {min: 0, max: Infinity};
+}
+
+let currentFileLines = 0; // 记录当前文件的行数
+
 function calculateTaskCost(file) {
   const previewEl = document.getElementById('task-cost-preview');
   if (!previewEl) return;
   if (!file || !currentTaskPrice) {
     previewEl.value = '0';
     currentEstimatedCost = 0;
+    currentFileLines = 0;
     return;
   }
   previewEl.value = currentLang==='zh'?'计算中...':'Calculating...';
   const reader = new FileReader();
   reader.onload = function(e) {
     const text = e.target.result;
-    // 按换行符分割并过滤空行
     const lines = text.split(/\r\n|\n/).filter(line => line.trim().length > 0);
-    const count = lines.length;
-    const cost = (count * currentTaskPrice).toFixed(3);
-    currentEstimatedCost = parseFloat(cost); // 记录到全局变量供提交时校验
-    previewEl.value = `${cost} (${count} ${currentLang==='zh'?'条':'lines'})`;
+    currentFileLines = lines.length;
+    const cost = (currentFileLines * currentTaskPrice).toFixed(3);
+    currentEstimatedCost = parseFloat(cost); 
+    previewEl.value = `${cost} (${currentFileLines} ${currentLang==='zh'?'条':'lines'})`;
   };
   reader.readAsText(file);
 }
@@ -1081,7 +1148,6 @@ async function renderProject(projectId, subTypeVal = null) {
 
   const c = document.getElementById('content');
   
-  // 确定当前选中的子类型 Tab
   let activeItem = project.items.find(i => i.val === subTypeVal);
   if (!activeItem) {
     activeItem = project.items.find(i => i.val !== 'closed') || project.items[0];
@@ -1092,20 +1158,18 @@ async function renderProject(projectId, subTypeVal = null) {
     return;
   }
 
-  // 提取单价数字用于计算，并重置预估消耗
   currentTaskPrice = parseFloat(activeItem.price) || 0;
   currentEstimatedCost = 0;
+  currentFileLines = 0;
 
   c.innerHTML = `<div style="color:var(--text3);font-size:13px">${t('loading')}</div>`;
 
-  // 只查询当前子类型的任务
   const {data:tasks} = await sb.from('tasks')
     .select('*')
     .eq('user_id', currentUser.id)
     .eq('task_type', activeItem.val)
     .order('created_at', {ascending: false});
 
-  // 顶部 Tabs
   const tabsHtml = `
     <div class="project-sub-tabs">
       ${project.items.map(item => `
@@ -1118,7 +1182,6 @@ async function renderProject(projectId, subTypeVal = null) {
     </div>
   `;
 
-  // 提交表单 (改为隐藏的 Modal 弹窗)
   const modalHtml = `
     <div class="modal-overlay" id="modal-new-task">
       <div class="modal-box" style="max-width: 550px;">
@@ -1130,6 +1193,11 @@ async function renderProject(projectId, subTypeVal = null) {
           <div class="modal-close" onclick="closeModal('modal-new-task')">×</div>
         </div>
         <div class="modal-body">
+          ${activeItem.rule ? `
+          <div class="modal-rule-banner">
+            <span style="color:#8b5cf6">ℹ️</span>
+            <div><span style="color:#e05252">📌</span> ${activeItem.rule.replace('📌 ', '')}</div>
+          </div>` : ''}
           <div class="form-row">
             <div class="form-group">
               <label class="form-label">${currentLang==='zh'?'任务名称（可选）':'Task Name (optional)'}</label>
@@ -1155,7 +1223,10 @@ async function renderProject(projectId, subTypeVal = null) {
             <label class="form-label">${currentLang==='zh'?'预计消耗积分':'Estimated Cost (Points)'}</label>
             <input type="text" id="task-cost-preview" class="form-input" readonly placeholder="0" style="color:var(--yellow); font-weight:bold; background:rgba(245,166,35,0.05); border-color:rgba(245,166,35,0.3);"/>
           </div>
-          <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:10px;" onclick="submitProjectTask('${activeItem.val}')" id="submit-task-btn">
+          <div class="modal-hint-banner">
+            <span style="font-weight:bold">! 💡</span> 提示：支持最大文件上传数量为500万，将自动分割为100万一个任务
+          </div>
+          <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:10px;" onclick="submitProjectTask('${activeItem.val}', '${activeItem.rule}')" id="submit-task-btn">
             ${currentLang==='zh'?'提交任务':'Submit Task'}
           </button>
         </div>
@@ -1163,7 +1234,6 @@ async function renderProject(projectId, subTypeVal = null) {
     </div>
   `;
 
-  // 专属任务列表 (在头部增加显眼的“新增”按钮)
   const listHtml = `
     <div class="section">
       <div class="section-header">
@@ -1216,7 +1286,7 @@ async function renderProject(projectId, subTypeVal = null) {
   selectedFile = null;
 }
 
-async function submitProjectTask(taskType){
+async function submitProjectTask(taskType, ruleStr){
   const country=document.getElementById('task-country').value;
   const taskName=document.getElementById('task-name').value.trim();
   
@@ -1229,7 +1299,13 @@ async function submitProjectTask(taskType){
   }
   if(!selectedFile){toast(currentLang==='zh'?'请上传号码文件':'Please upload a file','error');return;}
   
-  // 前端仅做基础拦截（防误触），真正的安全校验在后端
+  // 数量范围校验
+  const limits = parseRuleLimits(ruleStr);
+  if (currentFileLines < limits.min || currentFileLines > limits.max) {
+      toast(currentLang==='zh'?`上传数量必须在 ${limits.min} 到 ${limits.max} 之间`:`Quantity must be between ${limits.min} and ${limits.max}`, 'error');
+      return;
+  }
+
   if(currentEstimatedCost === 0) {
     toast(currentLang==='zh'?'正在计算预计消耗，请稍后再试':'Calculating estimated cost, please wait','info');
     return;
@@ -1250,7 +1326,6 @@ async function submitProjectTask(taskType){
     formData.append('taskType',taskType);
     if(taskName)formData.append('taskName',taskName);
     
-    // 🚀 核心修改：调用后端的安全创建接口
     const res=await proxyFetch('/api/internal/create-task',{method:'POST',body:formData});
     const data=await res.json();
     
@@ -1259,7 +1334,6 @@ async function submitProjectTask(taskType){
       return;
     }
     
-    // 提交成功，更新本地显示的余额（真实的扣费已经在后端完成了）
     if(data.newBalance !== undefined) {
         currentProfile.balance = data.newBalance;
     }
@@ -1329,7 +1403,7 @@ async function renderRecharge(){
   const{data:settings}=await sb.from('site_settings').select('*');
   const cfg={};(settings||[]).forEach(s=>cfg[s.key]=s.value);
   const wallet=cfg.usdt_wallet_address||'未配置钱包地址';
-  const qrUrl=cfg.pay_qr_url||''; // 改为读取 pay_qr_url
+  const qrUrl=cfg.pay_qr_url||''; 
   const rate=cfg.usdt_to_points||'6.8';
   
   c.innerHTML=`
@@ -1463,12 +1537,11 @@ async function generateOrder(walletAddr, qrUrl) {
   if(error){toast(error.message,'error');return;}
   
   rechargeState.orderId = order.id;
-  rechargeState.expireTime = Date.now() + 60 * 60 * 1000; // 60分钟
+  rechargeState.expireTime = Date.now() + 60 * 60 * 1000; 
 
-  // 赋值 UI
   const qrImg = document.getElementById('r-qr-img');
   qrImg.src = qrUrl || `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${walletAddr}`;
-  qrImg.style.display = 'inline-block'; // 确保图片可见
+  qrImg.style.display = 'inline-block'; 
   
   document.getElementById('r-wallet-addr').innerText = walletAddr;
   document.getElementById('r-pay-amount').innerText = uniqueAmount.toFixed(3);
