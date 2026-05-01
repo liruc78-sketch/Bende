@@ -770,6 +770,7 @@ async function initApp(session) {
   if(session?.user && !currentUser){
     currentUser=session.user;
     await loadProfile();
+    await loadDynamicPrices(); // 🚀 核心修复：在初始化时调用加载动态价格的函数
     if(!currentProfile){
       currentProfile={id:session.user.id,email:session.user.email,balance:0,role:'user'};
     }
