@@ -809,9 +809,6 @@ function updateSidebar(){
   document.getElementById('user-name-sb').textContent=currentProfile.username||currentProfile.email;
   document.getElementById('user-bal-sb').textContent=`${parseFloat(currentProfile.balance||0).toFixed(2)} 积分`;
   document.getElementById('topbar-balance').textContent=`${t('balance')}: ${parseFloat(currentProfile.balance||0).toFixed(2)} ${t('points')}`;
-  if(currentProfile.role==='admin'){
-    document.getElementById('admin-nav').style.display='block';
-  }
 }
 
 async function refreshBalance(){
