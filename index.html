@@ -13,6 +13,8 @@
 <meta property="og:site_name" content="本德筛号中心"/>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- 引入 SheetJS 用于生成 Excel 表格 -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 :root{
   --bg:#0d0f14;
@@ -1338,6 +1340,7 @@ async function renderProject(projectId, subTypeVal = null) {
                 ${task.status==='Finish'?`
                   <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start;">
                     <a href="javascript:void(0)" onclick="downloadResult('${task.id}','${task.remote_task_id}')" style="color:var(--accent);font-size:12px;font-weight:500;">${currentLang==='zh'?'有效TXT':'Valid TXT'}</a>
+                    <a href="javascript:void(0)" onclick="downloadExcel('${task.remote_task_id}')" style="color:var(--green);font-size:12px;font-weight:bold;">${currentLang==='zh'?'表格下载':'Download Excel'}</a>
                     <a href="javascript:void(0)" onclick="downloadInvalid('${task.remote_task_id}')" style="color:var(--purple);font-size:12px;font-weight:500;">${currentLang==='zh'?'无效TXT':'Invalid TXT'}</a>
                     <a href="javascript:void(0)" onclick="downloadSource('${task.remote_task_id}')" style="color:var(--text2);font-size:12px;">${currentLang==='zh'?'源文件':'Source File'}</a>
                   </div>
@@ -1472,6 +1475,65 @@ async function downloadResult(taskId,remoteId){
     URL.revokeObjectURL(url);
     toast(currentLang==='zh'?'下载成功':'Downloaded','success');
   } catch(e){toast(e.message,'error');}
+}
+
+// 🚀 新增：下载 Excel 表格
+async function downloadExcel(remoteId) {
+  toast(currentLang==='zh'?'正在生成表格，请稍候...':'Generating Excel, please wait...','info');
+  try {
+    const res = await proxyFetch('/api/task/result', { queryParams: { taskId: remoteId } });
+    if (!res.ok) throw new Error(currentLang==='zh'?'获取数据失败':'Failed to fetch data');
+    
+    const text = await res.text();
+    const lines = text.split(/\r\n|\n/).filter(l => l.trim());
+    
+    if (lines.length === 0) {
+        toast(currentLang==='zh'?'结果为空':'Result is empty', 'info');
+        return;
+    }
+
+    // 解析 CSV/TXT 格式数据
+    const dataArray = [];
+    
+    // 检查第一行是否包含表头（通常包含“手机号”或“phone”）
+    let startIndex = 0;
+    let headers = [];
+    if (lines[0].includes('手机号') || lines[0].includes('phone') || lines[0].includes('uid')) {
+        // 移除可能存在的 BOM 头 (ufeff)
+        headers = lines[0].replace(/^\uFEFF/, '').split(',');
+        startIndex = 1;
+    } else {
+        // 如果没有表头，根据逗号数量自动生成默认表头
+        const colCount = lines[0].split(',').length;
+        headers = Array.from({length: colCount}, (_, i) => `Column ${i+1}`);
+    }
+    
+    dataArray.push(headers);
+
+    // 解析数据行
+    for (let i = startIndex; i < lines.length; i++) {
+        // 处理可能包含逗号的字段（简单的 CSV 解析）
+        const row = lines[i].split(',');
+        dataArray.push(row);
+    }
+
+    // 使用 SheetJS 生成 Excel
+    const ws = XLSX.utils.aoa_to_sheet(dataArray);
+    
+    // 设置列宽（美化表格）
+    const wscols = headers.map(h => ({ wch: Math.max(h.length * 2, 15) }));
+    ws['!cols'] = wscols;
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Result");
+    
+    // 触发下载
+    XLSX.writeFile(wb, `result_${remoteId}.xlsx`);
+    toast(currentLang==='zh'?'表格下载成功':'Excel downloaded successfully','success');
+
+  } catch(e) {
+    toast(e.message, 'error');
+  }
 }
 
 // 🚀 新增：下载源文件
