@@ -469,6 +469,19 @@ tr:hover td{background:rgba(255,255,255,.02)}
   </div>
 </div>
 
+<!-- ANNOUNCEMENT MODAL -->
+<div class="modal-overlay" id="modal-announcement" style="z-index: 9999;">
+  <div class="modal-box" style="max-width: 400px;">
+    <div class="modal-header" style="justify-content: center; border-bottom: none; margin-bottom: 10px;">
+      <div class="modal-title" style="font-size: 18px; color: var(--accent);">📢 系统公告 / Announcement</div>
+    </div>
+    <div id="modal-announcement-body" style="line-height: 1.6; color: var(--text); margin-bottom: 24px; max-height: 50vh; overflow-y: auto; font-size: 14px; text-align: center;"></div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;font-size:15px;" onclick="confirmAnnouncement()">
+      确定 / Confirm
+    </button>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div id="toast"></div>
 
@@ -802,6 +815,28 @@ async function loadDynamicPrices() {
   } catch (e) { console.warn("Load prices failed", e); }
 }
 
+// 🚀 新增：检查并显示公告
+async function checkAnnouncement() {
+  // 如果当前会话已经显示过公告，则不再显示（防止刷新死循环）
+  if (sessionStorage.getItem('announcement_shown') === 'true') return; 
+
+  try {
+    const { data } = await sb.from('site_settings').select('value').eq('key', 'announcement').single();
+    if (data && data.value && data.value.trim() !== '') {
+      // 将换行符转换为 <br> 以保持排版
+      document.getElementById('modal-announcement-body').innerHTML = data.value.replace(/\n/g, '<br>');
+      document.getElementById('modal-announcement').classList.add('open');
+    }
+  } catch (e) { console.warn("Load announcement failed", e); }
+}
+
+// 🚀 新增：确认公告并刷新
+function confirmAnnouncement() {
+  sessionStorage.setItem('announcement_shown', 'true'); // 记录已显示
+  document.getElementById('modal-announcement').classList.remove('open');
+  location.reload(); // 自动刷新网页
+}
+
 async function initApp(session) {
   if(session?.user && !currentUser){
     currentUser=session.user;
@@ -822,6 +857,8 @@ async function initApp(session) {
     const page = urlParams.get('page') || 'dashboard';
     const sub = urlParams.get('sub');
     navigate(page, sub, true); 
+    
+    checkAnnouncement(); // 🚀 新增：登录完成后检查公告
   }
 }
 
