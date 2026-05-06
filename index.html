@@ -436,6 +436,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <div id="topbar">
       <div class="page-title" id="page-title">控制台</div>
       <div class="topbar-actions">
+        <button class="lang-btn" onclick="showAnnouncementManual()" style="color:var(--accent);font-weight:bold;border-color:var(--accent);background:rgba(79,142,247,0.1);">📢 <span id="btn-announce-text">公告</span></button>
         <button class="lang-btn" onclick="toggleTheme()" id="theme-btn" style="font-size:14px;padding:4px 8px;" title="切换主题">🌙</button>
         <button class="lang-btn" onclick="toggleLang()">🌐 <span id="lang-toggle-label">EN</span></button>
         <div style="font-size:12px;color:var(--text3)" id="topbar-balance">余额: 0</div>
@@ -783,8 +784,9 @@ function showAuthErr(msg){
   el.textContent=msg;el.style.display='block';
 }
 async function doLogout(){
-  if(autoLogoutTimer) clearTimeout(autoLogoutTimer); // 🚀 新增：清除定时器
-  localStorage.removeItem('login_timestamp'); // 🚀 新增：清除时间戳
+  if(autoLogoutTimer) clearTimeout(autoLogoutTimer); 
+  localStorage.removeItem('login_timestamp'); 
+  sessionStorage.removeItem('announcement_shown'); // 🚀 核心修复：退出时清理公告缓存，确保下次登录必弹
   await sb.auth.signOut();
   currentUser=null;currentProfile=null;
   document.getElementById('app').style.display='none';
@@ -815,26 +817,43 @@ async function loadDynamicPrices() {
   } catch (e) { console.warn("Load prices failed", e); }
 }
 
-// 🚀 新增：检查并显示公告
+// 🚀 新增：检查并显示公告 (自动弹出)
 async function checkAnnouncement() {
-  // 如果当前会话已经显示过公告，则不再显示（防止刷新死循环）
   if (sessionStorage.getItem('announcement_shown') === 'true') return; 
 
   try {
     const { data } = await sb.from('site_settings').select('value').eq('key', 'announcement').single();
     if (data && data.value && data.value.trim() !== '') {
-      // 将换行符转换为 <br> 以保持排版
       document.getElementById('modal-announcement-body').innerHTML = data.value.replace(/\n/g, '<br>');
       document.getElementById('modal-announcement').classList.add('open');
     }
   } catch (e) { console.warn("Load announcement failed", e); }
 }
 
+// 🚀 新增：手动点击查看公告 (不刷新网页)
+async function showAnnouncementManual() {
+  try {
+    const { data } = await sb.from('site_settings').select('value').eq('key', 'announcement').single();
+    if (data && data.value && data.value.trim() !== '') {
+      document.getElementById('modal-announcement-body').innerHTML = data.value.replace(/\n/g, '<br>');
+      document.getElementById('modal-announcement').classList.add('open');
+    } else {
+      toast(currentLang==='zh'?'暂无公告':'No announcements', 'info');
+    }
+  } catch (e) { console.warn("Load announcement failed", e); }
+}
+
 // 🚀 新增：确认公告并刷新
 function confirmAnnouncement() {
-  sessionStorage.setItem('announcement_shown', 'true'); // 记录已显示
-  document.getElementById('modal-announcement').classList.remove('open');
-  location.reload(); // 自动刷新网页
+  // 如果是首次登录弹出的，点击确定后刷新
+  if (sessionStorage.getItem('announcement_shown') !== 'true') {
+      sessionStorage.setItem('announcement_shown', 'true'); 
+      document.getElementById('modal-announcement').classList.remove('open');
+      location.reload(); 
+  } else {
+      // 如果是手动点击查看的，点击确定直接关闭即可，不刷新
+      document.getElementById('modal-announcement').classList.remove('open');
+  }
 }
 
 async function initApp(session) {
@@ -928,6 +947,7 @@ async function proxyFetch(apiPath, {method='GET', queryParams={}, body}={}){
 }
 
 function updateStaticText() {
+  document.getElementById('btn-announce-text').textContent = currentLang==='zh'?'公告':'Notice';
   document.getElementById('nav-sec1').textContent = currentLang==='zh'?'主菜单':'MENU';
   document.getElementById('nav-label-dashboard').textContent = t('dashboard');
   document.getElementById('nav-label-recharge').textContent = t('recharge');
