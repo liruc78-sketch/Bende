@@ -491,6 +491,36 @@ let currentProfile=null;
 let currentLang='zh';
 let currentPage='dashboard';
 
+// --- 自动退出管理 ---
+let autoLogoutTimer = null;
+function setupAutoLogout() {
+  if (autoLogoutTimer) clearTimeout(autoLogoutTimer);
+  
+  // 获取首次登录的时间戳
+  let loginTime = localStorage.getItem('login_timestamp');
+  if (!loginTime) {
+    loginTime = Date.now();
+    localStorage.setItem('login_timestamp', loginTime);
+  }
+  
+  // 计算已经过去的时间和剩余时间 (1小时 = 3600000毫秒)
+  const elapsed = Date.now() - parseInt(loginTime);
+  const remaining = 3600000 - elapsed; 
+  
+  if (remaining <= 0) {
+    // 如果已经超过1小时，立即退出
+    toast(currentLang==='zh'?'登录已过期，请重新登录':'Session expired, please login again', 'error');
+    doLogout();
+  } else {
+    // 否则，设置定时器在剩余时间后退出
+    autoLogoutTimer = setTimeout(() => {
+      toast(currentLang==='zh'?'登录已过期，请重新登录':'Session expired, please login again', 'error');
+      doLogout();
+    }, remaining);
+  }
+}
+// ------------------
+
 // --- 主题管理 ---
 // 如果本地没有存储过主题设置，则默认使用 'light' (白天模式)
 let currentTheme = localStorage.getItem('theme') || 'light'; 
@@ -678,7 +708,9 @@ async function doLogin(){
   const btn=document.getElementById('login-btn');
   btn.textContent='登录中...';btn.disabled=true;
   try{
+    // 修复BUG核心：登录前强制清除本地可能损坏的旧会话状态
     await sb.auth.signOut();
+    localStorage.removeItem('login_timestamp'); // 🚀 新增：登录前清理旧的时间戳
     
     const{data,error}=await sb.auth.signInWithPassword({email,password:pwd});
     if(error){showAuthErr(error.message);return;}
@@ -738,6 +770,8 @@ function showAuthErr(msg){
   el.textContent=msg;el.style.display='block';
 }
 async function doLogout(){
+  if(autoLogoutTimer) clearTimeout(autoLogoutTimer); // 🚀 新增：清除定时器
+  localStorage.removeItem('login_timestamp'); // 🚀 新增：清除时间戳
   await sb.auth.signOut();
   currentUser=null;currentProfile=null;
   document.getElementById('app').style.display='none';
@@ -780,6 +814,8 @@ async function initApp(session) {
     document.getElementById('app').style.display='flex';
     renderProjectNav();
     updateSidebar();
+    
+    setupAutoLogout(); // 🚀 新增：启动1小时自动退出定时器
     
     // 🚀 核心修改：登录成功后，读取 URL 参数恢复之前的页面，而不是死板地跳回首页
     const urlParams = new URLSearchParams(window.location.search);
