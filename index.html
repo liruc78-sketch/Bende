@@ -1947,34 +1947,177 @@ async function checkPaymentWithBackend() {
 }
 
 // ─── LOGS ───
+window.logFilters = { taskId: '', country: '', type: '', taskType: '' };
+
+window.applyLogFilters = function() {
+  window.logFilters.taskId = document.getElementById('filter-log-tid').value.trim();
+  window.logFilters.country = document.getElementById('filter-log-country').value;
+  window.logFilters.type = document.getElementById('filter-log-type').value;
+  window.logFilters.taskType = document.getElementById('filter-log-ttype').value.trim();
+  renderLogs();
+};
+
+window.resetLogFilters = function() {
+  window.logFilters = { taskId: '', country: '', type: '', taskType: '' };
+  renderLogs();
+};
+
 async function renderLogs(){
   const c=document.getElementById('content');
   c.innerHTML=`<div style="color:var(--text3);font-size:13px">${t('loading')}</div>`;
-  const{data:logs}=await sb.from('balance_logs').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false});
-  const typeMap={recharge:{zh:'充值',en:'Recharge',cls:'badge-green'},consume:{zh:'消耗',en:'Consume',cls:'badge-red'},admin_adjust:{zh:'管理员调整',en:'Admin Adjust',cls:'badge-purple'},refund:{zh:'退款',en:'Refund',cls:'badge-blue'}};
+
+  // 同时拉取账单和任务数据
+  const[{data:logs},{data:tasks}]=await Promise.all([
+    sb.from('balance_logs').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false}),
+    sb.from('tasks').select('*').eq('user_id',currentUser.id)
+  ]);
+
+  // 将任务数据转为 Map 方便快速查找
+  const taskMap = {};
+  (tasks || []).forEach(t => { taskMap[t.remote_task_id] = t; });
+
+  // 智能合并数据
+  let mergedLogs = (logs || []).map(log => {
+    let item = { ...log };
+    item.transType = log.amount > 0 ? (currentLang==='zh'?'收入':'Income') : (currentLang==='zh'?'支出':'Expense');
+    item.transColor = log.amount > 0 ? 'var(--green)' : 'var(--red)';
+    item.transBg = log.amount > 0 ? 'rgba(46,204,122,.1)' : 'rgba(224,82,82,.1)';
+
+    item.orderType = '-';
+    item.orderTypeBg = 'var(--bg3)';
+    item.orderTypeColor = 'var(--text2)';
+
+    item.displayId = '-';
+    item.taskTypeBadge = `<span class="badge badge-gray">${currentLang==='zh'?'无':'None'}</span>`;
+    item.country = '-';
+    item.quantity = '-';
+    item.unitPrice = '-';
+    item.statusBadge = `<span class="badge badge-green">${currentLang==='zh'?'完成':'Done'}</span>`;
+    item.completedAt = new Date(log.created_at).toLocaleString();
+
+    if (log.type === 'consume') {
+      item.orderType = currentLang==='zh'?'任务消费':'Task Consume';
+      item.orderTypeBg = 'rgba(224,82,82,.1)';
+      item.orderTypeColor = 'var(--red)';
+      const tidMatch = log.note.match(/任务\s+([A-Za-z0-9]+)/);
+      const tid = tidMatch ? tidMatch[1] : log.note;
+      item.displayId = tid;
+
+      const task = taskMap[tid];
+      if (task) {
+        // 查找项目中文名称用于显示 Badge
+        let pLabel = task.task_type;
+        PROJECT_DATA.forEach(p => {
+            const found = p.items.find(i => i.val === task.task_type);
+            if(found) pLabel = found.label;
+        });
+
+        item.taskTypeBadge = `<span class="badge badge-blue">${pLabel}</span>`;
+        item.country = COUNTRIES.find(c => c.code === task.country)?.name || task.country || '-';
+        item.quantity = task.task_total || 0;
+        item.unitPrice = task.task_total > 0 ? (Math.abs(log.amount) / task.task_total).toFixed(5) : '-';
+        item.statusBadge = statusBadge(task.status);
+      }
+    } else if (log.type === 'recharge') {
+      item.orderType = currentLang==='zh'?'充值':'Recharge';
+      item.orderTypeBg = 'rgba(46,204,122,.1)';
+      item.orderTypeColor = 'var(--green)';
+      item.displayId = log.ref_id || log.note;
+      const qMatch = log.note.match(/([\d.]+)\s*USDT/);
+      item.quantity = qMatch ? qMatch[1] : '-';
+      item.unitPrice = item.quantity !== '-' ? (log.amount / parseFloat(item.quantity)).toFixed(5) : '-';
+    } else if (log.type === 'admin_adjust') {
+      item.orderType = currentLang==='zh'?'后台调整':'Admin Adjust';
+      item.orderTypeBg = 'rgba(139,92,246,.1)';
+      item.orderTypeColor = 'var(--purple)';
+      item.displayId = log.note;
+    }
+
+    return item;
+  });
+
+  // 应用搜索过滤条件
+  if (window.logFilters.taskId) {
+    mergedLogs = mergedLogs.filter(l => l.displayId.toLowerCase().includes(window.logFilters.taskId.toLowerCase()));
+  }
+  if (window.logFilters.country) {
+    mergedLogs = mergedLogs.filter(l => l.country === COUNTRIES.find(c => c.code === window.logFilters.country)?.name);
+  }
+  if (window.logFilters.type) {
+    mergedLogs = mergedLogs.filter(l => l.type === window.logFilters.type);
+  }
+  if (window.logFilters.taskType) {
+    mergedLogs = mergedLogs.filter(l => l.taskTypeBadge.toLowerCase().includes(window.logFilters.taskType.toLowerCase()));
+  }
+
+  const countryOptions = COUNTRIES.map(c => `<option value="${c.code}" ${window.logFilters.country===c.code?'selected':''}>${c.name}</option>`).join('');
+
   c.innerHTML=`
+  <div style="display:flex; gap:15px; margin-bottom:20px; flex-wrap:wrap; align-items:flex-end; background:var(--bg2); padding:20px; border-radius:var(--radius2); border:1px solid var(--border);">
+    <div class="form-group" style="margin-bottom:0; flex:1; min-width:150px;">
+      <label class="form-label">${currentLang==='zh'?'任务ID':'Task ID'}</label>
+      <input type="text" id="filter-log-tid" class="form-input" placeholder="${currentLang==='zh'?'任务ID':'Task ID'}" value="${window.logFilters.taskId}">
+    </div>
+    <div class="form-group" style="margin-bottom:0; flex:1; min-width:150px;">
+      <label class="form-label">${currentLang==='zh'?'地区':'Country'}</label>
+      <select id="filter-log-country" class="form-select">
+        <option value="">${currentLang==='zh'?'请选择地区':'All Countries'}</option>
+        ${countryOptions}
+      </select>
+    </div>
+    <div class="form-group" style="margin-bottom:0; flex:1; min-width:150px;">
+      <label class="form-label">${currentLang==='zh'?'订单类型':'Order Type'}</label>
+      <select id="filter-log-type" class="form-select">
+        <option value="">${currentLang==='zh'?'请选择订单类别':'All Types'}</option>
+        <option value="consume" ${window.logFilters.type==='consume'?'selected':''}>${currentLang==='zh'?'任务消费':'Task Consume'}</option>
+        <option value="recharge" ${window.logFilters.type==='recharge'?'selected':''}>${currentLang==='zh'?'充值':'Recharge'}</option>
+        <option value="admin_adjust" ${window.logFilters.type==='admin_adjust'?'selected':''}>${currentLang==='zh'?'后台调整':'Admin Adjust'}</option>
+      </select>
+    </div>
+    <div class="form-group" style="margin-bottom:0; flex:1; min-width:150px;">
+      <label class="form-label">${currentLang==='zh'?'任务标识':'Task Type'}</label>
+      <input type="text" id="filter-log-ttype" class="form-input" placeholder="${currentLang==='zh'?'请输入任务标识':'Task Type'}" value="${window.logFilters.taskType}">
+    </div>
+    <div style="display:flex; gap:10px;">
+      <button class="btn btn-secondary" onclick="resetLogFilters()">${currentLang==='zh'?'重置':'Reset'}</button>
+      <button class="btn btn-primary" style="background:var(--purple)" onclick="applyLogFilters()">${currentLang==='zh'?'搜索':'Search'}</button>
+    </div>
+  </div>
+
   <div class="section">
-    <div class="section-header"><div class="section-title">${currentLang==='zh'?'积分变动记录':'Balance Transaction Log'}</div></div>
+    <div class="section-header"><div class="section-title">${currentLang==='zh'?'用户积分变更记录':'Balance Transaction Log'}</div></div>
     <div class="section-body" style="padding:0">
-      ${(logs||[]).length===0?`<div class="empty-state">${t('empty')}</div>`:
+      ${mergedLogs.length===0?`<div class="empty-state">${t('empty')}</div>`:
       `<div class="table-wrap"><table>
         <thead><tr>
-          <th>${currentLang==='zh'?'类型':'Type'}</th>
-          <th>${currentLang==='zh'?'变动':'Amount'}</th>
-          <th>${currentLang==='zh'?'变前余额':'Before'}</th>
-          <th>${currentLang==='zh'?'变后余额':'After'}</th>
-          <th>${currentLang==='zh'?'备注':'Note'}</th>
-          <th>${currentLang==='zh'?'时间':'Date'}</th>
+          <th>${currentLang==='zh'?'交易类型':'Trans Type'}</th>
+          <th>${currentLang==='zh'?'订单类型':'Order Type'}</th>
+          <th>${currentLang==='zh'?'任务ID':'Task ID'}</th>
+          <th>${currentLang==='zh'?'任务标识':'Task Badge'}</th>
+          <th>${currentLang==='zh'?'国家':'Country'}</th>
+          <th>${currentLang==='zh'?'数量':'Quantity'}</th>
+          <th>${currentLang==='zh'?'单价':'Unit Price'}</th>
+          <th>${currentLang==='zh'?'积分':'Points'}</th>
+          <th>${currentLang==='zh'?'当前积分':'Balance'}</th>
+          <th>${currentLang==='zh'?'状态':'Status'}</th>
+          <th>${currentLang==='zh'?'创建时间':'Created At'}</th>
+          <th>${currentLang==='zh'?'完成时间':'Completed At'}</th>
         </tr></thead>
         <tbody>
-          ${(logs||[]).map(l=>{const tp=typeMap[l.type]||{zh:l.type,en:l.type,cls:'badge-gray'};return`<tr>
-            <td><span class="badge ${tp.cls}">${tp[currentLang]||tp.zh}</span></td>
-            <td style="color:${l.amount>0?'var(--green)':'var(--red)'};font-weight:600">${l.amount>0?'+':''}${parseFloat(l.amount).toFixed(2)}</td>
-            <td style="color:var(--text2);font-size:12px">${parseFloat(l.balance_before).toFixed(2)}</td>
-            <td style="font-weight:500">${parseFloat(l.balance_after).toFixed(2)}</td>
-            <td style="font-size:12px;color:var(--text2)">${l.note||'-'}</td>
+          ${mergedLogs.map(l=>`<tr>
+            <td><span style="padding:4px 8px; border-radius:4px; font-size:11px; background:${l.transBg}; color:${l.transColor}; border:1px solid ${l.transColor}33;">${l.transType}</span></td>
+            <td><span style="padding:4px 8px; border-radius:4px; font-size:11px; background:${l.orderTypeBg}; color:${l.orderTypeColor}; border:1px solid ${l.orderTypeColor}33;">${l.orderType}</span></td>
+            <td style="font-family:monospace;font-size:11px;color:var(--text3)">${l.displayId}</td>
+            <td>${l.taskTypeBadge}</td>
+            <td>${l.country}</td>
+            <td>${l.quantity}</td>
+            <td>${l.unitPrice}</td>
+            <td style="color:${l.transColor};font-weight:600">${Math.abs(l.amount).toFixed(3)}</td>
+            <td style="font-weight:500">${parseFloat(l.balance_after).toFixed(3)}</td>
+            <td>${l.statusBadge}</td>
             <td style="font-size:11px;color:var(--text3)">${new Date(l.created_at).toLocaleString()}</td>
-          </tr>`;}).join('')}
+            <td style="font-size:11px;color:var(--text3)">${l.completedAt}</td>
+          </tr>`).join('')}
         </tbody>
       </table></div>`}
     </div>
