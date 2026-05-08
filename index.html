@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>本德筛号中心 - 号码筛选平台</title>
 
+<!-- 网站图标 (Favicon) -->
+<link rel="icon" href="./favicon.png" type="image/png"/>
+
 <!-- SEO 与 社交媒体分享标签 (Open Graph) -->
 <meta name="description" content="本德筛号中心 - 提供WhatsApp, Telegram, Zalo, Line等全球主流社交软件的号码开通、活跃、性别年龄精准筛选服务。"/>
 <meta property="og:title" content="本德筛号中心 - 全球号码精准筛选平台"/>
@@ -75,7 +78,7 @@ a{color:var(--accent);text-decoration:none}
 
 /* SIDEBAR */
 .logo{padding:20px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
-.logo-icon{width:34px;height:34px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff}
+.logo-icon{width:36px;height:36px;border-radius:8px;object-fit:contain;display:block;}
 .logo-text{font-weight:700;font-size:16px;color:var(--text)}
 .logo-sub{font-size:11px;color:var(--text3);margin-top:1px}
 .nav-section{padding:16px 12px 4px;font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.08em;text-transform:uppercase}
@@ -152,11 +155,12 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
 /* AUTH */
 #auth-screen{min-height:100vh;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px}
-.auth-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:36px 32px;width:100%;max-width:400px}
-.auth-logo{text-align:center;margin-bottom:28px}
-.auth-logo-icon{width:50px;height:50px;background:var(--accent);border-radius:12px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;color:#fff;margin-bottom:10px}
-.auth-logo h1{font-size:20px;font-weight:700;color:var(--text)}
-.auth-logo p{font-size:13px;color:var(--text3);margin-top:4px}
+.auth-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);width:100%;max-width:850px;display:flex;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,0.3)}
+.auth-left{flex:1;padding:50px 40px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(79,142,247,0.03);border-right:1px solid var(--border);text-align:center}
+.auth-right{flex:1;padding:50px 40px;display:flex;flex-direction:column;justify-content:center}
+.auth-logo-icon{width:160px;height:160px;object-fit:contain;display:block;margin-bottom:24px;filter:drop-shadow(0 10px 15px rgba(0,0,0,0.2))}
+.auth-left h1{font-size:28px;font-weight:800;color:var(--text);margin-bottom:12px;letter-spacing:1px}
+.auth-left p{font-size:14px;color:var(--text3);line-height:1.6}
 .auth-tabs{display:flex;background:var(--bg3);border-radius:8px;padding:3px;margin-bottom:24px;gap:3px}
 .auth-tab{flex:1;text-align:center;padding:7px;border-radius:6px;cursor:pointer;font-size:13px;color:var(--text2);transition:all .15s}
 .auth-tab.active{background:var(--bg2);color:var(--text);font-weight:500}
@@ -329,7 +333,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .step-num{width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;font-size:12px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:6px}
 .step-label{color:var(--text2)}
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-@media(max-width:700px){.two-col{grid-template-columns:1fr}.form-row{grid-template-columns:1fr}#sidebar{transform:translateX(-220px)}#main{margin-left:0}}
+@media(max-width:768px){.two-col{grid-template-columns:1fr}.form-row{grid-template-columns:1fr}#sidebar{transform:translateX(-220px)}#main{margin-left:0} .auth-box{flex-direction:column;max-width:400px} .auth-left{padding:30px 20px;border-right:none;border-bottom:1px solid var(--border)} .auth-right{padding:30px 20px} .auth-logo-icon{width:100px;height:100px;margin-bottom:15px} .auth-left h1{font-size:22px}}
 .dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:5px}
 .dot-green{background:var(--green)}
 .dot-yellow{background:var(--yellow)}
@@ -344,41 +348,46 @@ tr:hover td{background:rgba(255,255,255,.02)}
 <!-- AUTH SCREEN -->
 <div id="auth-screen">
   <div class="auth-box">
-    <div class="auth-logo">
-      <div class="auth-logo-icon">本德</div>
+    <!-- 左侧：Logo 和 标题 -->
+    <div class="auth-left">
+      <img src="./favicon.png" alt="Logo" class="auth-logo-icon">
       <h1>本德筛号中心</h1>
-      <p id="auth-subtitle">号码筛选平台 · Phone Screening Platform</p>
+      <p id="auth-subtitle">号码筛选平台<br>Phone Screening Platform</p>
     </div>
-    <div class="auth-tabs">
-      <div class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">登录 Login</div>
-      <div class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">注册 Register</div>
-    </div>
-    <div id="auth-err" class="auth-err"></div>
-    <div id="login-form">
-      <div class="form-group">
-        <label class="form-label">邮箱 Email</label>
-        <input type="email" id="login-email" class="form-input" placeholder="your@email.com"/>
+    
+    <!-- 右侧：登录/注册表单 -->
+    <div class="auth-right">
+      <div class="auth-tabs">
+        <div class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">登录 Login</div>
+        <div class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">注册 Register</div>
       </div>
-      <div class="form-group">
-        <label class="form-label">密码 Password</label>
-        <input type="password" id="login-pwd" class="form-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
+      <div id="auth-err" class="auth-err"></div>
+      <div id="login-form">
+        <div class="form-group">
+          <label class="form-label">邮箱 Email</label>
+          <input type="email" id="login-email" class="form-input" placeholder="your@email.com"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">密码 Password</label>
+          <input type="password" id="login-pwd" class="form-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;font-size:15px;" onclick="doLogin()" id="login-btn">登录 Login</button>
       </div>
-      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="doLogin()" id="login-btn">登录 Login</button>
-    </div>
-    <div id="register-form" style="display:none">
-      <div class="form-group">
-        <label class="form-label">邮箱 Email</label>
-        <input type="email" id="reg-email" class="form-input" placeholder="your@email.com"/>
+      <div id="register-form" style="display:none">
+        <div class="form-group">
+          <label class="form-label">邮箱 Email</label>
+          <input type="email" id="reg-email" class="form-input" placeholder="your@email.com"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">密码 Password（至少6位 / min 6 chars）</label>
+          <input type="password" id="reg-pwd" class="form-input" placeholder="••••••••"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">确认密码 Confirm Password</label>
+          <input type="password" id="reg-pwd2" class="form-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')doRegister()"/>
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;font-size:15px;" onclick="doRegister()" id="reg-btn">注册 Register</button>
       </div>
-      <div class="form-group">
-        <label class="form-label">密码 Password（至少6位 / min 6 chars）</label>
-        <input type="password" id="reg-pwd" class="form-input" placeholder="••••••••"/>
-      </div>
-      <div class="form-group">
-        <label class="form-label">确认密码 Confirm Password</label>
-        <input type="password" id="reg-pwd2" class="form-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')doRegister()"/>
-      </div>
-      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="doRegister()" id="reg-btn">注册 Register</button>
     </div>
   </div>
 </div>
@@ -388,7 +397,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
   <!-- Sidebar -->
   <div id="sidebar">
     <div class="logo">
-      <div class="logo-icon">本德</div>
+      <img src="./favicon.png" alt="Logo" class="logo-icon">
       <div>
         <div class="logo-text">本德筛号中心</div>
         <div class="logo-sub">筛选平台 Screening</div>
