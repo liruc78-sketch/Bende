@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>本德筛号中心 - 号码筛选平台</title>
 
+<!-- 网站图标 (Favicon) -->
+<link rel="icon" href="./favicon.png" type="image/png"/>
+
 <!-- SEO 与 社交媒体分享标签 (Open Graph) -->
 <meta name="description" content="本德筛号中心 - 提供WhatsApp, Telegram, Zalo, Line等全球主流社交软件的号码开通、活跃、性别年龄精准筛选服务。"/>
 <meta property="og:title" content="本德筛号中心 - 全球号码精准筛选平台"/>
@@ -75,7 +78,7 @@ a{color:var(--accent);text-decoration:none}
 
 /* SIDEBAR */
 .logo{padding:20px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
-.logo-icon{width:34px;height:34px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff}
+.logo-icon{width:36px;height:36px;border-radius:8px;object-fit:contain;display:block;}
 .logo-text{font-weight:700;font-size:16px;color:var(--text)}
 .logo-sub{font-size:11px;color:var(--text3);margin-top:1px}
 .nav-section{padding:16px 12px 4px;font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.08em;text-transform:uppercase}
@@ -152,11 +155,12 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
 /* AUTH */
 #auth-screen{min-height:100vh;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px}
-.auth-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:36px 32px;width:100%;max-width:400px}
-.auth-logo{text-align:center;margin-bottom:28px}
-.auth-logo-icon{width:50px;height:50px;background:var(--accent);border-radius:12px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;color:#fff;margin-bottom:10px}
-.auth-logo h1{font-size:20px;font-weight:700;color:var(--text)}
-.auth-logo p{font-size:13px;color:var(--text3);margin-top:4px}
+.auth-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);width:100%;max-width:850px;display:flex;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,0.3)}
+.auth-left{flex:1;padding:50px 40px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(79,142,247,0.03);border-right:1px solid var(--border);text-align:center}
+.auth-right{flex:1;padding:50px 40px;display:flex;flex-direction:column;justify-content:center}
+.auth-logo-icon{width:160px;height:160px;object-fit:contain;display:block;margin-bottom:24px;filter:drop-shadow(0 10px 15px rgba(0,0,0,0.2))}
+.auth-left h1{font-size:28px;font-weight:800;color:var(--text);margin-bottom:12px;letter-spacing:1px}
+.auth-left p{font-size:14px;color:var(--text3);line-height:1.6}
 .auth-tabs{display:flex;background:var(--bg3);border-radius:8px;padding:3px;margin-bottom:24px;gap:3px}
 .auth-tab{flex:1;text-align:center;padding:7px;border-radius:6px;cursor:pointer;font-size:13px;color:var(--text2);transition:all .15s}
 .auth-tab.active{background:var(--bg2);color:var(--text);font-weight:500}
@@ -329,7 +333,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .step-num{width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;font-size:12px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:6px}
 .step-label{color:var(--text2)}
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-@media(max-width:700px){.two-col{grid-template-columns:1fr}.form-row{grid-template-columns:1fr}#sidebar{transform:translateX(-220px)}#main{margin-left:0}}
+@media(max-width:768px){.two-col{grid-template-columns:1fr}.form-row{grid-template-columns:1fr}#sidebar{transform:translateX(-220px)}#main{margin-left:0} .auth-box{flex-direction:column;max-width:400px} .auth-left{padding:30px 20px;border-right:none;border-bottom:1px solid var(--border)} .auth-right{padding:30px 20px} .auth-logo-icon{width:100px;height:100px;margin-bottom:15px} .auth-left h1{font-size:22px}}
 .dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:5px}
 .dot-green{background:var(--green)}
 .dot-yellow{background:var(--yellow)}
@@ -344,41 +348,46 @@ tr:hover td{background:rgba(255,255,255,.02)}
 <!-- AUTH SCREEN -->
 <div id="auth-screen">
   <div class="auth-box">
-    <div class="auth-logo">
-      <div class="auth-logo-icon">本德</div>
+    <!-- 左侧：Logo 和 标题 -->
+    <div class="auth-left">
+      <img src="./favicon.png" alt="Logo" class="auth-logo-icon">
       <h1>本德筛号中心</h1>
-      <p id="auth-subtitle">号码筛选平台 · Phone Screening Platform</p>
+      <p id="auth-subtitle">号码筛选平台<br>Phone Screening Platform</p>
     </div>
-    <div class="auth-tabs">
-      <div class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">登录 Login</div>
-      <div class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">注册 Register</div>
-    </div>
-    <div id="auth-err" class="auth-err"></div>
-    <div id="login-form">
-      <div class="form-group">
-        <label class="form-label">邮箱 Email</label>
-        <input type="email" id="login-email" class="form-input" placeholder="your@email.com"/>
+    
+    <!-- 右侧：登录/注册表单 -->
+    <div class="auth-right">
+      <div class="auth-tabs">
+        <div class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">登录 Login</div>
+        <div class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">注册 Register</div>
       </div>
-      <div class="form-group">
-        <label class="form-label">密码 Password</label>
-        <input type="password" id="login-pwd" class="form-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
+      <div id="auth-err" class="auth-err"></div>
+      <div id="login-form">
+        <div class="form-group">
+          <label class="form-label">邮箱 Email</label>
+          <input type="email" id="login-email" class="form-input" placeholder="your@email.com"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">密码 Password</label>
+          <input type="password" id="login-pwd" class="form-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;font-size:15px;" onclick="doLogin()" id="login-btn">登录 Login</button>
       </div>
-      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="doLogin()" id="login-btn">登录 Login</button>
-    </div>
-    <div id="register-form" style="display:none">
-      <div class="form-group">
-        <label class="form-label">邮箱 Email</label>
-        <input type="email" id="reg-email" class="form-input" placeholder="your@email.com"/>
+      <div id="register-form" style="display:none">
+        <div class="form-group">
+          <label class="form-label">邮箱 Email</label>
+          <input type="email" id="reg-email" class="form-input" placeholder="your@email.com"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">密码 Password（至少6位 / min 6 chars）</label>
+          <input type="password" id="reg-pwd" class="form-input" placeholder="••••••••"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">确认密码 Confirm Password</label>
+          <input type="password" id="reg-pwd2" class="form-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')doRegister()"/>
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;font-size:15px;" onclick="doRegister()" id="reg-btn">注册 Register</button>
       </div>
-      <div class="form-group">
-        <label class="form-label">密码 Password（至少6位 / min 6 chars）</label>
-        <input type="password" id="reg-pwd" class="form-input" placeholder="••••••••"/>
-      </div>
-      <div class="form-group">
-        <label class="form-label">确认密码 Confirm Password</label>
-        <input type="password" id="reg-pwd2" class="form-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')doRegister()"/>
-      </div>
-      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="doRegister()" id="reg-btn">注册 Register</button>
     </div>
   </div>
 </div>
@@ -388,7 +397,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
   <!-- Sidebar -->
   <div id="sidebar">
     <div class="logo">
-      <div class="logo-icon">本德</div>
+      <img src="./favicon.png" alt="Logo" class="logo-icon">
       <div>
         <div class="logo-text">本德筛号中心</div>
         <div class="logo-sub">筛选平台 Screening</div>
@@ -436,6 +445,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <div id="topbar">
       <div class="page-title" id="page-title">控制台</div>
       <div class="topbar-actions">
+        <button class="lang-btn" onclick="showAnnouncementManual()" style="color:var(--accent);font-weight:bold;border-color:var(--accent);background:rgba(79,142,247,0.1);">📢 <span id="btn-announce-text">公告</span></button>
         <button class="lang-btn" onclick="toggleTheme()" id="theme-btn" style="font-size:14px;padding:4px 8px;" title="切换主题">🌙</button>
         <button class="lang-btn" onclick="toggleLang()">🌐 <span id="lang-toggle-label">EN</span></button>
         <div style="font-size:12px;color:var(--text3)" id="topbar-balance">余额: 0</div>
@@ -469,6 +479,19 @@ tr:hover td{background:rgba(255,255,255,.02)}
   </div>
 </div>
 
+<!-- ANNOUNCEMENT MODAL -->
+<div class="modal-overlay" id="modal-announcement" style="z-index: 9999;">
+  <div class="modal-box" style="max-width: 400px;">
+    <div class="modal-header" style="justify-content: center; border-bottom: none; margin-bottom: 10px;">
+      <div class="modal-title" style="font-size: 18px; color: var(--accent);">📢 系统公告 / Announcement</div>
+    </div>
+    <div id="modal-announcement-body" style="line-height: 1.6; color: var(--text); margin-bottom: 24px; max-height: 50vh; overflow-y: auto; font-size: 14px; text-align: center;"></div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;font-size:15px;" onclick="confirmAnnouncement()">
+      确定 / Confirm
+    </button>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div id="toast"></div>
 
@@ -490,6 +513,36 @@ let currentUser=null;
 let currentProfile=null;
 let currentLang='zh';
 let currentPage='dashboard';
+
+// --- 自动退出管理 ---
+let autoLogoutTimer = null;
+function setupAutoLogout() {
+  if (autoLogoutTimer) clearTimeout(autoLogoutTimer);
+  
+  // 获取首次登录的时间戳
+  let loginTime = localStorage.getItem('login_timestamp');
+  if (!loginTime) {
+    loginTime = Date.now();
+    localStorage.setItem('login_timestamp', loginTime);
+  }
+  
+  // 计算已经过去的时间和剩余时间 (1小时 = 3600000毫秒)
+  const elapsed = Date.now() - parseInt(loginTime);
+  const remaining = 3600000 - elapsed; 
+  
+  if (remaining <= 0) {
+    // 如果已经超过1小时，立即退出
+    toast(currentLang==='zh'?'登录已过期，请重新登录':'Session expired, please login again', 'error');
+    doLogout();
+  } else {
+    // 否则，设置定时器在剩余时间后退出
+    autoLogoutTimer = setTimeout(() => {
+      toast(currentLang==='zh'?'登录已过期，请重新登录':'Session expired, please login again', 'error');
+      doLogout();
+    }, remaining);
+  }
+}
+// ------------------
 
 // --- 主题管理 ---
 // 如果本地没有存储过主题设置，则默认使用 'light' (白天模式)
@@ -551,27 +604,24 @@ const PROJECT_DATA = [
   ]},
   { id: 'zalo', name: {zh:'Zalo', en:'Zalo'}, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#0068ff" stroke-width="2" class="brand-icon"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>', items: [
     {label:'Zalo筛开通',price:'0.0005/条',val:'zaloValid', rule:'📌 数量范围: 2,000-1,000,000 | 不支持国家: 中国、香港、澳门、台湾'},
-    {label:'Zalo筛性别年龄',price:'0.006/条',val:'closed', rule:'📌 数量范围: 500-1,000,000 | 不支持国家: 中国、香港、澳门、台湾'},
     {label:'Zalo筛活跃',price:'0.0055/条',val:'closed', rule:'📌 数量范围: 500-1,000,000 | 不支持国家: 中国'},
     {label:'Zalo急速筛性别年龄',price:'0.0065/条',val:'zaloGender', rule:'📌 数量范围: 500-1,000,000 | 不支持国家: 中国、香港、澳门、台湾'}
   ]},
   { id: 'tiktok', name: {zh:'TikTok/抖音', en:'TikTok'}, icon: '<svg viewBox="0 0 24 24" class="brand-icon theme-adaptive-icon"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 2.25-.71 4.46-2.01 6.26-1.21 1.68-2.9 2.9-4.85 3.45-2.03.57-4.23.5-6.18-.31-1.95-.81-3.54-2.26-4.45-4.11-.91-1.85-1.1-4.01-.55-5.96.55-1.95 1.85-3.6 3.55-4.61 1.7-.99 3.75-1.35 5.68-1.02.12.02.24.04.36.06v4.06c-.1-.02-.2-.04-.3-.06-1.1-.2-2.25-.1-3.25.3-1 .4-1.85 1.1-2.4 2.01-.55.9-.75 2.01-.55 3.06.2 1.05.8 1.95 1.65 2.55.85.6 1.95.9 3 .8 1.05-.1 2.05-.6 2.75-1.4.7-.8 1.1-1.9 1.1-3.01V.02z"/></svg>', items: [
-    {label:'TikTok筛用户名',price:'0.0055/条',val:'tiktokUser', rule:'📌 数量范围: 2,000-1,000,000 | 不支持国家: 中国、澳门、香港、台湾'},
-    {label:'TikTok筛开通',price:'0.0055/条',val:'tiktokValid', rule:'📌 数量范围: 2,000-1,000,000 | 不支持国家: 中国、澳门、香港、台湾'}
+    {label:'TikTok筛用户名',price:'0.0055/条',val:'tiktokUser', rule:'📌 数量范围: 2,000-1,000,000 | 不支持国家: 中国、澳门、香港、台湾'}
   ]},
   { id: 'crypto', name: {zh:'币圈交易所', en:'Crypto Exchange'}, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="2" class="brand-icon"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v8"></path><path d="M8 12h8"></path></svg>', items: [
-    {label:'币安筛开通',price:'0.007/条',val:'binanceValid', rule:'📌 数量范围: 1,000-400,000 | 不支持国家: 中国'},
-    {label:'Htx筛开通',price:'0.0065/条',val:'htxValid', rule:'📌 数量范围: 1,000-1,000,000 | 不支持国家: 中国、香港、澳门、台湾'},
-    {label:'Gate筛开通',price:'0.007/条',val:'closed', rule:'📌 数量范围: 500-1,000,000 | 不支持国家: 美国、香港、中国、台湾、澳门'},
-    {label:'Kucoin筛开通',price:'0.002/条',val:'closed', rule:'📌 数量范围: 500-1,000,000 | 不支持国家: 美国、香港、澳门、中国、美属萨摩亚（美国）、新加坡、泰国、伊朗、朝鲜、叙利亚、苏丹、古巴、巴拿马、萨摩亚'},
+    {label:'币安筛开通',price:'0.005/条',val:'binanceValid', rule:'📌 数量范围: 1,000-400,000 | 不支持国家: 中国'},
+    {label:'Htx筛开通',price:'0.0035/条',val:'htxValid', rule:'📌 数量范围: 1,000-1,000,000 | 不支持国家: 中国、香港、澳门、台湾'},
+    {label:'Kucoin筛开通',price:'0.004/条',val:'kucoinValid', rule:'📌 数量范围: 500-1,000,000 | 不支持国家: 美国、香港、澳门、中国、美属萨摩亚（美国）、新加坡、泰国、伊朗、朝鲜、叙利亚、苏丹、古巴、巴拿马、萨摩亚'},
     {label:'OKX筛开通',price:'0.008/条',val:'okxValid', rule:'📌 数量范围: 2,000-1,000,000 | 支持国家: 瑞士、澳大利亚、阿拉伯联合酋长国、以色列'},
-    {label:'CoinW筛开通',price:'0.001/条',val:'coinwValid', rule:'📌 数量范围: 2,000-1,000,000 | 不支持国家: 中国'}
+    {label:'CoinW筛开通',price:'0.0008/条',val:'coinwValid', rule:'📌 数量范围: 2,000-1,000,000 | 不支持国家: 中国'},
+    {label:'Mexc筛开通',price:'0.0055/条',val:'mexcValid', rule:'📌 数量范围: 500-1,000,000 | 不支持国家: 中国、香港、澳门、台湾'}
   ]},
   { id: 'wechat', name: {zh:'WeChat/微信', en:'WeChat'}, icon: '<img src="https://cdn.simpleicons.org/wechat/07C160" class="brand-icon">', items: [
     {label:'WeChat筛开通',price:'0.001/条',val:'wxValid', rule:'📌 数量范围: 100-1,000,000 | 不支持国家: 中国、香港、澳门'}
   ]},
   { id: 'rcs', name: {zh:'RCS', en:'RCS'}, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#4285F4" stroke-width="2" class="brand-icon"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>', items: [
-    {label:'RCS筛开通',price:'0.0008/条',val:'closed', rule:'📌 数量范围: 1,000-1,000,000 | 不支持国家: 中国、澳门、香港、台湾、俄罗斯、古巴、伊朗、朝鲜、苏丹、叙利亚、摩洛哥、托克劳、沃利斯和富图纳群岛、阿曼、巴基斯坦、肯尼亚、孟加拉国、阿拉伯联合酋长国、柬埔寨、吉尔吉斯斯坦、韩国、埃及、哈萨克斯坦、亚美尼亚、科威特、阿塞拜疆、菲律宾、尼日尔、尼日利亚'},
     {label:'RCS筛开通+系统',price:'0.001/条',val:'rcsSystem', rule:'📌 数量范围: 1,000-1,000,000 | 不支持国家: 中国'}
   ]},
   { id: 'amazon', name: {zh:'亚马逊', en:'Amazon'}, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#FF9900" stroke-width="2" class="brand-icon"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>', items: [
@@ -681,7 +731,9 @@ async function doLogin(){
   const btn=document.getElementById('login-btn');
   btn.textContent='登录中...';btn.disabled=true;
   try{
+    // 修复BUG核心：登录前强制清除本地可能损坏的旧会话状态
     await sb.auth.signOut();
+    localStorage.removeItem('login_timestamp'); // 🚀 新增：登录前清理旧的时间戳
     
     const{data,error}=await sb.auth.signInWithPassword({email,password:pwd});
     if(error){showAuthErr(error.message);return;}
@@ -741,6 +793,9 @@ function showAuthErr(msg){
   el.textContent=msg;el.style.display='block';
 }
 async function doLogout(){
+  if(autoLogoutTimer) clearTimeout(autoLogoutTimer); 
+  localStorage.removeItem('login_timestamp'); 
+  sessionStorage.removeItem('announcement_shown'); // 🚀 核心修复：退出时清理公告缓存，确保下次登录必弹
   await sb.auth.signOut();
   currentUser=null;currentProfile=null;
   document.getElementById('app').style.display='none';
@@ -771,6 +826,45 @@ async function loadDynamicPrices() {
   } catch (e) { console.warn("Load prices failed", e); }
 }
 
+// 🚀 新增：检查并显示公告 (自动弹出)
+async function checkAnnouncement() {
+  if (sessionStorage.getItem('announcement_shown') === 'true') return; 
+
+  try {
+    const { data } = await sb.from('site_settings').select('value').eq('key', 'announcement').single();
+    if (data && data.value && data.value.trim() !== '') {
+      document.getElementById('modal-announcement-body').innerHTML = data.value.replace(/\n/g, '<br>');
+      document.getElementById('modal-announcement').classList.add('open');
+    }
+  } catch (e) { console.warn("Load announcement failed", e); }
+}
+
+// 🚀 新增：手动点击查看公告 (不刷新网页)
+async function showAnnouncementManual() {
+  try {
+    const { data } = await sb.from('site_settings').select('value').eq('key', 'announcement').single();
+    if (data && data.value && data.value.trim() !== '') {
+      document.getElementById('modal-announcement-body').innerHTML = data.value.replace(/\n/g, '<br>');
+      document.getElementById('modal-announcement').classList.add('open');
+    } else {
+      toast(currentLang==='zh'?'暂无公告':'No announcements', 'info');
+    }
+  } catch (e) { console.warn("Load announcement failed", e); }
+}
+
+// 🚀 新增：确认公告并刷新
+function confirmAnnouncement() {
+  // 如果是首次登录弹出的，点击确定后刷新
+  if (sessionStorage.getItem('announcement_shown') !== 'true') {
+      sessionStorage.setItem('announcement_shown', 'true'); 
+      document.getElementById('modal-announcement').classList.remove('open');
+      location.reload(); 
+  } else {
+      // 如果是手动点击查看的，点击确定直接关闭即可，不刷新
+      document.getElementById('modal-announcement').classList.remove('open');
+  }
+}
+
 async function initApp(session) {
   if(session?.user && !currentUser){
     currentUser=session.user;
@@ -784,11 +878,15 @@ async function initApp(session) {
     renderProjectNav();
     updateSidebar();
     
+    setupAutoLogout(); // 🚀 新增：启动1小时自动退出定时器
+    
     // 🚀 核心修改：登录成功后，读取 URL 参数恢复之前的页面，而不是死板地跳回首页
     const urlParams = new URLSearchParams(window.location.search);
     const page = urlParams.get('page') || 'dashboard';
     const sub = urlParams.get('sub');
     navigate(page, sub, true); 
+    
+    checkAnnouncement(); // 🚀 新增：登录完成后检查公告
   }
 }
 
@@ -858,6 +956,7 @@ async function proxyFetch(apiPath, {method='GET', queryParams={}, body}={}){
 }
 
 function updateStaticText() {
+  document.getElementById('btn-announce-text').textContent = currentLang==='zh'?'公告':'Notice';
   document.getElementById('nav-sec1').textContent = currentLang==='zh'?'主菜单':'MENU';
   document.getElementById('nav-label-dashboard').textContent = t('dashboard');
   document.getElementById('nav-label-recharge').textContent = t('recharge');
@@ -1916,34 +2015,177 @@ async function checkPaymentWithBackend() {
 }
 
 // ─── LOGS ───
+window.logFilters = { taskId: '', country: '', type: '', taskType: '' };
+
+window.applyLogFilters = function() {
+  window.logFilters.taskId = document.getElementById('filter-log-tid').value.trim();
+  window.logFilters.country = document.getElementById('filter-log-country').value;
+  window.logFilters.type = document.getElementById('filter-log-type').value;
+  window.logFilters.taskType = document.getElementById('filter-log-ttype').value.trim();
+  renderLogs();
+};
+
+window.resetLogFilters = function() {
+  window.logFilters = { taskId: '', country: '', type: '', taskType: '' };
+  renderLogs();
+};
+
 async function renderLogs(){
   const c=document.getElementById('content');
   c.innerHTML=`<div style="color:var(--text3);font-size:13px">${t('loading')}</div>`;
-  const{data:logs}=await sb.from('balance_logs').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false});
-  const typeMap={recharge:{zh:'充值',en:'Recharge',cls:'badge-green'},consume:{zh:'消耗',en:'Consume',cls:'badge-red'},admin_adjust:{zh:'管理员调整',en:'Admin Adjust',cls:'badge-purple'},refund:{zh:'退款',en:'Refund',cls:'badge-blue'}};
+
+  // 同时拉取账单和任务数据
+  const[{data:logs},{data:tasks}]=await Promise.all([
+    sb.from('balance_logs').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false}),
+    sb.from('tasks').select('*').eq('user_id',currentUser.id)
+  ]);
+
+  // 将任务数据转为 Map 方便快速查找
+  const taskMap = {};
+  (tasks || []).forEach(t => { taskMap[t.remote_task_id] = t; });
+
+  // 智能合并数据
+  let mergedLogs = (logs || []).map(log => {
+    let item = { ...log };
+    item.transType = log.amount > 0 ? (currentLang==='zh'?'收入':'Income') : (currentLang==='zh'?'支出':'Expense');
+    item.transColor = log.amount > 0 ? 'var(--green)' : 'var(--red)';
+    item.transBg = log.amount > 0 ? 'rgba(46,204,122,.1)' : 'rgba(224,82,82,.1)';
+
+    item.orderType = '-';
+    item.orderTypeBg = 'var(--bg3)';
+    item.orderTypeColor = 'var(--text2)';
+
+    item.displayId = '-';
+    item.taskTypeBadge = `<span class="badge badge-gray">${currentLang==='zh'?'无':'None'}</span>`;
+    item.country = '-';
+    item.quantity = '-';
+    item.unitPrice = '-';
+    item.statusBadge = `<span class="badge badge-green">${currentLang==='zh'?'完成':'Done'}</span>`;
+    item.completedAt = new Date(log.created_at).toLocaleString();
+
+    if (log.type === 'consume') {
+      item.orderType = currentLang==='zh'?'任务消费':'Task Consume';
+      item.orderTypeBg = 'rgba(224,82,82,.1)';
+      item.orderTypeColor = 'var(--red)';
+      const tidMatch = log.note.match(/任务\s+([A-Za-z0-9]+)/);
+      const tid = tidMatch ? tidMatch[1] : log.note;
+      item.displayId = tid;
+
+      const task = taskMap[tid];
+      if (task) {
+        // 查找项目中文名称用于显示 Badge
+        let pLabel = task.task_type;
+        PROJECT_DATA.forEach(p => {
+            const found = p.items.find(i => i.val === task.task_type);
+            if(found) pLabel = found.label;
+        });
+
+        item.taskTypeBadge = `<span class="badge badge-blue">${pLabel}</span>`;
+        item.country = COUNTRIES.find(c => c.code === task.country)?.name || task.country || '-';
+        item.quantity = task.task_total || 0;
+        item.unitPrice = task.task_total > 0 ? (Math.abs(log.amount) / task.task_total).toFixed(5) : '-';
+        item.statusBadge = statusBadge(task.status);
+      }
+    } else if (log.type === 'recharge') {
+      item.orderType = currentLang==='zh'?'充值':'Recharge';
+      item.orderTypeBg = 'rgba(46,204,122,.1)';
+      item.orderTypeColor = 'var(--green)';
+      item.displayId = log.ref_id || log.note;
+      const qMatch = log.note.match(/([\d.]+)\s*USDT/);
+      item.quantity = qMatch ? qMatch[1] : '-';
+      item.unitPrice = item.quantity !== '-' ? (log.amount / parseFloat(item.quantity)).toFixed(5) : '-';
+    } else if (log.type === 'admin_adjust') {
+      item.orderType = currentLang==='zh'?'后台调整':'Admin Adjust';
+      item.orderTypeBg = 'rgba(139,92,246,.1)';
+      item.orderTypeColor = 'var(--purple)';
+      item.displayId = log.note;
+    }
+
+    return item;
+  });
+
+  // 应用搜索过滤条件
+  if (window.logFilters.taskId) {
+    mergedLogs = mergedLogs.filter(l => l.displayId.toLowerCase().includes(window.logFilters.taskId.toLowerCase()));
+  }
+  if (window.logFilters.country) {
+    mergedLogs = mergedLogs.filter(l => l.country === COUNTRIES.find(c => c.code === window.logFilters.country)?.name);
+  }
+  if (window.logFilters.type) {
+    mergedLogs = mergedLogs.filter(l => l.type === window.logFilters.type);
+  }
+  if (window.logFilters.taskType) {
+    mergedLogs = mergedLogs.filter(l => l.taskTypeBadge.toLowerCase().includes(window.logFilters.taskType.toLowerCase()));
+  }
+
+  const countryOptions = COUNTRIES.map(c => `<option value="${c.code}" ${window.logFilters.country===c.code?'selected':''}>${c.name}</option>`).join('');
+
   c.innerHTML=`
+  <div style="display:flex; gap:15px; margin-bottom:20px; flex-wrap:wrap; align-items:flex-end; background:var(--bg2); padding:20px; border-radius:var(--radius2); border:1px solid var(--border);">
+    <div class="form-group" style="margin-bottom:0; flex:1; min-width:150px;">
+      <label class="form-label">${currentLang==='zh'?'任务ID':'Task ID'}</label>
+      <input type="text" id="filter-log-tid" class="form-input" placeholder="${currentLang==='zh'?'任务ID':'Task ID'}" value="${window.logFilters.taskId}">
+    </div>
+    <div class="form-group" style="margin-bottom:0; flex:1; min-width:150px;">
+      <label class="form-label">${currentLang==='zh'?'地区':'Country'}</label>
+      <select id="filter-log-country" class="form-select">
+        <option value="">${currentLang==='zh'?'请选择地区':'All Countries'}</option>
+        ${countryOptions}
+      </select>
+    </div>
+    <div class="form-group" style="margin-bottom:0; flex:1; min-width:150px;">
+      <label class="form-label">${currentLang==='zh'?'订单类型':'Order Type'}</label>
+      <select id="filter-log-type" class="form-select">
+        <option value="">${currentLang==='zh'?'请选择订单类别':'All Types'}</option>
+        <option value="consume" ${window.logFilters.type==='consume'?'selected':''}>${currentLang==='zh'?'任务消费':'Task Consume'}</option>
+        <option value="recharge" ${window.logFilters.type==='recharge'?'selected':''}>${currentLang==='zh'?'充值':'Recharge'}</option>
+        <option value="admin_adjust" ${window.logFilters.type==='admin_adjust'?'selected':''}>${currentLang==='zh'?'后台调整':'Admin Adjust'}</option>
+      </select>
+    </div>
+    <div class="form-group" style="margin-bottom:0; flex:1; min-width:150px;">
+      <label class="form-label">${currentLang==='zh'?'任务标识':'Task Type'}</label>
+      <input type="text" id="filter-log-ttype" class="form-input" placeholder="${currentLang==='zh'?'请输入任务标识':'Task Type'}" value="${window.logFilters.taskType}">
+    </div>
+    <div style="display:flex; gap:10px;">
+      <button class="btn btn-secondary" onclick="resetLogFilters()">${currentLang==='zh'?'重置':'Reset'}</button>
+      <button class="btn btn-primary" style="background:var(--purple)" onclick="applyLogFilters()">${currentLang==='zh'?'搜索':'Search'}</button>
+    </div>
+  </div>
+
   <div class="section">
-    <div class="section-header"><div class="section-title">${currentLang==='zh'?'积分变动记录':'Balance Transaction Log'}</div></div>
+    <div class="section-header"><div class="section-title">${currentLang==='zh'?'用户积分变更记录':'Balance Transaction Log'}</div></div>
     <div class="section-body" style="padding:0">
-      ${(logs||[]).length===0?`<div class="empty-state">${t('empty')}</div>`:
+      ${mergedLogs.length===0?`<div class="empty-state">${t('empty')}</div>`:
       `<div class="table-wrap"><table>
         <thead><tr>
-          <th>${currentLang==='zh'?'类型':'Type'}</th>
-          <th>${currentLang==='zh'?'变动':'Amount'}</th>
-          <th>${currentLang==='zh'?'变前余额':'Before'}</th>
-          <th>${currentLang==='zh'?'变后余额':'After'}</th>
-          <th>${currentLang==='zh'?'备注':'Note'}</th>
-          <th>${currentLang==='zh'?'时间':'Date'}</th>
+          <th>${currentLang==='zh'?'交易类型':'Trans Type'}</th>
+          <th>${currentLang==='zh'?'订单类型':'Order Type'}</th>
+          <th>${currentLang==='zh'?'任务ID':'Task ID'}</th>
+          <th>${currentLang==='zh'?'任务标识':'Task Badge'}</th>
+          <th>${currentLang==='zh'?'国家':'Country'}</th>
+          <th>${currentLang==='zh'?'数量':'Quantity'}</th>
+          <th>${currentLang==='zh'?'单价':'Unit Price'}</th>
+          <th>${currentLang==='zh'?'积分':'Points'}</th>
+          <th>${currentLang==='zh'?'当前积分':'Balance'}</th>
+          <th>${currentLang==='zh'?'状态':'Status'}</th>
+          <th>${currentLang==='zh'?'创建时间':'Created At'}</th>
+          <th>${currentLang==='zh'?'完成时间':'Completed At'}</th>
         </tr></thead>
         <tbody>
-          ${(logs||[]).map(l=>{const tp=typeMap[l.type]||{zh:l.type,en:l.type,cls:'badge-gray'};return`<tr>
-            <td><span class="badge ${tp.cls}">${tp[currentLang]||tp.zh}</span></td>
-            <td style="color:${l.amount>0?'var(--green)':'var(--red)'};font-weight:600">${l.amount>0?'+':''}${parseFloat(l.amount).toFixed(2)}</td>
-            <td style="color:var(--text2);font-size:12px">${parseFloat(l.balance_before).toFixed(2)}</td>
-            <td style="font-weight:500">${parseFloat(l.balance_after).toFixed(2)}</td>
-            <td style="font-size:12px;color:var(--text2)">${l.note||'-'}</td>
+          ${mergedLogs.map(l=>`<tr>
+            <td><span style="padding:4px 8px; border-radius:4px; font-size:11px; background:${l.transBg}; color:${l.transColor}; border:1px solid ${l.transColor}33;">${l.transType}</span></td>
+            <td><span style="padding:4px 8px; border-radius:4px; font-size:11px; background:${l.orderTypeBg}; color:${l.orderTypeColor}; border:1px solid ${l.orderTypeColor}33;">${l.orderType}</span></td>
+            <td style="font-family:monospace;font-size:11px;color:var(--text3)">${l.displayId}</td>
+            <td>${l.taskTypeBadge}</td>
+            <td>${l.country}</td>
+            <td>${l.quantity}</td>
+            <td>${l.unitPrice}</td>
+            <td style="color:${l.transColor};font-weight:600">${Math.abs(l.amount).toFixed(3)}</td>
+            <td style="font-weight:500">${parseFloat(l.balance_after).toFixed(3)}</td>
+            <td>${l.statusBadge}</td>
             <td style="font-size:11px;color:var(--text3)">${new Date(l.created_at).toLocaleString()}</td>
-          </tr>`;}).join('')}
+            <td style="font-size:11px;color:var(--text3)">${l.completedAt}</td>
+          </tr>`).join('')}
         </tbody>
       </table></div>`}
     </div>
