@@ -153,6 +153,16 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .badge-gray{background:rgba(255,255,255,.07);color:var(--text2)}
 .badge-purple{background:rgba(139,92,246,.15);color:var(--purple)}
 
+/* SPLASH / 刷新过场动画 */
+#splash-screen{position:fixed;inset:0;z-index:99999;background:var(--bg);display:flex;align-items:center;justify-content:center;transition:opacity .35s ease}
+.splash-inner{display:flex;flex-direction:column;align-items:center;gap:22px;animation:splashFade .4s ease}
+.splash-logo{width:64px;height:64px;border-radius:16px;animation:splashPulse 1.6s ease-in-out infinite}
+.splash-spinner{width:38px;height:38px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:splashSpin .8s linear infinite}
+.splash-text{color:var(--text2);font-size:13px;letter-spacing:2px}
+@keyframes splashSpin{to{transform:rotate(360deg)}}
+@keyframes splashPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.08);opacity:.82}}
+@keyframes splashFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
 /* AUTH */
 #auth-screen{min-height:100vh;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px}
 .auth-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);width:100%;max-width:850px;display:flex;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,0.3)}
@@ -260,6 +270,12 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .brand-icon { width: 18px; height: 18px; object-fit: contain; display: block; }
 .service-icon .brand-icon { width: 22px; height: 22px; }
 
+/* 页面/项目切换：先淡出旧内容，再淡入新内容 */
+@keyframes contentFadeOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-6px); } }
+@keyframes contentFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+#content.content-fade-out { animation: contentFadeOut .22s ease forwards; }
+#content.content-fade-in { animation: contentFadeIn .4s ease; }
+
 /* PROJECT SUB TABS */
 .project-sub-tabs { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
 .project-sub-tab { padding: 10px 18px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.15); font-size: 13px; cursor: pointer; border-radius: 8px; transition: all .2s; color: var(--text2); }
@@ -345,8 +361,17 @@ tr:hover td{background:rgba(255,255,255,.02)}
 </head>
 <body>
 
+<!-- SPLASH / 刷新过场动画 (默认显示，覆盖鉴权空档，避免闪现登录页) -->
+<div id="splash-screen">
+  <div class="splash-inner">
+    <img src="./favicon.png" alt="Logo" class="splash-logo">
+    <div class="splash-spinner"></div>
+    <div class="splash-text">加载中 Loading...</div>
+  </div>
+</div>
+
 <!-- AUTH SCREEN -->
-<div id="auth-screen">
+<div id="auth-screen" style="display:none">
   <div class="auth-box">
     <!-- 左侧：Logo 和 标题 -->
     <div class="auth-left">
@@ -869,6 +894,15 @@ function confirmAnnouncement() {
   }
 }
 
+// 🚀 刷新过场：淡出并隐藏加载动画（仅执行一次）
+function hideSplash(){
+  const s=document.getElementById('splash-screen');
+  if(!s || s.dataset.hidden) return;
+  s.dataset.hidden='1';
+  s.style.opacity='0';
+  setTimeout(()=>{ s.style.display='none'; }, 380);
+}
+
 async function initApp(session) {
   if(session?.user && !currentUser){
     currentUser=session.user;
@@ -879,6 +913,7 @@ async function initApp(session) {
     }
     document.getElementById('auth-screen').style.display='none';
     document.getElementById('app').style.display='flex';
+    hideSplash(); // 🚀 进入主程序，淡出过场动画
     renderProjectNav();
     updateSidebar();
     
@@ -902,13 +937,15 @@ sb.auth.onAuthStateChange(async(event,session)=>{
     currentProfile=null;
     document.getElementById('app').style.display='none';
     document.getElementById('auth-screen').style.display='flex';
+    hideSplash(); // 🚀 已登出，淡出过场动画，显示登录页
   }
 });
 
 sb.auth.getSession().then(({data:{session}, error})=>{
   if(error || !session){
-    if(error) sb.auth.signOut(); 
+    if(error) sb.auth.signOut();
     document.getElementById('auth-screen').style.display='flex';
+    hideSplash(); // 🚀 无有效会话，淡出过场动画，显示登录页
   } else {
     initApp(session); 
   }
@@ -1038,6 +1075,23 @@ function closeTab(id) {
 }
 
 // 增加 isPopState 参数，防止浏览器后退时产生死循环
+// 🚀 内容区交叉淡化：先淡出当前内容 → 淡出结束后渲染新内容 → 再淡入
+let _contentTransitionTimer = null;
+function transitionContent(renderFn){
+  const c = document.getElementById('content');
+  if(!c){ renderFn(); return; }
+  if(_contentTransitionTimer) clearTimeout(_contentTransitionTimer);
+  c.classList.remove('content-fade-in');
+  c.classList.add('content-fade-out');
+  _contentTransitionTimer = setTimeout(()=>{
+    _contentTransitionTimer = null;
+    renderFn();              // 此时内容已淡出（不可见），替换为新内容
+    c.classList.remove('content-fade-out');
+    void c.offsetWidth;      // 强制重排，重新触发淡入动画
+    c.classList.add('content-fade-in');
+  }, 220);                   // 与 .content-fade-out 动画时长一致
+}
+
 function navigate(page, subType = null, isPopState = false){
   currentPage=page;
   document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
@@ -1067,25 +1121,29 @@ function navigate(page, subType = null, isPopState = false){
     window.history.pushState({ page, subType }, '', url);
   }
 
-  // 拦截项目专属路由
-  if(page.startsWith('project_')) {
-    const projectId = page.replace('project_', '');
-    const project = PROJECT_DATA.find(p => p.id === projectId);
-    document.getElementById('page-title').innerHTML = project ? `<div style="display:flex;align-items:center;gap:8px">${project.icon} <span>${project.name[currentLang]}</span></div>` : '';
-    renderProject(projectId, subType);
-    return;
-  }
-
-  document.getElementById('page-title').textContent=t(page);
-  const pages={
-    dashboard:renderDashboard,
-    recharge:renderRecharge,
-    logs:renderLogs,
-    prices:renderPrices,
-    admin:renderAdmin,
-    profile:renderProfile,
+  // 🚀 实际渲染逻辑包装为函数，交给交叉淡化在「淡出后」执行
+  const doRender = () => {
+    // 拦截项目专属路由
+    if(page.startsWith('project_')) {
+      const projectId = page.replace('project_', '');
+      const project = PROJECT_DATA.find(p => p.id === projectId);
+      document.getElementById('page-title').innerHTML = project ? `<div style="display:flex;align-items:center;gap:8px">${project.icon} <span>${project.name[currentLang]}</span></div>` : '';
+      renderProject(projectId, subType);
+      return;
+    }
+    document.getElementById('page-title').textContent=t(page);
+    const pages={
+      dashboard:renderDashboard,
+      recharge:renderRecharge,
+      logs:renderLogs,
+      prices:renderPrices,
+      admin:renderAdmin,
+      profile:renderProfile,
+    };
+    if(pages[page])pages[page]();
   };
-  if(pages[page])pages[page]();
+
+  transitionContent(doRender);
 }
 
 // 🚀 新增：监听浏览器的“前进/后退”按钮事件
@@ -1405,7 +1463,7 @@ async function renderProject(projectId, subTypeVal = null) {
     <div class="project-sub-tabs">
       ${project.items.map(item => `
         <div class="project-sub-tab ${item.val === activeItem.val ? 'active' : ''}" 
-             onclick="${item.val === 'closed' ? `toast('通道已关闭','info')` : `renderProject('${projectId}', '${item.val}')`}"
+             onclick="${item.val === 'closed' ? `toast('通道已关闭','info')` : `navigate('project_${projectId}', '${item.val}')`}"
              style="${item.val === 'closed' ? 'opacity:0.5;cursor:not-allowed' : ''}">
           ${item.label}
         </div>
