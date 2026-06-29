@@ -1378,25 +1378,77 @@ let currentEstimatedCost=0;
 
 function handleFileSelect(input){
   if(input.files[0]){
-    selectedFile=input.files[0];
-    const zone=document.getElementById('upload-zone');
-    zone.classList.add('has-file');
-    document.getElementById('upload-label').textContent=`✓ ${selectedFile.name} (${(selectedFile.size/1024).toFixed(1)} KB)`;
-    calculateTaskCost(selectedFile);
+    const file=input.files[0];
+    if(!file.name.toLowerCase().endsWith('.txt')){
+      toast(currentLang==='zh'?'仅支持.txt文件':'Only .txt files supported','error');
+      input.value='';
+      return;
+    }
+    processAndDedupeFile(file);
   }
 }
 function handleDrop(e){
   e.preventDefault();
   document.getElementById('upload-zone').classList.remove('dragover');
   const file=e.dataTransfer.files[0];
-  if(file&&file.name.endsWith('.txt')){
-    selectedFile=file;
-    document.getElementById('upload-zone').classList.add('has-file');
-    document.getElementById('upload-label').textContent=`✓ ${file.name}`;
-    calculateTaskCost(selectedFile);
+  if(file&&file.name.toLowerCase().endsWith('.txt')){
+    processAndDedupeFile(file);
   } else {
     toast(currentLang==='zh'?'仅支持.txt文件':'Only .txt files supported','error');
   }
+}
+
+// 🚀 新增：号码去重 —— 去除空行与重复号码，保留首次出现顺序（所有项目通用）
+function dedupeNumbers(text){
+  const seen=new Set();
+  const unique=[];
+  let original=0;
+  const lines=(text||'').split(/\r\n|\n/);
+  for(let i=0;i<lines.length;i++){
+    const line=lines[i].trim();
+    if(!line) continue;        // 跳过空行
+    original++;
+    if(seen.has(line)) continue; // 跳过重复号码
+    seen.add(line);
+    unique.push(line);
+  }
+  return {content:unique.join('\n'),original:original,unique:unique.length,removed:original-unique.length};
+}
+
+// 🚀 新增：读取上传文件并自动去重，用去重结果替换 selectedFile
+// 之后的计费、提交 API、源文件存档都会使用去重后的号码
+function processAndDedupeFile(file){
+  const zone=document.getElementById('upload-zone');
+  if(zone) zone.classList.add('has-file');
+  const labelEl=document.getElementById('upload-label');
+  if(labelEl) labelEl.textContent=currentLang==='zh'?`⏳ 正在处理并去重 ${file.name}...`:`⏳ Processing & deduplicating ${file.name}...`;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const result=dedupeNumbers(e.target.result);
+    // 用去重后的内容重建文件，文件名保持不变
+    selectedFile=new File([result.content],file.name,{type:'text/plain'});
+    if(labelEl){
+      labelEl.textContent=result.removed>0
+        ? (currentLang==='zh'
+            ? `✓ ${file.name}（去重后 ${result.unique} 条，已移除 ${result.removed} 条重复）`
+            : `✓ ${file.name} (${result.unique} unique, ${result.removed} duplicates removed)`)
+        : (currentLang==='zh'
+            ? `✓ ${file.name}（${result.unique} 条）`
+            : `✓ ${file.name} (${result.unique} lines)`);
+    }
+    if(result.removed>0){
+      toast(currentLang==='zh'?`已自动去除 ${result.removed} 个重复号码`:`Automatically removed ${result.removed} duplicate numbers`,'success');
+    }
+    calculateTaskCost(selectedFile,result.unique);
+  };
+  reader.onerror=function(){
+    // 读取失败时退回原始文件，保证流程不中断
+    selectedFile=file;
+    if(labelEl) labelEl.textContent=`✓ ${file.name}`;
+    toast(currentLang==='zh'?'文件读取失败，将按原文件上传':'File read failed, uploading as-is','error');
+    calculateTaskCost(selectedFile);
+  };
+  reader.readAsText(file);
 }
 
 // 解析规则中的最小和最大数量
@@ -1414,13 +1466,21 @@ function parseRuleLimits(ruleStr) {
 
 let currentFileLines = 0; // 记录当前文件的行数
 
-function calculateTaskCost(file) {
+function calculateTaskCost(file, knownLines) {
   const previewEl = document.getElementById('task-cost-preview');
   if (!previewEl) return;
   if (!file || !currentTaskPrice) {
     previewEl.value = '0';
     currentEstimatedCost = 0;
     currentFileLines = 0;
+    return;
+  }
+  // 已知去重后的行数时直接计费，避免重复读取大文件
+  if (typeof knownLines === 'number') {
+    currentFileLines = knownLines;
+    const cost = (currentFileLines * currentTaskPrice).toFixed(3);
+    currentEstimatedCost = parseFloat(cost);
+    previewEl.value = `${cost} (${currentFileLines} ${currentLang==='zh'?'条':'lines'})`;
     return;
   }
   previewEl.value = currentLang==='zh'?'计算中...':'Calculating...';
@@ -1517,7 +1577,7 @@ async function renderProject(projectId, subTypeVal = null) {
             <input type="text" id="task-cost-preview" class="form-input" readonly placeholder="0" style="color:var(--yellow); font-weight:bold; background:rgba(245,166,35,0.05); border-color:rgba(245,166,35,0.3);"/>
           </div>
           <div class="modal-hint-banner">
-            <span style="font-weight:bold">💡</span> 提示：支持最大文件上传数量为500万，将自动分割为100万一个任务
+            <span style="font-weight:bold">💡</span> 提示：支持最大文件上传数量为500万，将自动分割为100万一个任务，系统会自动去除重复号码
           </div>
           <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:10px;" onclick="submitProjectTask('${activeItem.val}', '${activeItem.rule}')" id="submit-task-btn">
             ${currentLang==='zh'?'提交任务':'Submit Task'}
