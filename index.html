@@ -357,6 +357,74 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .dot-red{background:var(--red)}
 .qr-box{background:#fff;border-radius:8px;padding:8px;display:inline-block}
 .wallet-addr{font-family:monospace;font-size:12px;background:var(--bg3);padding:8px 12px;border-radius:6px;word-break:break-all;color:var(--text2);border:1px solid var(--border)}
+
+/* ===== AVATAR GALLERY (头像浏览) ===== */
+.ag-overlay{position:fixed;inset:0;background:var(--bg);z-index:600;display:none;flex-direction:column}
+.ag-overlay.open{display:flex}
+.ag-topbar{flex-shrink:0;display:flex;align-items:center;gap:12px;padding:12px 22px;background:var(--bg2);border-bottom:1px solid var(--border)}
+.ag-title{font-size:16px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px}
+.ag-sub{font-size:12px;color:var(--text3);font-family:monospace;font-weight:400}
+.ag-close{margin-left:auto;display:flex;align-items:center;gap:7px;height:38px;padding:0 16px 0 13px;border-radius:9px;background:var(--red);border:1px solid var(--red);color:#fff;cursor:pointer;font-size:14px;font-weight:600;line-height:1;flex-shrink:0;box-shadow:0 3px 10px rgba(224,82,82,.35)}
+.ag-close:hover{filter:brightness(1.12)}
+.ag-close .x{font-size:20px;font-weight:700}
+.ag-filters{flex-shrink:0;display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px;padding:12px 22px;background:var(--bg2);border-bottom:1px solid var(--border);position:relative;z-index:3}
+.ag-fgroup{display:flex;flex-direction:column;gap:5px}
+.ag-flabel{font-size:10px;font-weight:600;letter-spacing:.05em;color:var(--text3);text-transform:uppercase}
+.ag-filters select,.ag-filters input{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:7px 10px;font-size:13px;outline:none;height:34px}
+.ag-filters select:focus,.ag-filters input:focus{border-color:var(--accent)}
+.ag-ms{position:relative}
+.ag-ms-btn{display:flex;align-items:center;gap:8px;min-width:130px;max-width:200px;height:34px;padding:0 10px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;cursor:pointer}
+.ag-ms-btn:hover{border-color:var(--border2)}
+.ag-ms.active .ag-ms-btn{border-color:var(--accent);color:var(--accent);background:rgba(79,142,247,.08)}
+.ag-ms-text{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left}
+.ag-ms-caret{color:var(--text3);font-size:10px;flex-shrink:0}
+.ag-ms-panel{position:absolute;top:calc(100% + 4px);left:0;min-width:100%;max-height:280px;overflow-y:auto;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;box-shadow:0 10px 28px rgba(0,0,0,.4);padding:6px;display:none;z-index:50}
+.ag-ms-panel.open{display:block}
+.ag-ms-opt{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:6px;font-size:13px;color:var(--text);cursor:pointer;white-space:nowrap}
+.ag-ms-opt:hover{background:var(--bg3)}
+.ag-ms-opt input{width:15px;height:15px;accent-color:var(--accent);cursor:pointer;margin:0;flex-shrink:0}
+.ag-range{display:flex;align-items:center;gap:6px;color:var(--text3)}
+.ag-range input{width:66px}
+.ag-reset{background:var(--bg3);border:1px solid var(--border);color:var(--text2);border-radius:8px;padding:0 16px;height:34px;font-size:13px;cursor:pointer}
+.ag-reset:hover{background:var(--bg4);color:var(--text)}
+.ag-export-group{margin-left:auto;display:flex;align-items:flex-end;gap:12px}
+.ag-selctrl{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--text2)}
+.ag-selctrl .ag-flabel{margin-bottom:0}
+.ag-selctrl-row{display:flex;align-items:center;gap:6px;height:34px}
+.ag-selctrl a{cursor:pointer;color:var(--accent)}
+.ag-selctrl a:hover{text-decoration:underline}
+.ag-selctrl .ag-dot{color:var(--text3)}
+.ag-export{display:flex;align-items:center;gap:7px;height:38px;padding:0 18px;border-radius:9px;background:var(--green);border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 3px 12px rgba(46,204,122,.35);white-space:nowrap}
+.ag-export:hover{filter:brightness(1.08)}
+.ag-export:disabled{background:var(--bg4);color:var(--text3);box-shadow:none;cursor:not-allowed}
+.ag-total{font-size:11px;color:var(--text3);align-self:flex-end;padding-bottom:2px}
+.ag-hint{width:100%;font-size:11px;color:var(--text3);margin-top:2px}
+.ag-body{flex:1;overflow-y:auto;padding:20px 22px;position:relative;z-index:1}
+.ag-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:18px}
+.ag-card{position:relative;background:var(--bg2);border:2px solid var(--border);border-radius:12px;overflow:hidden;transition:transform .12s,box-shadow .12s,border-color .12s,opacity .12s}
+.ag-card:hover{transform:translateY(-3px);box-shadow:0 8px 22px rgba(0,0,0,.25)}
+.ag-card.selected{border-color:var(--green)}
+.ag-card:not(.selected){opacity:.5}
+.ag-card:not(.selected):hover{opacity:.8}
+.ag-thumb{position:relative;width:100%}
+.ag-imgwrap{position:relative;display:flex;align-items:center;justify-content:center;width:100%;aspect-ratio:1/1;background:var(--bg3);overflow:hidden;cursor:zoom-in}
+.ag-imgwrap img{width:100%;height:100%;object-fit:cover;display:block}
+.ag-imgwrap.failed::after{content:"🖼";font-size:38px;opacity:.3}
+.ag-imgwrap.ag-noavatar{flex-direction:column;gap:6px;cursor:default;color:var(--text3)}
+.ag-na-ic{font-size:46px;opacity:.45;line-height:1}
+.ag-na-txt{font-size:11px;color:var(--text3)}
+.ag-biz{position:absolute;top:8px;right:8px;background:var(--purple);color:#fff;font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;box-shadow:0 2px 6px rgba(0,0,0,.3);z-index:2}
+.ag-check{position:absolute;top:8px;left:8px;width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,.45);border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:transparent;font-size:15px;font-weight:800;cursor:pointer;z-index:3;transition:background .1s}
+.ag-card.selected .ag-check{background:var(--green);border-color:#fff;color:#fff}
+.ag-meta{padding:11px 12px;cursor:pointer;user-select:none}
+.ag-phone{font-family:monospace;font-size:13.5px;color:var(--text);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ag-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.ag-tag{font-size:11px;padding:2px 8px;border-radius:20px;background:var(--bg4);color:var(--text2);white-space:nowrap}
+.ag-tag.male{background:rgba(79,142,247,.15);color:var(--accent)}
+.ag-tag.female{background:rgba(224,82,82,.15);color:var(--red)}
+.ag-loadmore{display:flex;justify-content:center;padding:24px}
+.ag-empty{text-align:center;padding:60px 20px;color:var(--text3)}
+@media(max-width:768px){.ag-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}.ag-topbar,.ag-filters,.ag-body{padding-left:14px;padding-right:14px}.ag-export-group{margin-left:0;width:100%}}
 </style>
 </head>
 <body>
@@ -514,6 +582,86 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;font-size:15px;" onclick="confirmAnnouncement()">
       确定 / Confirm
     </button>
+  </div>
+</div>
+
+<!-- AVATAR GALLERY (头像浏览) -->
+<div class="ag-overlay" id="avatar-gallery">
+  <div class="ag-topbar">
+    <div class="ag-title">🖼️ <span id="ag-title-text">头像浏览</span> <span class="ag-sub" id="ag-taskid"></span></div>
+    <button class="ag-close" onclick="closeAvatars()" title="关闭 / Close"><span class="x">×</span> <span id="ag-close-text">关闭</span></button>
+  </div>
+  <div class="ag-filters">
+    <div class="ag-fgroup">
+      <label class="ag-flabel" id="ag-lbl-avatar">头像</label>
+      <div class="ag-ms" id="ag-ms-avatar">
+        <button type="button" class="ag-ms-btn" onclick="agToggleMs('avatar',event)"><span class="ag-ms-text" id="ag-ms-avatar-text">全部</span><span class="ag-ms-caret">▾</span></button>
+        <div class="ag-ms-panel" id="ag-ms-avatar-panel"></div>
+      </div>
+    </div>
+    <div class="ag-fgroup">
+      <label class="ag-flabel" id="ag-lbl-gender">性别</label>
+      <div class="ag-ms" id="ag-ms-gender">
+        <button type="button" class="ag-ms-btn" onclick="agToggleMs('gender',event)"><span class="ag-ms-text" id="ag-ms-gender-text">全部</span><span class="ag-ms-caret">▾</span></button>
+        <div class="ag-ms-panel" id="ag-ms-gender-panel"></div>
+      </div>
+    </div>
+    <div class="ag-fgroup">
+      <label class="ag-flabel" id="ag-lbl-race">人种</label>
+      <div class="ag-ms" id="ag-ms-race">
+        <button type="button" class="ag-ms-btn" onclick="agToggleMs('race',event)"><span class="ag-ms-text" id="ag-ms-race-text">全部</span><span class="ag-ms-caret">▾</span></button>
+        <div class="ag-ms-panel" id="ag-ms-race-panel"></div>
+      </div>
+    </div>
+    <div class="ag-fgroup">
+      <label class="ag-flabel" id="ag-lbl-age">年龄</label>
+      <div class="ag-range">
+        <input id="ag-f-agemin" type="number" min="0" placeholder="最小" oninput="applyAvatarFilters()"/>
+        <span>-</span>
+        <input id="ag-f-agemax" type="number" min="0" placeholder="最大" oninput="applyAvatarFilters()"/>
+      </div>
+    </div>
+    <div class="ag-fgroup">
+      <label class="ag-flabel" id="ag-lbl-days">活跃天数</label>
+      <div class="ag-range">
+        <input id="ag-f-daysmin" type="number" min="0" placeholder="最小" oninput="applyAvatarFilters()"/>
+        <span>-</span>
+        <input id="ag-f-daysmax" type="number" min="0" placeholder="最大" oninput="applyAvatarFilters()"/>
+      </div>
+    </div>
+    <div class="ag-fgroup">
+      <label class="ag-flabel" id="ag-lbl-biz">商业号</label>
+      <div class="ag-ms" id="ag-ms-biz">
+        <button type="button" class="ag-ms-btn" onclick="agToggleMs('biz',event)"><span class="ag-ms-text" id="ag-ms-biz-text">全部</span><span class="ag-ms-caret">▾</span></button>
+        <div class="ag-ms-panel" id="ag-ms-biz-panel"></div>
+      </div>
+    </div>
+    <div class="ag-fgroup">
+      <label class="ag-flabel" id="ag-lbl-search">搜索号码</label>
+      <input id="ag-f-search" type="text" placeholder="手机号 / ws号" oninput="applyAvatarFilters()"/>
+    </div>
+    <button class="ag-reset" id="ag-reset-btn" onclick="resetAvatarFilters()">重置</button>
+    <div class="ag-export-group">
+      <div class="ag-selctrl">
+        <label class="ag-flabel" id="ag-lbl-select">选择</label>
+        <div class="ag-selctrl-row">
+          <a id="ag-sel-all" onclick="agSelectAll(true)">全选</a>
+          <span class="ag-dot">·</span>
+          <a id="ag-sel-none" onclick="agSelectAll(false)">全不选</a>
+        </div>
+      </div>
+      <button class="ag-export" id="ag-export-btn" onclick="exportAvatars()">导出</button>
+      <span class="ag-total" id="ag-total"></span>
+    </div>
+    <div class="ag-hint" id="ag-hint"></div>
+  </div>
+  <div class="ag-body" id="ag-body">
+    <div class="ag-grid" id="ag-grid"></div>
+    <div id="ag-sentinel" style="height:1px"></div>
+    <div class="ag-loadmore" id="ag-loadmore" style="display:none">
+      <button class="btn btn-secondary" onclick="renderAvatarBatch();updateAvatarCount();" id="ag-more-btn">加载更多</button>
+    </div>
+    <div class="ag-empty" id="ag-empty" style="display:none">没有符合条件的头像</div>
   </div>
 </div>
 
@@ -1640,9 +1788,10 @@ async function renderProject(projectId, subTypeVal = null) {
               <td>
                 ${task.status==='Finish'?`
                   <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start;">
-                    <a href="javascript:void(0)" onclick="downloadResult('${task.id}','${task.remote_task_id}')" style="color:var(--accent);font-size:12px;font-weight:500;">${currentLang==='zh'?'有效TXT':'Valid TXT'}</a>
+                    ${activeItem.val.toLowerCase().includes('gender')?`<a href="javascript:void(0)" onclick="viewAvatars('${task.remote_task_id}','${(task.task_name||'').replace(/['"\\]/g,'')}')" style="color:var(--yellow);font-size:12px;font-weight:bold;">${currentLang==='zh'?'🖼️ 查看头像':'🖼️ View Avatars'}</a>`:''}
+                    ${!activeItem.label.includes('性别年龄-全格式')?`<a href="javascript:void(0)" onclick="downloadResult('${task.id}','${task.remote_task_id}')" style="color:var(--accent);font-size:12px;font-weight:500;">${currentLang==='zh'?'有效TXT':'Valid TXT'}</a>`:''}
                     <a href="javascript:void(0)" onclick="downloadExcel('${task.remote_task_id}')" style="color:var(--green);font-size:12px;font-weight:bold;">${currentLang==='zh'?'表格下载':'Download Excel'}</a>
-                    <a href="javascript:void(0)" onclick="downloadInvalid('${task.remote_task_id}')" style="color:var(--purple);font-size:12px;font-weight:500;">${currentLang==='zh'?'无效TXT':'Invalid TXT'}</a>
+                    ${!activeItem.label.includes('性别年龄-全格式')?`<a href="javascript:void(0)" onclick="downloadInvalid('${task.remote_task_id}')" style="color:var(--purple);font-size:12px;font-weight:500;">${currentLang==='zh'?'无效TXT':'Invalid TXT'}</a>`:''}
                     <a href="javascript:void(0)" onclick="downloadSource('${task.remote_task_id}')" style="color:var(--text2);font-size:12px;">${currentLang==='zh'?'源文件':'Source File'}</a>
                   </div>
                 `:''}
@@ -1840,6 +1989,296 @@ async function downloadExcel(remoteId) {
   } catch(e) {
     toast(e.message, 'error');
   }
+}
+
+// ================= 头像浏览 (Avatar Gallery) =================
+const avGallery = { rows: [], filtered: [], rendered: 0, batch: 48, io: null, L: null, deselected: new Set(), taskId: '' };
+
+function agKey(row){ return row.phone || row.ws || row.avatar; }
+function agIsSelected(row){ return !avGallery.deselected.has(agKey(row)); }
+
+function agEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function agVal(id){ const el=document.getElementById(id); return el?el.value:''; }
+function agNum(id){ const v=agVal(id); if(v==='' || v==null) return null; const n=parseInt(v,10); return isNaN(n)?null:n; }
+function agNormGender(g){ g=(g||'').trim().toLowerCase(); if(g==='男'||g==='male'||g==='m') return '男'; if(g==='女'||g==='female'||g==='f') return '女'; return 'unknown'; }
+function agNormBiz(b){ b=(b||'').trim().toLowerCase(); if(b==='是'||b==='yes'||b==='true'||b==='1') return '是'; return '否'; }
+
+// 根据表头智能匹配列索引，若无表头则回退到 WS全格式 默认列序
+function agMapCols(header){
+  const find=(...names)=>{ for(let i=0;i<header.length;i++){ const h=(header[i]||'').toLowerCase().trim(); if(names.some(n=>h.includes(n))) return i; } return -1; };
+  const idx={
+    phone: find('原手机','手机号','phone'),
+    ws: find('ws号','ws','账号','uid'),
+    active: find('活跃时间','time'),
+    days: find('活跃天数','天数','days'),
+    gender: find('性别','gender'),
+    age: find('年龄','age'),
+    race: find('人种','race','ethnic'),
+    avatar: find('头像','avatar','image'),
+    biz: find('商业','business'),
+  };
+  const dflt={ phone:0, active:1, ws:2, days:3, gender:4, age:5, race:6, avatar:7, biz:8 };
+  for(const k in idx){ if(idx[k]===-1 && dflt[k]<header.length) idx[k]=dflt[k]; }
+  return idx;
+}
+
+function parseAvatarRows(text){
+  const lines = text.split(/\r\n|\n/).filter(l=>l.trim());
+  if(!lines.length) return [];
+  let start=0, header;
+  const first = lines[0].replace(/^﻿/,'');
+  if(/手机号|phone|uid|ws号|头像|avatar|性别|gender/i.test(first)){ header=first.split(','); start=1; }
+  else { header = Array.from({length:first.split(',').length},(_,i)=>'col'+i); }
+  const idx = agMapCols(header);
+  const rows=[];
+  for(let i=start;i<lines.length;i++){
+    const c = lines[i].split(',');
+    const avatar = (c[idx.avatar]||'').trim();
+    rows.push({
+      phone:(c[idx.phone]||'').trim(),
+      ws:(c[idx.ws]||'').trim(),
+      active:(c[idx.active]||'').trim(),
+      days:(c[idx.days]||'').trim(),
+      gender:(c[idx.gender]||'').trim(),
+      age:(c[idx.age]||'').trim(),
+      race:(c[idx.race]||'').trim(),
+      avatar,
+      hasAvatar: /^https?:\/\//i.test(avatar),
+      biz:(c[idx.biz]||'').trim(),
+    });
+  }
+  return rows;
+}
+
+async function viewAvatars(remoteId, taskName){
+  toast(currentLang==='zh'?'正在加载头像数据，请稍候...':'Loading avatars, please wait...','info');
+  try{
+    const res = await proxyFetch('/api/task/result', { queryParams:{ taskId: remoteId } });
+    if(!res.ok) throw new Error(currentLang==='zh'?'获取数据失败':'Failed to fetch data');
+    const text = await res.text();
+    const rows = parseAvatarRows(text);
+    if(!rows.length){ toast(currentLang==='zh'?'该任务结果为空':'This result is empty','info'); return; }
+    avGallery.rows = rows;
+    setupAvatarUI(remoteId, taskName);
+    resetAvatarFilters();
+    openAvatarOverlay();
+  }catch(e){ toast(e.message,'error'); }
+}
+
+function setupAvatarUI(remoteId, taskName){
+  const L = currentLang==='zh'
+    ? {title:'头像浏览',avatarLbl:'头像',hasAvatar:'有头像',noAvatar:'无头像',noAvatarShort:'无头像',gender:'性别',race:'人种',age:'年龄',days:'活跃天数',biz:'商业号',search:'搜索号码',reset:'重置',close:'关闭',all:'全部',male:'男',female:'女',unknown:'未知',yes:'是',no:'否',min:'最小',max:'最大',ph:'手机号 / ws号',more:'加载更多',empty:'没有符合条件的号码',hint:'提示：头像图片由 WhatsApp 官方 CDN 提供，链接会随时间失效，建议尽快查看。',ageUnit:'岁',daysUnit:'天',biz1:'商',selectLabel:'选择',selAll:'全选',selNone:'全不选',sep:'、',selN:(n)=>`已选 ${n} 项`,exportBtn:(n)=>`⬇ 导出 ${n} 个号码`,total:(t)=>`共 ${t} 个`,exportEmpty:'没有可导出的号码',exported:(n)=>`已导出 ${n} 个号码`}
+    : {title:'Avatar Gallery',avatarLbl:'Avatar',hasAvatar:'Has avatar',noAvatar:'No avatar',noAvatarShort:'No avatar',gender:'Gender',race:'Race',age:'Age',days:'Active Days',biz:'Business',search:'Search',reset:'Reset',close:'Close',all:'All',male:'Male',female:'Female',unknown:'Unknown',yes:'Yes',no:'No',min:'Min',max:'Max',ph:'Phone / WS',more:'Load More',empty:'No numbers match your filters',hint:'Note: avatars are served by WhatsApp CDN and links expire over time — view them soon.',ageUnit:'',daysUnit:'d',biz1:'B',selectLabel:'Select',selAll:'All',selNone:'None',sep:', ',selN:(n)=>`${n} selected`,exportBtn:(n)=>`⬇ Export ${n}`,total:(t)=>`of ${t}`,exportEmpty:'Nothing to export',exported:(n)=>`Exported ${n} numbers`};
+  avGallery.L = L;
+  avGallery.taskId = remoteId;
+  document.getElementById('ag-title-text').textContent = L.title;
+  document.getElementById('ag-taskid').textContent = taskName ? (taskName+' · '+remoteId) : remoteId;
+  document.getElementById('ag-close-text').textContent = L.close;
+  document.getElementById('ag-lbl-gender').textContent = L.gender;
+  document.getElementById('ag-lbl-race').textContent = L.race;
+  document.getElementById('ag-lbl-age').textContent = L.age;
+  document.getElementById('ag-lbl-days').textContent = L.days;
+  document.getElementById('ag-lbl-biz').textContent = L.biz;
+  document.getElementById('ag-lbl-search').textContent = L.search;
+  document.getElementById('ag-reset-btn').textContent = L.reset;
+  document.getElementById('ag-more-btn').textContent = L.more;
+  document.getElementById('ag-empty').textContent = L.empty;
+  document.getElementById('ag-hint').textContent = L.hint;
+  document.getElementById('ag-lbl-select').textContent = L.selectLabel;
+  document.getElementById('ag-sel-all').textContent = L.selAll;
+  document.getElementById('ag-sel-none').textContent = L.selNone;
+  document.getElementById('ag-lbl-avatar').textContent = L.avatarLbl;
+  document.getElementById('ag-f-agemin').placeholder = L.min;
+  document.getElementById('ag-f-agemax').placeholder = L.max;
+  document.getElementById('ag-f-daysmin').placeholder = L.min;
+  document.getElementById('ag-f-daysmax').placeholder = L.max;
+  document.getElementById('ag-f-search').placeholder = L.ph;
+  buildMs('avatar', [{v:'has',l:L.hasAvatar},{v:'none',l:L.noAvatar}]);
+  buildMs('gender', [{v:'男',l:L.male},{v:'女',l:L.female},{v:'unknown',l:L.unknown}]);
+  buildMs('biz', [{v:'是',l:L.yes},{v:'否',l:L.no}]);
+  const races = [...new Set(avGallery.rows.map(r=>r.race).filter(x=>x && x.toLowerCase()!=='unknown'))].sort();
+  buildMs('race', races.map(r=>({v:r,l:r})));
+}
+
+// 头像筛选默认值：有头像时默认只看「有头像」；若全部无头像则默认「无头像」
+function agSetAvatarDefault(){
+  const hasAny = avGallery.rows.some(r=>r.hasAvatar);
+  const hasInput = document.querySelector('#ag-ms-avatar-panel input[value="has"]');
+  const noneInput = document.querySelector('#ag-ms-avatar-panel input[value="none"]');
+  if(hasInput) hasInput.checked = hasAny;
+  if(noneInput) noneInput.checked = !hasAny;
+  agMsSummary('avatar');
+}
+
+// 多选筛选下拉组件 (Multi-select filter dropdowns)
+function buildMs(key, opts){
+  const panel = document.getElementById('ag-ms-'+key+'-panel');
+  panel.innerHTML = opts.map(o=>`<label class="ag-ms-opt"><input type="checkbox" value="${agEsc(o.v)}" data-label="${agEsc(o.l)}" onchange="agMsChanged('${key}')"><span>${agEsc(o.l)}</span></label>`).join('');
+  agMsSummary(key);
+}
+function agMsValues(key){ return [...document.querySelectorAll('#ag-ms-'+key+'-panel input:checked')].map(i=>i.value); }
+function agMsSummary(key){
+  const L = avGallery.L;
+  const labels = [...document.querySelectorAll('#ag-ms-'+key+'-panel input:checked')].map(i=>i.dataset.label);
+  const txt = labels.length===0 ? L.all : (labels.length<=2 ? labels.join(L.sep) : L.selN(labels.length));
+  document.getElementById('ag-ms-'+key+'-text').textContent = txt;
+  document.getElementById('ag-ms-'+key).classList.toggle('active', labels.length>0);
+}
+function agMsChanged(key){ agMsSummary(key); applyAvatarFilters(); }
+function agToggleMs(key, e){
+  e.stopPropagation();
+  const panel = document.getElementById('ag-ms-'+key+'-panel');
+  const isOpen = panel.classList.contains('open');
+  agMsCloseAll();
+  if(!isOpen) panel.classList.add('open');
+}
+function agMsCloseAll(){ document.querySelectorAll('.ag-ms-panel.open').forEach(p=>p.classList.remove('open')); }
+function agMsOutsideClose(e){ if(!e.target.closest('.ag-ms')) agMsCloseAll(); }
+
+function resetAvatarFilters(){
+  ['ag-f-agemin','ag-f-agemax','ag-f-daysmin','ag-f-daysmax','ag-f-search'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  ['avatar','gender','race','biz'].forEach(k=>{ document.querySelectorAll('#ag-ms-'+k+'-panel input').forEach(i=>i.checked=false); agMsSummary(k); });
+  agSetAvatarDefault();
+  agMsCloseAll();
+  avGallery.deselected.clear();
+  applyAvatarFilters();
+}
+
+function applyAvatarFilters(){
+  const avatars = agMsValues('avatar');
+  const genders = agMsValues('gender'), races = agMsValues('race'), bizs = agMsValues('biz');
+  const amin = agNum('ag-f-agemin'), amax = agNum('ag-f-agemax');
+  const dmin = agNum('ag-f-daysmin'), dmax = agNum('ag-f-daysmax');
+  const q = (agVal('ag-f-search')||'').trim().toLowerCase();
+  avGallery.filtered = avGallery.rows.filter(row=>{
+    if(avatars.length && !avatars.includes(row.hasAvatar ? 'has' : 'none')) return false;
+    if(genders.length && !genders.includes(agNormGender(row.gender))) return false;
+    if(races.length && !races.includes(row.race)) return false;
+    if(bizs.length && !bizs.includes(agNormBiz(row.biz))) return false;
+    if(amin!==null || amax!==null){ const age=parseInt(row.age,10); if(isNaN(age)) return false; if(amin!==null && age<amin) return false; if(amax!==null && age>amax) return false; }
+    if(dmin!==null || dmax!==null){ const d=parseInt(row.days,10); if(isNaN(d)) return false; if(dmin!==null && d<dmin) return false; if(dmax!==null && d>dmax) return false; }
+    if(q && !((row.phone||'').toLowerCase().includes(q) || (row.ws||'').toLowerCase().includes(q))) return false;
+    return true;
+  });
+  avGallery.rendered = 0;
+  document.getElementById('ag-grid').innerHTML='';
+  document.getElementById('ag-body').scrollTop=0;
+  renderAvatarBatch();
+  updateAvatarCount();
+}
+
+function avatarCard(row){
+  const L = avGallery.L;
+  const card = document.createElement('div');
+  card.className = 'ag-card' + (agIsSelected(row) ? ' selected' : '');
+  const g = agNormGender(row.gender);
+  const gTag = g==='男'?`<span class="ag-tag male">${L.male}</span>` : g==='女'?`<span class="ag-tag female">${L.female}</span>` : `<span class="ag-tag">${L.unknown}</span>`;
+  const age = parseInt(row.age,10);
+  const ageTag = !isNaN(age)?`<span class="ag-tag">${age}${L.ageUnit}</span>`:'';
+  const raceTag = (row.race && row.race.toLowerCase()!=='unknown')?`<span class="ag-tag">${agEsc(row.race)}</span>`:'';
+  const days = parseInt(row.days,10);
+  const daysTag = !isNaN(days)?`<span class="ag-tag">${days}${L.daysUnit}</span>`:'';
+  const bizBadge = agNormBiz(row.biz)==='是'?`<span class="ag-biz">${L.biz1}</span>`:'';
+  const idText = row.phone || row.ws || '-';
+  const thumbInner = row.hasAvatar
+    ? `<a class="ag-imgwrap" href="${agEsc(row.avatar)}" target="_blank" rel="noopener noreferrer">
+        <img src="${agEsc(row.avatar)}" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="" onerror="agImgError(this)"/>
+      </a>`
+    : `<div class="ag-imgwrap ag-noavatar"><span class="ag-na-ic">👤</span><span class="ag-na-txt">${L.noAvatarShort}</span></div>`;
+  card.innerHTML = `
+    <div class="ag-thumb">
+      ${thumbInner}
+      ${bizBadge}
+      <span class="ag-check" title="选择 / Select">✓</span>
+    </div>
+    <div class="ag-meta">
+      <div class="ag-phone" title="${agEsc(idText)}">${agEsc(idText)}</div>
+      <div class="ag-tags">${gTag}${ageTag}${raceTag}${daysTag}</div>
+    </div>`;
+  // 点击图片下方区域 / 勾选圈 = 单独勾选或取消勾选
+  const toggle = (e)=>{ e.preventDefault(); e.stopPropagation(); agToggleSelect(row, card); };
+  card.querySelector('.ag-meta').addEventListener('click', toggle);
+  card.querySelector('.ag-check').addEventListener('click', toggle);
+  return card;
+}
+
+function agToggleSelect(row, card){
+  const k = agKey(row);
+  if(avGallery.deselected.has(k)) avGallery.deselected.delete(k); else avGallery.deselected.add(k);
+  card.classList.toggle('selected', agIsSelected(row));
+  updateAvatarCount();
+}
+
+function agSelectAll(select){
+  const keys = avGallery.filtered.map(agKey);
+  if(select) keys.forEach(k=>avGallery.deselected.delete(k));
+  else keys.forEach(k=>avGallery.deselected.add(k));
+  document.querySelectorAll('#ag-grid .ag-card').forEach(c=>c.classList.toggle('selected', select));
+  updateAvatarCount();
+}
+
+function exportAvatars(){
+  const L = avGallery.L;
+  const sel = avGallery.filtered.filter(agIsSelected);
+  const nums = [...new Set(sel.map(r => r.phone || r.ws).filter(Boolean))];
+  if(!nums.length){ toast(L.exportEmpty, 'info'); return; }
+  const blob = new Blob([nums.join('\r\n')], { type:'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `avatars_${avGallery.taskId||'result'}_${nums.length}.txt`; a.click();
+  URL.revokeObjectURL(url);
+  toast(L.exported(nums.length), 'success');
+}
+
+function agImgError(img){ img.onerror=null; const w=img.parentElement; if(w) w.classList.add('failed'); img.style.display='none'; }
+
+function renderAvatarBatch(){
+  const grid = document.getElementById('ag-grid');
+  const end = Math.min(avGallery.rendered + avGallery.batch, avGallery.filtered.length);
+  const frag = document.createDocumentFragment();
+  for(let i=avGallery.rendered;i<end;i++) frag.appendChild(avatarCard(avGallery.filtered[i]));
+  grid.appendChild(frag);
+  avGallery.rendered = end;
+}
+
+function updateAvatarCount(){
+  const L = avGallery.L;
+  const selCount = avGallery.filtered.reduce((n,r)=> n + (agIsSelected(r)?1:0), 0);
+  const exportBtn = document.getElementById('ag-export-btn');
+  exportBtn.textContent = L.exportBtn(selCount);
+  exportBtn.disabled = selCount===0;
+  document.getElementById('ag-total').textContent = L.total(avGallery.rows.length);
+  document.getElementById('ag-empty').style.display = avGallery.filtered.length===0 ? 'block' : 'none';
+  document.getElementById('ag-loadmore').style.display = avGallery.rendered < avGallery.filtered.length ? 'flex' : 'none';
+}
+
+function ensureAvatarObserver(){
+  if(avGallery.io) return;
+  const root = document.getElementById('ag-body');
+  avGallery.io = new IntersectionObserver((entries)=>{
+    if(entries[0].isIntersecting && avGallery.rendered < avGallery.filtered.length){ renderAvatarBatch(); updateAvatarCount(); }
+  }, { root, rootMargin:'500px' });
+  avGallery.io.observe(document.getElementById('ag-sentinel'));
+}
+
+function agKeyHandler(e){ if(e.key==='Escape'){ if(document.querySelector('.ag-ms-panel.open')) agMsCloseAll(); else closeAvatars(); } }
+
+function openAvatarOverlay(){
+  document.getElementById('avatar-gallery').classList.add('open');
+  document.body.style.overflow='hidden';
+  ensureAvatarObserver();
+  document.addEventListener('keydown', agKeyHandler);
+  document.addEventListener('click', agMsOutsideClose);
+}
+
+function closeAvatars(){
+  document.getElementById('avatar-gallery').classList.remove('open');
+  document.body.style.overflow='';
+  document.removeEventListener('keydown', agKeyHandler);
+  document.removeEventListener('click', agMsOutsideClose);
+  agMsCloseAll();
+  document.getElementById('ag-grid').innerHTML='';
+  avGallery.rows=[]; avGallery.filtered=[]; avGallery.rendered=0; avGallery.deselected.clear();
 }
 
 // 🚀 新增：下载源文件
