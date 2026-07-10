@@ -1748,6 +1748,24 @@ async function renderProject(projectId, subTypeVal = null) {
     </div>
   `;
 
+  // 结果下载按钮：按项目类型定制标签与显隐（activeItem 对整个列表固定，故只需计算一次）
+  const validTxtLabel =
+    activeItem.val === 'iosBlueValid' ? (currentLang==='zh'?'蓝号码':'Blue Number') :
+    activeItem.val === 'phoneCheck'   ? (currentLang==='zh'?'空号':'Empty Number') :
+    activeItem.val === 'phoneActive'  ? (currentLang==='zh'?'活跃号':'Active') :
+    (currentLang==='zh'?'有效TXT':'Valid TXT');
+  const invalidTxtLabel =
+    activeItem.val === 'iosBlueValid' ? (currentLang==='zh'?'非蓝号码':'Non-Blue') :
+    activeItem.val === 'phoneCheck'   ? (currentLang==='zh'?'非空号':'Non-Empty') :
+    activeItem.val === 'phoneActive'  ? (currentLang==='zh'?'非活跃号':'Inactive') :
+    (currentLang==='zh'?'无效TXT':'Invalid TXT');
+  // 表格下载：蓝号、空号检测，以及名称含“开通”的项目隐藏；其余（如号码活跃检测、全格式等）保留
+  const showExcelDownload = !(
+    activeItem.val === 'iosBlueValid' ||
+    activeItem.val === 'phoneCheck' ||
+    (activeItem.label||'').includes('开通')
+  );
+
   const listHtml = `
     <div class="section">
       <div class="section-header">
@@ -1789,9 +1807,9 @@ async function renderProject(projectId, subTypeVal = null) {
                 ${task.status==='Finish'?`
                   <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start;">
                     ${activeItem.val.toLowerCase().includes('gender')?`<a href="javascript:void(0)" onclick="viewAvatars('${task.remote_task_id}','${(task.task_name||'').replace(/['"\\]/g,'')}')" style="color:var(--yellow);font-size:12px;font-weight:bold;">${currentLang==='zh'?'🖼️ 查看头像':'🖼️ View Avatars'}</a>`:''}
-                    ${!activeItem.label.includes('性别年龄-全格式')?`<a href="javascript:void(0)" onclick="downloadResult('${task.id}','${task.remote_task_id}')" style="color:var(--accent);font-size:12px;font-weight:500;">${currentLang==='zh'?'有效TXT':'Valid TXT'}</a>`:''}
-                    <a href="javascript:void(0)" onclick="downloadExcel('${task.remote_task_id}')" style="color:var(--green);font-size:12px;font-weight:bold;">${currentLang==='zh'?'表格下载':'Download Excel'}</a>
-                    ${!activeItem.label.includes('性别年龄-全格式')?`<a href="javascript:void(0)" onclick="downloadInvalid('${task.remote_task_id}')" style="color:var(--purple);font-size:12px;font-weight:500;">${currentLang==='zh'?'无效TXT':'Invalid TXT'}</a>`:''}
+                    ${!activeItem.label.includes('性别年龄-全格式')?`<a href="javascript:void(0)" onclick="downloadResult('${task.id}','${task.remote_task_id}')" style="color:var(--accent);font-size:12px;font-weight:500;">${validTxtLabel}</a>`:''}
+                    ${showExcelDownload?`<a href="javascript:void(0)" onclick="downloadExcel('${task.remote_task_id}')" style="color:var(--green);font-size:12px;font-weight:bold;">${currentLang==='zh'?'表格下载':'Download Excel'}</a>`:''}
+                    ${!activeItem.label.includes('性别年龄-全格式')?`<a href="javascript:void(0)" onclick="downloadInvalid('${task.remote_task_id}')" style="color:var(--purple);font-size:12px;font-weight:500;">${invalidTxtLabel}</a>`:''}
                     <a href="javascript:void(0)" onclick="downloadSource('${task.remote_task_id}')" style="color:var(--text2);font-size:12px;">${currentLang==='zh'?'源文件':'Source File'}</a>
                   </div>
                 `:''}
