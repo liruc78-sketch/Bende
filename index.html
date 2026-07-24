@@ -1751,12 +1751,12 @@ async function renderProject(projectId, subTypeVal = null) {
   // 结果下载按钮：按项目类型定制标签与显隐（activeItem 对整个列表固定，故只需计算一次）
   const validTxtLabel =
     activeItem.val === 'iosBlueValid' ? (currentLang==='zh'?'蓝号码':'Blue Number') :
-    activeItem.val === 'phoneCheck'   ? (currentLang==='zh'?'空号':'Empty Number') :
+    activeItem.val === 'phoneCheck'   ? (currentLang==='zh'?'非空号':'Non-Empty') :
     activeItem.val === 'phoneActive'  ? (currentLang==='zh'?'活跃号':'Active') :
     (currentLang==='zh'?'有效TXT':'Valid TXT');
   const invalidTxtLabel =
     activeItem.val === 'iosBlueValid' ? (currentLang==='zh'?'非蓝号码':'Non-Blue') :
-    activeItem.val === 'phoneCheck'   ? (currentLang==='zh'?'非空号':'Non-Empty') :
+    activeItem.val === 'phoneCheck'   ? (currentLang==='zh'?'空号':'Empty Number') :
     activeItem.val === 'phoneActive'  ? (currentLang==='zh'?'非活跃号':'Inactive') :
     (currentLang==='zh'?'无效TXT':'Invalid TXT');
   // 表格下载：蓝号、空号检测，以及名称含“开通”的项目隐藏；其余（如号码活跃检测、全格式等）保留
