@@ -1008,6 +1008,31 @@ async function loadDynamicPrices() {
   } catch (e) { console.warn("Load prices failed", e); }
 }
 
+// 🚀 新增：把公告文本安全地渲染进弹窗（转义 HTML 后，将 http(s) 链接变为可点击）
+function renderAnnouncementBody(text) {
+  const body = document.getElementById('modal-announcement-body');
+  const esc = (s) => String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  // 只识别 http/https 链接，避免 javascript: 等危险协议；
+  // 仅匹配标准 URL 字符（ASCII），这样中文/空格/表情会自然作为链接的结束边界
+  const urlRe = /https?:\/\/[A-Za-z0-9\-._~:/?#\[\]@!$&'()*+,;=%]+/g;
+  let html = '', last = 0, m;
+  while ((m = urlRe.exec(text)) !== null) {
+    html += esc(text.slice(last, m.index));
+    let url = m[0], trailing = '';
+    // 去掉链接结尾多余的标点（如句号、右括号），避免被误当成链接一部分
+    const tail = url.match(/[.,;:!?)\]}'"，。！？）】]+$/);
+    if (tail) { trailing = url.slice(url.length - tail[0].length); url = url.slice(0, -tail[0].length); }
+    const safe = esc(url);
+    html += `<a href="${safe}" target="_blank" rel="noopener noreferrer" style="color:var(--accent);text-decoration:underline;word-break:break-all;">${safe}</a>` + esc(trailing);
+    last = m.index + m[0].length;
+  }
+  html += esc(text.slice(last));
+  body.innerHTML = html;
+  body.style.whiteSpace = 'pre-line';
+}
+
 // 🚀 新增：检查并显示公告 (自动弹出)
 async function checkAnnouncement() {
   if (sessionStorage.getItem('announcement_shown') === 'true') return;
@@ -1015,9 +1040,7 @@ async function checkAnnouncement() {
   try {
     const { data } = await sb.from('site_settings').select('value').eq('key', 'announcement').single();
     if (data && data.value && data.value.trim() !== '') {
-      const body = document.getElementById('modal-announcement-body');
-      body.textContent = data.value;
-      body.style.whiteSpace = 'pre-line';
+      renderAnnouncementBody(data.value);
       document.getElementById('modal-announcement').classList.add('open');
     }
   } catch (e) { console.warn("Load announcement failed", e); }
@@ -1028,9 +1051,7 @@ async function showAnnouncementManual() {
   try {
     const { data } = await sb.from('site_settings').select('value').eq('key', 'announcement').single();
     if (data && data.value && data.value.trim() !== '') {
-      const body = document.getElementById('modal-announcement-body');
-      body.textContent = data.value;
-      body.style.whiteSpace = 'pre-line';
+      renderAnnouncementBody(data.value);
       document.getElementById('modal-announcement').classList.add('open');
     } else {
       toast(currentLang==='zh'?'暂无公告':'No announcements', 'info');
