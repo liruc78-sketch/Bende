@@ -209,18 +209,6 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .admin-tab{padding:7px 16px;border-radius:7px;cursor:pointer;font-size:13px;color:var(--text2)}
 .admin-tab.active{background:var(--bg2);color:var(--text);font-weight:500}
 
-/* PRICE GRID */
-.price-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
-.price-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
-.price-card-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
-.price-card-icon{font-size:18px}
-.price-card-name{font-size:13px;font-weight:600;color:var(--text)}
-.price-item{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:12px}
-.price-item:last-child{border-bottom:none}
-.price-item-label{color:var(--text2)}
-.price-item-val{color:var(--accent);font-weight:500}
-.price-item-status{padding:2px 6px;border-radius:10px;font-size:10px}
-
 /* HOME SEARCH */
 .home-search-wrap { margin-bottom: 20px; position: relative; }
 .home-search-input { width: 100%; background: var(--bg2); border: 1px solid var(--border); color: var(--text); border-radius: var(--radius2); padding: 14px 20px 14px 48px; font-size: 15px; outline: none; transition: all .2s; }
@@ -537,11 +525,6 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>
         <span id="nav-label-logs">积分记录</span>
       </div>
-      <div class="nav-item" onclick="navigate('prices')" id="nav-prices">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <span id="nav-label-prices">价格列表</span>
-      </div>
-      
     </div>
     <div class="nav-bottom">
       <div class="user-pill" onclick="navigate('profile')" title="个人中心">
@@ -885,7 +868,6 @@ const T={
   'tasks':{zh:'任务列表',en:'My Tasks'},
   'recharge':{zh:'充值',en:'Recharge'},
   'logs':{zh:'积分记录',en:'Balance Logs'},
-  'prices':{zh:'价格列表',en:'Pricing'},
   'admin':{zh:'后台管理',en:'Admin Panel'},
   'profile':{zh:'个人中心',en:'Profile'},
   'points':{zh:'积分',en:'pts'},
@@ -1211,7 +1193,6 @@ function updateStaticText() {
   document.getElementById('nav-label-recharge').textContent = t('recharge');
   document.getElementById('nav-sec-services').textContent = currentLang==='zh'?'筛选项目':'SERVICES';
   document.getElementById('nav-label-logs').textContent = t('logs');
-  document.getElementById('nav-label-prices').textContent = t('prices');
   if(document.getElementById('nav-sec2')) document.getElementById('nav-sec2').textContent = currentLang==='zh'?'管理员':'ADMIN';
   if(document.getElementById('nav-label-admin')) document.getElementById('nav-label-admin').textContent = t('admin');
   document.getElementById('logout-label').textContent = currentLang==='zh'?'退出':'Logout';
@@ -1236,7 +1217,6 @@ const STATIC_ICONS = {
   dashboard: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>',
   recharge: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>',
   logs: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>',
-  prices: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
   admin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
   profile: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>'
 };
@@ -1344,7 +1324,6 @@ function navigate(page, subType = null, isPopState = false){
       dashboard:renderDashboard,
       recharge:renderRecharge,
       logs:renderLogs,
-      prices:renderPrices,
       admin:renderAdmin,
       profile:renderProfile,
     };
@@ -2847,69 +2826,6 @@ async function renderLogs(){
     </div>
   </div>`;
 }
-
-// ─── PRICES ───
-function renderPrices(){
-  const c=document.getElementById('content');
-  c.innerHTML=`
-  <div class="info-box" style="margin-bottom:20px">
-    <strong>💱 ${currentLang==='zh'?'当前汇率':'Current Rate'}: 1 USDT = 6.8 积分/Points</strong>
-    &nbsp;|&nbsp; ${currentLang==='zh'?'以下价格单位为USDT/条':'Prices are in USDT per record'}
-  </div>
-  
-  <!-- 新增搜索框 -->
-  <div class="home-search-wrap">
-    <svg class="home-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-    <input type="text" class="home-search-input" placeholder="${currentLang==='zh'?'搜索价格项目 (例如: WhatsApp, 空号检测)...':'Search prices (e.g. WhatsApp, Phone check)...'}" oninput="renderPriceList(this.value)">
-  </div>
-
-  <div id="price-list-container"></div>
-  `;
-  
-  renderPriceList('');
-}
-
-window.renderPriceList = function(keyword = '') {
-  const container = document.getElementById('price-list-container');
-  if (!container) return;
-
-  const kw = keyword.toLowerCase().trim();
-  let filteredData = PROJECT_DATA;
-
-  if (kw) {
-    filteredData = PROJECT_DATA.map(cat => {
-      if (cat.name.zh.toLowerCase().includes(kw) || cat.name.en.toLowerCase().includes(kw)) return cat;
-      const matchedItems = cat.items.filter(item => item.label.toLowerCase().includes(kw));
-      if (matchedItems.length > 0) {
-        return { ...cat, items: matchedItems };
-      }
-      return null;
-    }).filter(Boolean);
-  }
-
-  if (filteredData.length === 0) {
-    container.innerHTML = `<div class="empty-state">${currentLang==='zh'?'未找到匹配的项目':'No matching services found'}</div>`;
-    return;
-  }
-
-  container.innerHTML = `
-  <div class="price-grid">
-    ${filteredData.map(cat=>`<div class="price-card">
-      <div class="price-card-header">
-        <span class="service-icon" style="width:24px;height:24px;font-size:14px;background:transparent;">${cat.icon}</span>
-        <span class="price-card-name">${cat.name[currentLang]}</span>
-      </div>
-      ${cat.items.map(item=>{
-        const closed = item.val === 'closed';
-        return`<div class="price-item">
-          <span class="price-item-label">${item.label}</span>
-          ${closed?`<span class="price-item-status badge badge-gray">${currentLang==='zh'?'关闭':'Closed'}</span>`:
-          `<span class="price-item-val">${item.price}</span>`}
-        </div>`;
-      }).join('')}
-    </div>`).join('')}
-  </div>`;
-};
 
 // ─── NOTE: Run this SQL in Supabase to fix RLS policies ───
 // DROP POLICY IF EXISTS profiles_admin_all ON public.profiles;
