@@ -1774,12 +1774,16 @@ async function renderProject(projectId, subTypeVal = null) {
   `;
 
   // 结果下载按钮：按项目类型定制标签与显隐（activeItem 对整个列表固定，故只需计算一次）
+  // 运营商检测 / 高级美国运营商检测：有效→T卡（仅保留 T-Mobile / Metro by T-Mobile），无效→非T卡（排除 T-Mobile）
+  const isCarrierTask = activeItem.val === 'operatorStandard' || activeItem.val === 'phoneUsCarrier';
   const validTxtLabel =
+    isCarrierTask                     ? (currentLang==='zh'?'T卡':'T-Card') :
     activeItem.val === 'iosBlueValid' ? (currentLang==='zh'?'蓝号码':'Blue Number') :
     activeItem.val === 'phoneCheck'   ? (currentLang==='zh'?'非空号':'Non-Empty') :
     activeItem.val === 'phoneActive'  ? (currentLang==='zh'?'活跃号':'Active') :
     (currentLang==='zh'?'有效TXT':'Valid TXT');
   const invalidTxtLabel =
+    isCarrierTask                     ? (currentLang==='zh'?'非T卡':'Non-T-Card') :
     activeItem.val === 'iosBlueValid' ? (currentLang==='zh'?'非蓝号码':'Non-Blue') :
     activeItem.val === 'phoneCheck'   ? (currentLang==='zh'?'空号':'Empty Number') :
     activeItem.val === 'phoneActive'  ? (currentLang==='zh'?'非活跃号':'Inactive') :
@@ -1832,9 +1836,9 @@ async function renderProject(projectId, subTypeVal = null) {
                 ${task.status==='Finish'?`
                   <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start;">
                     ${activeItem.val.toLowerCase().includes('gender')?`<a href="javascript:void(0)" onclick="viewAvatars('${task.remote_task_id}','${(task.task_name||'').replace(/['"\\]/g,'')}')" style="color:var(--yellow);font-size:12px;font-weight:bold;">${currentLang==='zh'?'🖼️ 查看头像':'🖼️ View Avatars'}</a>`:''}
-                    ${!activeItem.label.includes('性别年龄-全格式')?`<a href="javascript:void(0)" onclick="downloadResult('${task.id}','${task.remote_task_id}')" style="color:var(--accent);font-size:12px;font-weight:500;">${validTxtLabel}</a>`:''}
+                    ${!activeItem.label.includes('性别年龄-全格式')?`<a href="javascript:void(0)" onclick="${isCarrierTask?`downloadTCard('${task.remote_task_id}')`:`downloadResult('${task.id}','${task.remote_task_id}')`}" style="color:var(--accent);font-size:12px;font-weight:500;">${validTxtLabel}</a>`:''}
                     ${showExcelDownload?`<a href="javascript:void(0)" onclick="downloadExcel('${task.remote_task_id}')" style="color:var(--green);font-size:12px;font-weight:bold;">${currentLang==='zh'?'表格下载':'Download Excel'}</a>`:''}
-                    ${!activeItem.label.includes('性别年龄-全格式')?`<a href="javascript:void(0)" onclick="downloadInvalid('${task.remote_task_id}')" style="color:var(--purple);font-size:12px;font-weight:500;">${invalidTxtLabel}</a>`:''}
+                    ${!activeItem.label.includes('性别年龄-全格式')?`<a href="javascript:void(0)" onclick="${isCarrierTask?`downloadNonTCard('${task.remote_task_id}')`:`downloadInvalid('${task.remote_task_id}')`}" style="color:var(--purple);font-size:12px;font-weight:500;">${invalidTxtLabel}</a>`:''}
                     <a href="javascript:void(0)" onclick="downloadSource('${task.remote_task_id}')" style="color:var(--text2);font-size:12px;">${currentLang==='zh'?'源文件':'Source File'}</a>
                   </div>
                 `:''}
@@ -2375,6 +2379,71 @@ async function downloadInvalid(remoteId) {
     URL.revokeObjectURL(url);
     toast(currentLang==='zh'?'无效号码下载成功':'Invalid numbers downloaded','success');
   } catch(e) { toast(e.message, 'error'); }
+}
+
+// 🚀 新增：运营商检测 T卡 / 非T卡 筛选下载
+// 规则：底层运营商为 T-Mobile / Metro by T-Mobile 的号码即为「T卡」，其余为「非T卡」。
+// 依据行内是否出现 "t-mobile" 判定（"Metro by T-Mobile" 亦包含该子串），与运营商列所在位置无关，
+// 兼容 全球运营商检测(operatorStandard) 与 高级美国运营商检测(phoneUsCarrier) 两种结果格式。
+function rowIsTCard(cells){
+  return cells.some(c => (c||'').toLowerCase().includes('t-mobile'));
+}
+
+// 拉取运营商检测结果并解析为「行数组 + 手机号列索引」
+async function fetchCarrierResult(remoteId){
+  const res = await proxyFetch('/api/task/result', { queryParams: { taskId: remoteId } });
+  if(!res.ok) throw new Error(currentLang==='zh'?'获取结果失败':'Failed to fetch result');
+  const text = await res.text();
+  const lines = text.split(/\r\n|\n/).filter(l => l.trim());
+  let start = 0, phoneIdx = 0;
+  if(lines.length){
+    const first = lines[0].replace(/^﻿/, '');
+    // 检测表头（含「手机号」/phone 等），并定位手机号列
+    if(/手机号|phone|号码|底层运营商|carrier/i.test(first)){
+      const header = first.split(',');
+      const pIdx = header.findIndex(h => /手机号|phone/i.test((h||'').trim()));
+      if(pIdx !== -1) phoneIdx = pIdx;
+      start = 1;
+    }
+  }
+  const rows = [];
+  for(let i=start;i<lines.length;i++){ rows.push(lines[i].split(',')); }
+  return { rows, phoneIdx };
+}
+
+// 下载文件工具
+function downloadTextFile(content, filename){
+  const blob = new Blob([content], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// T卡：仅保留 T-Mobile / Metro by T-Mobile 号码
+async function downloadTCard(remoteId){
+  if(!remoteId){toast(currentLang==='zh'?'无远程任务ID':'No remote task ID','error');return;}
+  toast(currentLang==='zh'?'正在筛选 T卡 号码...':'Filtering T-Card numbers...','info');
+  try{
+    const { rows, phoneIdx } = await fetchCarrierResult(remoteId);
+    const out = rows.filter(rowIsTCard).map(r => (r[phoneIdx]||'').trim()).filter(Boolean);
+    if(!out.length){ toast(currentLang==='zh'?'该任务没有 T卡 号码':'No T-Card numbers found','info'); return; }
+    downloadTextFile(out.join('\n'), `tcard_${remoteId}.txt`);
+    toast(currentLang==='zh'?`T卡 下载成功（${out.length} 条）`:`T-Card downloaded (${out.length})`,'success');
+  }catch(e){ toast(e.message,'error'); }
+}
+
+// 非T卡：排除 T-Mobile / Metro by T-Mobile，保留其余号码
+async function downloadNonTCard(remoteId){
+  if(!remoteId){toast(currentLang==='zh'?'无远程任务ID':'No remote task ID','error');return;}
+  toast(currentLang==='zh'?'正在筛选 非T卡 号码...':'Filtering Non-T-Card numbers...','info');
+  try{
+    const { rows, phoneIdx } = await fetchCarrierResult(remoteId);
+    const out = rows.filter(r => !rowIsTCard(r)).map(r => (r[phoneIdx]||'').trim()).filter(Boolean);
+    if(!out.length){ toast(currentLang==='zh'?'该任务没有 非T卡 号码':'No Non-T-Card numbers found','info'); return; }
+    downloadTextFile(out.join('\n'), `non_tcard_${remoteId}.txt`);
+    toast(currentLang==='zh'?`非T卡 下载成功（${out.length} 条）`:`Non-T-Card downloaded (${out.length})`,'success');
+  }catch(e){ toast(e.message,'error'); }
 }
 
 // ─── RECHARGE (AUTO DETECT) ───
