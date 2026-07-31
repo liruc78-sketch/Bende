@@ -982,8 +982,9 @@ function showAuthErr(msg){
   el.textContent=msg;el.style.display='block';
 }
 async function doLogout(){
-  if(autoLogoutTimer) clearTimeout(autoLogoutTimer); 
-  localStorage.removeItem('login_timestamp'); 
+  if(autoLogoutTimer) clearTimeout(autoLogoutTimer);
+  stopRechargeTimers(); // 🚀 退出时停止充值检测定时器，避免上一账号的轮询写入下一账号（保留 localStorage 以便本人重登恢复）
+  localStorage.removeItem('login_timestamp');
   sessionStorage.removeItem('announcement_shown'); // 🚀 核心修复：退出时清理公告缓存，确保下次登录必弹
   await sb.auth.signOut();
   currentUser=null;currentProfile=null;
@@ -1113,8 +1114,10 @@ async function initApp(session) {
     const urlParams = new URLSearchParams(window.location.search);
     const page = urlParams.get('page') || 'dashboard';
     const sub = urlParams.get('sub');
-    navigate(page, sub, true); 
-    
+    navigate(page, sub, true);
+
+    resumeBackgroundRechargeMonitor(); // 🚀 刷新后即使不在充值页，也继续检测到账并自动充值到账积分
+
     checkAnnouncement(); // 🚀 新增：登录完成后检查公告
   }
 }
@@ -1123,6 +1126,7 @@ sb.auth.onAuthStateChange(async(event,session)=>{
   if((event==='SIGNED_IN' || event==='INITIAL_SESSION') && session){
     initApp(session);
   } else if (event === 'SIGNED_OUT') {
+    stopRechargeTimers(); // 🚀 登出时停止充值检测定时器，防止跨账号串号
     currentUser=null;
     currentProfile=null;
     document.getElementById('app').style.display='none';
@@ -1282,6 +1286,11 @@ function transitionContent(renderFn){
 
 function navigate(page, subType = null, isPopState = false){
   currentPage=page;
+  // 🚀 离开充值页时停止倒计时 UI（保留后台到账检测，仍可自动充值到账积分）
+  if(page !== 'recharge' && rechargeState.countdownTimer){
+    clearInterval(rechargeState.countdownTimer);
+    rechargeState.countdownTimer = null;
+  }
   document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
   const nav=document.getElementById('nav-'+page);
   if(nav)nav.classList.add('active');
@@ -2449,6 +2458,144 @@ async function downloadNonTCard(remoteId){
 // ─── RECHARGE (AUTO DETECT) ───
 let rechargeState = { orderId: null, detectTimer: null, countdownTimer: null, expireTime: null };
 
+// 🚀 充值订单持久化：刷新页面后仍能恢复到二维码支付界面，并继续自动检测到账、自动充值到账积分
+const RECHARGE_LS_KEY = 'pending_recharge_order';
+function saveRechargeOrder(orderId, expireTime){
+  try{
+    localStorage.setItem(RECHARGE_LS_KEY, JSON.stringify({
+      orderId, expireTime, userId: (currentUser && currentUser.id) || null
+    }));
+  }catch(e){ console.warn('保存充值订单失败', e); }
+}
+function loadRechargeOrder(){
+  try{
+    const raw = localStorage.getItem(RECHARGE_LS_KEY);
+    if(!raw) return null;
+    const obj = JSON.parse(raw);
+    // 仅恢复当前登录用户自己的订单，避免同一浏览器多账号切换时串号
+    if(obj && obj.userId && currentUser && obj.userId !== currentUser.id) return null;
+    return obj;
+  }catch(e){ return null; }
+}
+function clearRechargeOrder(){
+  try{ localStorage.removeItem(RECHARGE_LS_KEY); }catch(e){}
+}
+
+// 🚀 停止全部充值相关定时器并复位内存状态（退出登录 / 到账后调用）
+function stopRechargeTimers(){
+  if(rechargeState.detectTimer) clearInterval(rechargeState.detectTimer);
+  if(rechargeState.countdownTimer) clearInterval(rechargeState.countdownTimer);
+  rechargeState.detectTimer = null;
+  rechargeState.countdownTimer = null;
+  rechargeState.orderId = null;
+  rechargeState.expireTime = null;
+}
+
+// 后端返回「已到账」的判定（paid = 链上到账，approved = 管理员人工通过）
+function isPaidStatus(data){
+  return data && data.code === 0 && (data.status === 'paid' || data.status === 'approved');
+}
+
+// 调用后端检测某订单是否到账，返回解析后的数据（失败返回 null）
+async function fetchPaymentStatus(orderId){
+  try{
+    const res = await proxyFetch('/api/internal/check-payment', {
+      method: 'POST',
+      body: JSON.stringify({ orderId })
+    });
+    return await res.json();
+  }catch(e){ console.warn('检测支付失败', e); return null; }
+}
+
+// 到账成功后的统一处理：停止检测、清理持久化、刷新余额、界面反馈
+function onRechargePaid(data){
+  stopRechargeTimers();
+  clearRechargeOrder();
+
+  // 界面元素可能因刷新后停留在其它页面而不存在，逐一判空更新
+  const statusEl = document.getElementById('r-order-status');
+  if (statusEl) { statusEl.className = 'badge badge-green'; statusEl.innerText = currentLang==='zh'?'已支付':'Paid'; }
+  const cdEl = document.getElementById('r-countdown');
+  if (cdEl) { cdEl.innerText = currentLang==='zh'?'支付成功':'Success'; cdEl.style.color = 'var(--green)'; }
+
+  if (data && data.newBalance !== undefined && data.newBalance !== null) {
+    if(currentProfile) currentProfile.balance = data.newBalance;
+    updateSidebar();
+  } else {
+    loadProfile().then(updateSidebar);
+  }
+  toast(currentLang==='zh'?'充值成功！':'Recharge successful!','success');
+  // 3 秒后回到创建订单界面；触发时二次校验仍停留在充值页，避免覆盖用户已切换到的其它页面
+  if (document.getElementById('recharge-view')) {
+    setTimeout(() => {
+      if (currentPage === 'recharge' && document.getElementById('recharge-view')) renderRecharge();
+    }, 3000);
+  }
+}
+
+// 🚀 用服务端权威订单数据填充「步骤2」支付界面（创建订单与刷新恢复共用同一套渲染）
+function populateStep2(order, walletAddr, qrUrl){
+  const serverUsdt = parseFloat(order.usdt_amount);
+  const serverPts = parseFloat(order.points_amount);
+
+  const qrImg = document.getElementById('r-qr-img');
+  if(qrImg){
+    qrImg.src = qrUrl || `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${walletAddr}`;
+    qrImg.style.display = 'inline-block';
+  }
+  const set = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
+  set('r-wallet-addr', walletAddr);
+  set('r-pay-amount', serverUsdt.toFixed(3));
+  set('r-order-id', String(order.id).replace(/-/g, '').toUpperCase());
+  set('r-order-amount', `${serverUsdt.toFixed(3)} USDT`);
+  set('r-order-pts', `${serverPts} 积分`);
+  set('r-inst-amount', `${serverUsdt.toFixed(3)} USDT`);
+
+  const step1 = document.getElementById('recharge-step1');
+  const step2 = document.getElementById('recharge-step2');
+  if(step1) step1.style.display = 'none';
+  if(step2) step2.style.display = 'block';
+}
+
+// 回到「步骤1：创建订单」界面（当恢复失败/订单已结束时用）
+function showStep1(){
+  const step1 = document.getElementById('recharge-step1');
+  const step2 = document.getElementById('recharge-step2');
+  if(step1) step1.style.display = 'block';
+  if(step2) step2.style.display = 'none';
+}
+
+// 🚀 后台恢复：即使刷新后停留在其它页面，也继续检测到账并自动充值到账积分
+async function resumeBackgroundRechargeMonitor(){
+  if(currentPage === 'recharge') return; // 充值页由 renderRecharge 负责恢复
+  const saved = loadRechargeOrder();
+  if(!saved || !saved.orderId) return;
+  try{
+    const{data:order}=await sb.from('recharge_orders').select('*').eq('id', saved.orderId).single();
+    if(!order){ clearRechargeOrder(); return; }
+    if(order.status === 'paid' || order.status === 'approved'){
+      clearRechargeOrder();
+      await loadProfile();
+      updateSidebar();
+      toast(currentLang==='zh'?'充值成功！':'Recharge successful!','success');
+    } else if(order.status === 'pending'){
+      if(saved.expireTime && saved.expireTime > Date.now()){
+        rechargeState.orderId = order.id;
+        rechargeState.expireTime = saved.expireTime;
+        startBackendDetection(); // 仅后台轮询检测到账，无倒计时 UI
+      } else {
+        // 已超时但仍是 pending：做最后一次到账检测，避免临界时间到账的资金漏充
+        rechargeState.orderId = order.id;
+        const data = await fetchPaymentStatus(order.id);
+        if(isPaidStatus(data)){ onRechargePaid(data); }
+        else { rechargeState.orderId = null; clearRechargeOrder(); }
+      }
+    } else {
+      clearRechargeOrder(); // cancelled / rejected
+    }
+  }catch(e){ console.warn('后台恢复充值检测失败', e); }
+}
+
 async function renderRecharge(){
   if(rechargeState.detectTimer) clearInterval(rechargeState.detectTimer);
   if(rechargeState.countdownTimer) clearInterval(rechargeState.countdownTimer);
@@ -2457,13 +2604,19 @@ async function renderRecharge(){
   const{data:settings}=await sb.from('site_settings').select('*');
   const cfg={};(settings||[]).forEach(s=>cfg[s.key]=s.value);
   const wallet=cfg.usdt_wallet_address||'未配置钱包地址';
-  const qrUrl=cfg.pay_qr_url||''; 
+  const qrUrl=cfg.pay_qr_url||'';
   const rate=cfg.usdt_to_points||'6.8';
-  
+
+  // 🚀 若本地存在有效期内的未完成订单，首屏直接呈现步骤2，避免刷新时先闪回步骤1
+  const _saved = loadRechargeOrder();
+  const restoringPending = !!(_saved && _saved.orderId && _saved.expireTime && _saved.expireTime > Date.now());
+  const step1Style = restoringPending ? ' style="display:none;"' : '';
+  const step2Style = restoringPending ? '' : ' style="display:none;"';
+
   c.innerHTML=`
   <div id="recharge-view">
       <!-- 步骤1：创建订单 -->
-      <div id="recharge-step1">
+      <div id="recharge-step1"${step1Style}>
         <div class="recharge-steps">
             <div class="r-step active"><div class="r-step-num">1</div><div>${currentLang==='zh'?'创建充值订单':'Create Order'}</div></div>
             <div class="r-step-line"></div>
@@ -2495,7 +2648,7 @@ async function renderRecharge(){
       </div>
 
       <!-- 步骤2：支付订单 -->
-      <div id="recharge-step2" style="display:none;">
+      <div id="recharge-step2"${step2Style}>
         <div class="recharge-steps">
             <div class="r-step"><div class="r-step-num">1</div><div>${currentLang==='zh'?'创建充值订单':'Create Order'}</div></div>
             <div class="r-step-line" style="background:var(--accent)"></div>
@@ -2560,6 +2713,47 @@ async function renderRecharge(){
       </div>
   </div>
   `;
+
+  // 🚀 刷新恢复：若存在未完成的充值订单，直接恢复到二维码支付界面并继续检测到账
+  try{
+    const saved = loadRechargeOrder();
+    if(saved && saved.orderId){
+      const{data:order}=await sb.from('recharge_orders').select('*').eq('id', saved.orderId).single();
+      if(!order){
+        clearRechargeOrder(); showStep1();
+      } else if(order.status === 'paid' || order.status === 'approved'){
+        // 关闭/刷新期间已到账：清理订单并刷新余额显示
+        clearRechargeOrder();
+        await loadProfile();
+        updateSidebar();
+        showStep1();
+        toast(currentLang==='zh'?'充值成功！':'Recharge successful!','success');
+      } else if(order.status === 'pending'){
+        if(saved.expireTime && saved.expireTime > Date.now()){
+          // 订单仍在有效期内：恢复界面 + 倒计时 + 后台自动检测到账
+          rechargeState.orderId = order.id;
+          rechargeState.expireTime = saved.expireTime;
+          populateStep2(order, wallet, qrUrl);
+          startCountdown();
+          startBackendDetection();
+        } else {
+          // 已超时但仍是 pending：做最后一次到账检测，避免临界时间到账的资金漏充
+          rechargeState.orderId = order.id;
+          const data = await fetchPaymentStatus(order.id);
+          if(isPaidStatus(data)){
+            onRechargePaid(data);
+          } else {
+            rechargeState.orderId = null;
+            clearRechargeOrder();
+            showStep1();
+          }
+        }
+      } else {
+        // 已取消 / 已拒绝：清理，回到创建订单界面
+        clearRechargeOrder(); showStep1();
+      }
+    }
+  }catch(e){ console.warn('恢复充值订单失败', e); }
 }
 
 function calcPoints(val,rate){
@@ -2594,24 +2788,12 @@ async function generateOrder(walletAddr, qrUrl) {
   rechargeState.orderId = order.id;
   rechargeState.expireTime = Date.now() + 60 * 60 * 1000;
 
-  // 使用服务端返回的权威值显示
-  const serverUsdt = parseFloat(order.usdt_amount);
-  const serverPts = parseFloat(order.points_amount);
+  // 🚀 持久化订单：刷新页面后可自动恢复二维码界面并继续检测到账
+  saveRechargeOrder(order.id, rechargeState.expireTime);
 
-  const qrImg = document.getElementById('r-qr-img');
-  qrImg.src = qrUrl || `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${walletAddr}`;
-  qrImg.style.display = 'inline-block';
+  // 使用服务端返回的权威值填充并显示步骤2（与刷新恢复共用）
+  populateStep2(order, walletAddr, qrUrl);
 
-  document.getElementById('r-wallet-addr').innerText = walletAddr;
-  document.getElementById('r-pay-amount').innerText = serverUsdt.toFixed(3);
-  document.getElementById('r-order-id').innerText = order.id.replace(/-/g, '').toUpperCase();
-  document.getElementById('r-order-amount').innerText = `${serverUsdt.toFixed(3)} USDT`;
-  document.getElementById('r-order-pts').innerText = `${serverPts} 积分`;
-  document.getElementById('r-inst-amount').innerText = `${serverUsdt.toFixed(3)} USDT`;
-
-  document.getElementById('recharge-step1').style.display = 'none';
-  document.getElementById('recharge-step2').style.display = 'block';
-  
   startCountdown();
   startBackendDetection();
 }
@@ -2622,17 +2804,19 @@ function startCountdown() {
     const updateTimer = () => {
         const now = Date.now();
         const diff = rechargeState.expireTime - now;
-        
+        const el = document.getElementById('r-countdown'); // 可能因离开充值页而不存在
+
         if (diff <= 0) {
             clearInterval(rechargeState.countdownTimer);
-            document.getElementById('r-countdown').innerText = "00:00";
+            rechargeState.countdownTimer = null;
+            if (el) el.innerText = "00:00";
             cancelOrder(true);
             return;
         }
-        
+
         const m = Math.floor(diff / 1000 / 60).toString().padStart(2, '0');
         const s = Math.floor((diff / 1000) % 60).toString().padStart(2, '0');
-        document.getElementById('r-countdown').innerText = `${m}:${s}`;
+        if (el) el.innerText = `${m}:${s}`;
     };
     
     updateTimer();
@@ -2665,7 +2849,10 @@ async function cancelOrder(isTimeout = false) {
     
     if(rechargeState.detectTimer) clearInterval(rechargeState.detectTimer);
     if(rechargeState.countdownTimer) clearInterval(rechargeState.countdownTimer);
-    
+
+    // 🚀 清理持久化订单，避免刷新后又被恢复
+    clearRechargeOrder();
+
     if(rechargeState.orderId) {
         await sb.from('recharge_orders').update({ status: 'cancelled' }).eq('id', rechargeState.orderId);
     }
@@ -2687,32 +2874,25 @@ function startBackendDetection() {
 
 async function checkPaymentWithBackend() {
   if (!rechargeState.orderId) return;
-  try {
-    const res = await proxyFetch('/api/internal/check-payment', { 
-        method: 'POST', 
-        body: JSON.stringify({ orderId: rechargeState.orderId }) 
-    });
-    const data = await res.json();
-    
-    if (data.code === 0 && data.status === 'paid') {
-        if (rechargeState.detectTimer) clearInterval(rechargeState.detectTimer);
-        if (rechargeState.countdownTimer) clearInterval(rechargeState.countdownTimer);
-        
-        document.getElementById('r-order-status').className = 'badge badge-green';
-        document.getElementById('r-order-status').innerText = currentLang==='zh'?'已支付':'Paid';
-        document.getElementById('r-countdown').innerText = currentLang==='zh'?'支付成功':'Success';
-        document.getElementById('r-countdown').style.color = 'var(--green)';
-        
-        if(data.newBalance) {
-            currentProfile.balance = data.newBalance;
-            updateSidebar();
-        }
-        toast(currentLang==='zh'?'充值成功！':'Recharge successful!','success');
-        setTimeout(() => renderRecharge(), 3000); 
-    }
-  } catch (e) {
-    console.warn("Check payment error:", e);
+
+  // 🚀 已过有效期：先停止轮询，再做最后一次到账检测（避免临界时间到账漏充）；仍未到账才清理并标记取消
+  if (rechargeState.expireTime && Date.now() >= rechargeState.expireTime) {
+    const expiredOrderId = rechargeState.orderId;
+    if (rechargeState.detectTimer) clearInterval(rechargeState.detectTimer);
+    rechargeState.detectTimer = null;
+    const data = await fetchPaymentStatus(expiredOrderId);
+    if (!rechargeState.orderId) return;                 // 期间已被 cancelOrder 等流程处理
+    if (isPaidStatus(data)) { onRechargePaid(data); return; }
+    // 仍未到账：清理持久化，并把订单标记为已取消（后台无倒计时，需在此兜底，避免遗留 pending）
+    rechargeState.orderId = null;
+    clearRechargeOrder();
+    try { await sb.from('recharge_orders').update({ status: 'cancelled' }).eq('id', expiredOrderId); } catch(e){ console.warn('标记超时订单失败', e); }
+    return;
   }
+
+  const data = await fetchPaymentStatus(rechargeState.orderId);
+  if (!rechargeState.orderId) return; // 期间已被其它轮询/流程处理，避免重复入账提示
+  if (isPaidStatus(data)) onRechargePaid(data);
 }
 
 // ─── LOGS ───
