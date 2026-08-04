@@ -3,17 +3,67 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>本德筛号中心 - 号码筛选平台</title>
+<title>本德筛号中心 - 全球号码筛选与空号检测平台 | WhatsApp/Telegram 筛号</title>
 
 <!-- 网站图标 (Favicon) -->
 <link rel="icon" href="./favicon.png" type="image/png"/>
 
 <!-- SEO 与 社交媒体分享标签 (Open Graph) -->
-<meta name="description" content="本德筛号中心 - 提供WhatsApp, Telegram, Zalo, Line等全球主流社交软件的号码开通、活跃、性别年龄精准筛选服务。"/>
-<meta property="og:title" content="本德筛号中心 - 全球号码精准筛选平台"/>
-<meta property="og:description" content="提供WhatsApp, Telegram, Zalo, Line等全球主流社交软件的号码开通、活跃、性别年龄精准筛选服务。"/>
+<meta name="description" content="本德筛号中心（benderdata.com）是专业的号码筛选与空号检测平台，提供 WhatsApp、Telegram、Facebook、Line、Viber 等全球主流社交软件的号码开通检测、活跃度筛选、空号过滤，以及性别、年龄精准筛选，支持大批量上传与结果一键导出。"/>
+<meta name="keywords" content="筛号,号码筛选,空号检测,空号过滤,筛号平台,WhatsApp筛号,WS筛号,Telegram筛号,TG筛号,电报筛号,号码开通检测,号码活跃度检测,性别年龄筛选,全球号码筛选,出海营销筛号,本德筛号中心"/>
+<meta name="robots" content="index,follow"/>
+<link rel="canonical" href="https://benderdata.com/"/>
+<meta property="og:title" content="本德筛号中心 - 全球号码筛选与空号检测平台"/>
+<meta property="og:description" content="专业号码筛选（筛号）与空号检测平台，支持 WhatsApp、Telegram、Facebook、Line、Viber 等全球主流社交软件的号码开通、活跃、性别年龄精准筛选。"/>
 <meta property="og:type" content="website"/>
+<meta property="og:url" content="https://benderdata.com/"/>
 <meta property="og:site_name" content="本德筛号中心"/>
+<meta property="og:image" content="https://benderdata.com/favicon.png"/>
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="本德筛号中心 - 全球号码筛选与空号检测平台"/>
+<meta name="twitter:description" content="专业号码筛选与空号检测平台，支持 WhatsApp、Telegram 等全球主流社交软件的号码筛选。"/>
+<meta name="twitter:image" content="https://benderdata.com/favicon.png"/>
+
+<!-- 结构化数据 (JSON-LD)：帮助谷歌理解站点、服务与常见问题 -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://benderdata.com/#website",
+      "url": "https://benderdata.com/",
+      "name": "本德筛号中心",
+      "description": "全球号码筛选与空号检测平台",
+      "inLanguage": "zh-CN"
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://benderdata.com/#org",
+      "name": "本德筛号中心",
+      "url": "https://benderdata.com/",
+      "logo": "https://benderdata.com/favicon.png"
+    },
+    {
+      "@type": "Service",
+      "name": "号码筛选与空号检测",
+      "serviceType": "号码筛选 / 空号检测",
+      "provider": { "@id": "https://benderdata.com/#org" },
+      "areaServed": "Worldwide",
+      "description": "支持 WhatsApp、Telegram、Facebook、Line、Viber 等社交软件的号码开通检测、活跃度筛选、空号过滤与性别年龄筛选。"
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "什么是筛号？", "acceptedAnswer": { "@type": "Answer", "text": "筛号是指批量检测手机号码在某社交软件（如 WhatsApp、Telegram）上是否注册、开通或处于活跃状态，从而筛选出有效的目标号码，提升后续触达效率。" } },
+        { "@type": "Question", "name": "空号检测能做什么？", "acceptedAnswer": { "@type": "Answer", "text": "空号检测用于批量识别停机、空号、虚号等无效号码，过滤掉这些号码后可以显著提升营销触达率，降低无效成本。" } },
+        { "@type": "Question", "name": "支持哪些社交软件的筛号？", "acceptedAnswer": { "@type": "Answer", "text": "支持 WhatsApp、Telegram/电报、Facebook、Instagram、领英、Twitter/X、Snapchat、WeChat/微信、Viber、Line、Signal 等全球主流社交软件。" } },
+        { "@type": "Question", "name": "如何开始使用本德筛号中心？", "acceptedAnswer": { "@type": "Answer", "text": "注册账号并充值积分后，上传需要检测的号码，选择对应的筛选项目（如 WhatsApp 筛开通、Telegram 筛活跃），系统处理完成后即可下载筛选结果。" } }
+      ]
+    }
+  ]
+}
+</script>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <!-- 引入 SheetJS 用于生成 Excel 表格 -->
@@ -164,7 +214,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 @keyframes splashFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
 /* AUTH */
-#auth-screen{min-height:100vh;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px}
+#auth-screen{min-height:100vh;background:var(--bg);display:flex;flex-direction:column;overflow-y:auto}
 .auth-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);width:100%;max-width:850px;display:flex;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,0.3)}
 .auth-left{flex:1;padding:50px 40px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(79,142,247,0.03);border-right:1px solid var(--border);text-align:center}
 .auth-right{flex:1;padding:50px 40px;display:flex;flex-direction:column;justify-content:center}
@@ -176,6 +226,48 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .auth-tab.active{background:var(--bg2);color:var(--text);font-weight:500}
 .auth-divider{text-align:center;font-size:12px;color:var(--text3);margin:8px 0}
 .auth-err{background:rgba(224,82,82,.12);border:1px solid var(--red);color:var(--red);border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none}
+
+/* ===== LANDING / SEO 公开落地页（未登录访客与搜索引擎可见） ===== */
+.lp-nav{display:flex;align-items:center;justify-content:space-between;padding:16px 6vw;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:20}
+.lp-nav-brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;color:var(--text)}
+.lp-nav-brand img{width:34px;height:34px;border-radius:8px}
+.lp-nav-links{display:flex;gap:10px}
+.lp-btn{padding:8px 18px;border-radius:8px;font-size:14px;cursor:pointer;border:1px solid var(--border2);color:var(--text);background:var(--bg2);transition:all .15s;text-decoration:none;display:inline-block}
+.lp-btn:hover{border-color:var(--accent)}
+.lp-btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.lp-wrap{max-width:1100px;margin:0 auto;padding:0 24px;width:100%}
+.lp-hero{padding:60px 24px 32px;text-align:center}
+.lp-hero h1{font-size:38px;font-weight:800;color:var(--text);line-height:1.28;margin-bottom:18px}
+.lp-hero .lp-sub{font-size:17px;color:var(--text2);max-width:780px;margin:0 auto 26px;line-height:1.75}
+.lp-hero-tags{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.lp-tag{background:var(--bg3);border:1px solid var(--border);color:var(--text2);border-radius:20px;padding:6px 14px;font-size:13px}
+.lp-section{padding:48px 0;border-top:1px solid var(--border)}
+.lp-section h2{font-size:26px;font-weight:700;color:var(--text);text-align:center;margin-bottom:12px}
+.lp-section .lp-lead{text-align:center;color:var(--text2);max-width:740px;margin:0 auto 32px;line-height:1.75;font-size:15px}
+.lp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
+.lp-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:24px}
+.lp-card h3{font-size:17px;color:var(--text);margin-bottom:10px;font-weight:600}
+.lp-card p{font-size:14px;color:var(--text2);line-height:1.75}
+.lp-plat{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;max-width:900px;margin:0 auto}
+.lp-plat span{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 18px;font-size:14px;color:var(--text)}
+.lp-faq{max-width:820px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.lp-faq-item{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:20px 24px}
+.lp-faq-item h3{font-size:16px;color:var(--text);margin-bottom:8px}
+.lp-faq-item p{font-size:14px;color:var(--text2);line-height:1.75}
+.lp-auth-anchor{display:flex;justify-content:center;padding:8px 20px 0}
+.lp-footer{border-top:1px solid var(--border);padding:34px 24px;text-align:center;color:var(--text3);font-size:13px;line-height:1.9}
+.lp-footer a{color:var(--text2)}
+.lp-footer .lp-kw{color:var(--text3);font-size:12px;margin-top:10px}
+@media(max-width:768px){.lp-hero h1{font-size:27px}.lp-hero{padding:40px 16px 24px}.lp-nav{padding:14px 20px}.lp-section{padding:38px 0}}
+
+/* 右侧悬浮客服 */
+.cs-float{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:40;background:var(--bg2);border:1px solid var(--border);border-right:none;border-radius:12px 0 0 12px;box-shadow:-4px 4px 20px rgba(0,0,0,.25);padding:14px 12px;display:flex;flex-direction:column;align-items:center;gap:6px;width:98px;text-align:center;transition:background .2s}
+.cs-float:hover{background:var(--bg3)}
+.cs-float-title{font-size:12px;color:var(--green);font-weight:700}
+.cs-float-icon{width:34px;height:34px}
+.cs-float-name{font-size:12px;color:var(--text);font-weight:600}
+.cs-float-contact{font-size:11px;color:var(--text2);word-break:break-all;line-height:1.35}
+@media(max-width:768px){.cs-float{width:76px;padding:10px 8px}.cs-float-icon{width:28px;height:28px}}
 
 /* PROGRESS BAR */
 .progress-bar{background:var(--bg3);border-radius:20px;height:6px;overflow:hidden}
@@ -451,8 +543,40 @@ tr:hover td{background:rgba(255,255,255,.02)}
   </div>
 </div>
 
-<!-- AUTH SCREEN -->
-<div id="auth-screen" style="display:none">
+<!-- AUTH SCREEN + 公开落地页（未登录访客 / 搜索引擎可见；登录成功后由 JS 隐藏并切换到主程序 #app） -->
+<div id="auth-screen">
+
+  <!-- 右侧悬浮客服（未登录落地页可见；登录后随 #auth-screen 一起隐藏） -->
+  <div id="cs-float" class="cs-float" style="display:none"></div>
+
+  <!-- 顶部导航 -->
+  <header class="lp-nav">
+    <div class="lp-nav-brand"><img src="./favicon.png" alt="本德筛号中心 Logo">本德筛号中心</div>
+    <div class="lp-nav-links">
+      <a class="lp-btn" href="#login-area">登录</a>
+      <a class="lp-btn lp-btn-primary" href="#login-area">免费注册</a>
+    </div>
+  </header>
+
+  <!-- Hero 首屏 -->
+  <section class="lp-hero">
+    <div class="lp-wrap">
+      <h1>本德筛号中心 — 全球号码筛选与空号检测平台</h1>
+      <p class="lp-sub">专业的号码筛选（筛号）服务平台，支持 WhatsApp、Telegram、Facebook、Line、Viber 等全球主流社交软件的号码开通检测、活跃度筛选、空号过滤，以及性别、年龄精准筛选。支持大批量上传、快速处理、结果一键导出 Excel。</p>
+      <div class="lp-hero-tags">
+        <span class="lp-tag">WhatsApp 筛号</span>
+        <span class="lp-tag">Telegram 筛号</span>
+        <span class="lp-tag">空号检测</span>
+        <span class="lp-tag">活跃度筛选</span>
+        <span class="lp-tag">性别年龄筛选</span>
+        <span class="lp-tag">全球号码筛选</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 登录 / 注册（原有功能，完整保留，未做任何修改） -->
+  <section id="login-area" style="padding:24px 0 8px">
+    <div class="lp-auth-anchor">
   <div class="auth-box">
     <!-- 左侧：Logo 和 标题 -->
     <div class="auth-left">
@@ -496,7 +620,92 @@ tr:hover td{background:rgba(255,255,255,.02)}
       </div>
     </div>
   </div>
-</div>
+    </div><!-- /.lp-auth-anchor -->
+  </section><!-- /#login-area -->
+
+  <!-- 号码筛选服务 -->
+  <section class="lp-section">
+    <div class="lp-wrap">
+      <h2>号码筛选服务</h2>
+      <p class="lp-lead">本德筛号中心提供一站式号码筛选与空号检测服务，帮助出海企业与营销团队从海量号码中快速筛选出真实、活跃的目标用户。</p>
+      <div class="lp-grid">
+        <div class="lp-card">
+          <h3>WhatsApp 筛号</h3>
+          <p>检测号码是否开通 WhatsApp（WS 筛开通）、是否为活跃用户（WS 筛活跃），并可按性别、年龄进行精准分层筛选。</p>
+        </div>
+        <div class="lp-card">
+          <h3>Telegram / 电报筛号</h3>
+          <p>电报号码开通检测（TG 筛开通）、活跃用户筛选（TG 筛活跃）、用户名与性别年龄筛选，锁定高价值目标客户。</p>
+        </div>
+        <div class="lp-card">
+          <h3>空号检测 / 空号过滤</h3>
+          <p>批量识别停机、空号、虚号等无效号码并过滤，显著提升营销触达率，降低短信与外呼的无效成本。</p>
+        </div>
+        <div class="lp-card">
+          <h3>性别年龄筛选</h3>
+          <p>按性别、年龄段对号码进行精准分层，帮助广告投放与私域运营更高效地触达目标人群。</p>
+        </div>
+        <div class="lp-card">
+          <h3>多平台号码筛选</h3>
+          <p>覆盖 Facebook、Instagram、Line、Viber、Signal、WeChat、Snapchat 等主流社交软件的号码开通与活跃检测。</p>
+        </div>
+        <div class="lp-card">
+          <h3>全球号码检测</h3>
+          <p>支持全球主流国家与地区的手机号码状态查询，数据实时更新，满足跨境与出海业务的筛号需求。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 支持平台 -->
+  <section class="lp-section">
+    <div class="lp-wrap">
+      <h2>支持的社交平台</h2>
+      <p class="lp-lead">一个平台满足全球主流社交软件的筛号与检测需求，无需在多个工具之间来回切换。</p>
+      <div class="lp-plat">
+        <span>WhatsApp</span><span>Telegram / 电报</span><span>Facebook / 脸书</span><span>Instagram</span>
+        <span>领英 LinkedIn</span><span>Twitter / X</span><span>Snapchat</span><span>WeChat / 微信</span>
+        <span>Viber</span><span>Line</span><span>Signal / 信号</span><span>RCS</span>
+        <span>亚马逊</span><span>Teams</span><span>Shopee</span><span>IOS / 苹果</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 平台优势 -->
+  <section class="lp-section">
+    <div class="lp-wrap">
+      <h2>为什么选择本德筛号中心</h2>
+      <div class="lp-grid">
+        <div class="lp-card"><h3>数据实时精准</h3><p>一次性实时检测，直接返回号码的开通与活跃状态，准确率高，杜绝二手过期数据。</p></div>
+        <div class="lp-card"><h3>支持大批量</h3><p>支持批量上传大量号码、快速并发处理，筛选结果可一键导出 Excel 表格，方便后续使用。</p></div>
+        <div class="lp-card"><h3>多平台一站式</h3><p>WhatsApp、Telegram、Facebook 等主流平台的筛号需求，在一个平台内即可全部完成。</p></div>
+        <div class="lp-card"><h3>数据安全可靠</h3><p>号码数据多层加密处理，通道稳定，保护你的数据与业务隐私安全。</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 常见问题 -->
+  <section class="lp-section">
+    <div class="lp-wrap">
+      <h2>常见问题</h2>
+      <div class="lp-faq">
+        <div class="lp-faq-item"><h3>什么是筛号？</h3><p>筛号是指批量检测手机号码在某社交软件（如 WhatsApp、Telegram）上是否注册、开通或处于活跃状态，从而筛选出有效的目标号码，提升后续触达效率。</p></div>
+        <div class="lp-faq-item"><h3>空号检测能做什么？</h3><p>空号检测用于批量识别停机、空号、虚号等无效号码，过滤掉这些号码后可以显著提升营销触达率，降低无效成本。</p></div>
+        <div class="lp-faq-item"><h3>支持哪些社交软件的筛号？</h3><p>支持 WhatsApp、Telegram/电报、Facebook、Instagram、领英、Twitter/X、Snapchat、WeChat/微信、Viber、Line、Signal 等全球主流社交软件。</p></div>
+        <div class="lp-faq-item"><h3>如何开始使用本德筛号中心？</h3><p>注册账号并充值积分后，上传需要检测的号码，选择对应的筛选项目（如 WhatsApp 筛开通、Telegram 筛活跃），系统处理完成后即可下载筛选结果。</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 页脚 -->
+  <footer class="lp-footer">
+    <div>本德筛号中心 · 全球号码筛选与空号检测平台 · <a href="https://benderdata.com/">benderdata.com</a></div>
+    <div class="lp-kw">筛号 · 号码筛选 · 空号检测 · 空号过滤 · WhatsApp 筛号 · Telegram 筛号 · 号码活跃度检测 · 性别年龄筛选 · 全球号码筛选</div>
+    <div style="margin-top:8px">© 2026 本德筛号中心（benderdata.com）</div>
+  </footer>
+
+</div><!-- /#auth-screen -->
+
 
 <!-- MAIN APP -->
 <div id="app" style="display:none">
@@ -549,7 +758,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <button class="lang-btn" onclick="showAnnouncementManual()" style="color:var(--accent);font-weight:bold;border-color:var(--accent);background:rgba(79,142,247,0.1);">📢 <span id="btn-announce-text">公告</span></button>
         <button class="lang-btn" onclick="toggleTheme()" id="theme-btn" style="font-size:14px;padding:4px 8px;" title="切换主题">🌙</button>
         <button class="lang-btn" onclick="toggleLang()">🌐 <span id="lang-toggle-label">EN</span></button>
-        <div style="font-size:12px;color:var(--text3)" id="topbar-balance">余额: 0</div>
+        <button class="lang-btn" onclick="showCustomerService()" id="topbar-cs-btn" style="color:var(--green);font-weight:bold;border-color:var(--green);background:rgba(46,204,122,0.1);">💬 联系客服</button>
       </div>
     </div>
     <!-- 新增的标签栏容器 -->
@@ -590,6 +799,17 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;font-size:15px;" onclick="confirmAnnouncement()">
       确定 / Confirm
     </button>
+  </div>
+</div>
+
+<!-- 联系客服 弹窗（站内点击顶栏"联系客服"时弹出） -->
+<div class="modal-overlay" id="modal-cs" style="z-index: 9999;">
+  <div class="modal-box" style="max-width: 380px;">
+    <div class="modal-header" style="justify-content: space-between; border-bottom:none; margin-bottom: 6px;">
+      <div class="modal-title" style="font-size: 18px; color: var(--green);">💬 联系客服 / Contact Us</div>
+      <div class="modal-close" onclick="document.getElementById('modal-cs').classList.remove('open')">×</div>
+    </div>
+    <div id="cs-modal-body" style="text-align:center;padding:8px 4px 4px;"></div>
   </div>
 </div>
 
@@ -1080,6 +1300,74 @@ function confirmAnnouncement() {
   }
 }
 
+// ===== 客服联系方式（后台可配置：Line / WhatsApp；匿名可读的 RPC，未登录也能显示） =====
+let CS_INFO = null;
+function _csEsc(s){ return String(s==null?'':s).replace(/[&<>"']/g, ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+
+// 根据平台 + 联系方式生成一键联系链接
+function buildCsLink(platform, contact){
+  const c=(contact||'').trim();
+  if(!c) return '';
+  if(/^https?:\/\//i.test(c)) return c;                 // 已是完整链接，原样使用
+  if(platform==='whatsapp'){ const d=c.replace(/[^0-9]/g,''); return d?('https://wa.me/'+d):''; }
+  if(platform==='line'){ return 'https://line.me/ti/p/~'+c.replace(/^@/,''); }
+  return '';
+}
+function csPlatformMeta(platform){
+  if(platform==='line') return { name:'Line', icon:'https://cdn.simpleicons.org/line/00C300', color:'#00C300' };
+  return { name:'WhatsApp', icon:'https://cdn.simpleicons.org/whatsapp/25D366', color:'#25D366' };
+}
+
+// 拉取客服信息
+async function fetchCustomerService(){
+  try{
+    const { data, error } = await sb.rpc('get_customer_service');
+    if(error) throw error;
+    const row = Array.isArray(data)?data[0]:data;
+    if(row && row.contact && String(row.contact).trim()!==''){
+      CS_INFO = { platform: row.platform||'whatsapp', contact: String(row.contact).trim() };
+    } else { CS_INFO = null; }
+  }catch(e){ console.warn('load customer service failed', e); CS_INFO = null; }
+  renderCsFloat();
+}
+
+// 落地页右侧悬浮客服
+function renderCsFloat(){
+  const box=document.getElementById('cs-float');
+  if(!box) return;
+  if(!CS_INFO){ box.style.display='none'; return; }
+  const meta=csPlatformMeta(CS_INFO.platform);
+  const link=buildCsLink(CS_INFO.platform, CS_INFO.contact);
+  box.innerHTML =
+    '<div class="cs-float-title">客服 Support</div>'+
+    '<img src="'+meta.icon+'" alt="'+meta.name+'" class="cs-float-icon">'+
+    '<div class="cs-float-name">'+meta.name+'</div>'+
+    '<div class="cs-float-contact">'+_csEsc(CS_INFO.contact)+'</div>';
+  box.onclick=()=>{ if(link) window.open(link,'_blank','noopener'); };
+  box.style.cursor= link?'pointer':'default';
+  box.style.display='flex';
+}
+
+// 站内点击顶栏"联系客服"弹窗
+function showCustomerService(){
+  const body=document.getElementById('cs-modal-body');
+  if(!CS_INFO){
+    body.innerHTML='<div style="color:var(--text2);font-size:14px;padding:12px 0">暂未设置客服联系方式 / Not available</div>';
+    document.getElementById('modal-cs').classList.add('open'); return;
+  }
+  const meta=csPlatformMeta(CS_INFO.platform);
+  const link=buildCsLink(CS_INFO.platform, CS_INFO.contact);
+  body.innerHTML =
+    '<img src="'+meta.icon+'" alt="'+meta.name+'" style="width:56px;height:56px;margin-bottom:10px">'+
+    '<div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px">'+meta.name+'</div>'+
+    '<div style="font-size:16px;color:var(--text);margin-bottom:16px;word-break:break-all">'+_csEsc(CS_INFO.contact)+'</div>'+
+    (link?('<a href="'+_csEsc(link)+'" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;font-size:15px;text-decoration:none;background:'+meta.color+';border-color:'+meta.color+'">立即联系 / Contact</a>'):'');
+  document.getElementById('modal-cs').classList.add('open');
+}
+
+// 页面载入即拉取（未登录也可读），用于落地页悬浮客服与站内弹窗
+fetchCustomerService();
+
 // 🚀 刷新过场：保证启动动画至少完整显示一段时间后再淡出（仅执行一次）
 const _splashStart = Date.now();
 const MIN_SPLASH_MS = 1000; // 启动加载动画最短显示时长（即使秒开也会停留这么久）
@@ -1166,7 +1454,6 @@ function updateSidebar(){
   document.getElementById('user-avatar-sb').textContent=initials;
   document.getElementById('user-name-sb').textContent=currentProfile.username||currentProfile.email;
   document.getElementById('user-bal-sb').textContent=`${parseFloat(currentProfile.balance||0).toFixed(2)} 积分`;
-  document.getElementById('topbar-balance').textContent=`${t('balance')}: ${parseFloat(currentProfile.balance||0).toFixed(2)} ${t('points')}`;
 }
 
 async function refreshBalance(){
