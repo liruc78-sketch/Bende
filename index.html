@@ -260,14 +260,18 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .lp-footer .lp-kw{color:var(--text3);font-size:12px;margin-top:10px}
 @media(max-width:768px){.lp-hero h1{font-size:27px}.lp-hero{padding:40px 16px 24px}.lp-nav{padding:14px 20px}.lp-section{padding:38px 0}}
 
-/* 右侧悬浮客服 */
-.cs-float{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:40;background:var(--bg2);border:1px solid var(--border);border-right:none;border-radius:12px 0 0 12px;box-shadow:-4px 4px 20px rgba(0,0,0,.25);padding:14px 12px;display:flex;flex-direction:column;align-items:center;gap:6px;width:98px;text-align:center;transition:background .2s}
-.cs-float:hover{background:var(--bg3)}
-.cs-float-title{font-size:12px;color:var(--green);font-weight:700}
-.cs-float-icon{width:34px;height:34px}
+/* 右侧悬浮客服（可同时显示多个联系方式） */
+.cs-float{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:40;background:var(--bg2);border:1px solid var(--border);border-right:none;border-radius:12px 0 0 12px;box-shadow:-4px 4px 20px rgba(0,0,0,.25);padding:12px 10px;display:flex;flex-direction:column;align-items:center;gap:2px;width:100px;text-align:center}
+.cs-float-title{font-size:12px;color:var(--green);font-weight:700;margin-bottom:4px}
+.cs-float-item{display:flex;flex-direction:column;align-items:center;gap:3px;text-decoration:none;padding:8px 0;width:100%;border-top:1px solid var(--border);transition:opacity .15s}
+.cs-float-item:first-of-type{border-top:none}
+.cs-float-item:hover{opacity:.8}
+.cs-float-icon{width:32px;height:32px}
 .cs-float-name{font-size:12px;color:var(--text);font-weight:600}
-.cs-float-contact{font-size:11px;color:var(--text2);word-break:break-all;line-height:1.35}
-@media(max-width:768px){.cs-float{width:76px;padding:10px 8px}.cs-float-icon{width:28px;height:28px}}
+.cs-float-contact{font-size:11px;color:var(--text2);word-break:break-all;line-height:1.3}
+.cs-modal-item{padding:14px 0;border-bottom:1px solid var(--border)}
+.cs-modal-item:last-child{border-bottom:none}
+@media(max-width:768px){.cs-float{width:82px;padding:10px 6px}.cs-float-icon{width:28px;height:28px}}
 
 /* PROGRESS BAR */
 .progress-bar{background:var(--bg3);border-radius:20px;height:6px;overflow:hidden}
@@ -758,7 +762,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <button class="lang-btn" onclick="showAnnouncementManual()" style="color:var(--accent);font-weight:bold;border-color:var(--accent);background:rgba(79,142,247,0.1);">📢 <span id="btn-announce-text">公告</span></button>
         <button class="lang-btn" onclick="toggleTheme()" id="theme-btn" style="font-size:14px;padding:4px 8px;" title="切换主题">🌙</button>
         <button class="lang-btn" onclick="toggleLang()">🌐 <span id="lang-toggle-label">EN</span></button>
-        <button class="lang-btn" onclick="showCustomerService()" id="topbar-cs-btn" style="color:var(--green);font-weight:bold;border-color:var(--green);background:rgba(46,204,122,0.1);">💬 联系客服</button>
+        <button class="lang-btn" onclick="showCustomerService()" id="topbar-cs-btn" style="color:var(--green);font-weight:bold;border-color:var(--green);background:rgba(46,204,122,0.1);">💬 客服</button>
       </div>
     </div>
     <!-- 新增的标签栏容器 -->
@@ -1300,8 +1304,8 @@ function confirmAnnouncement() {
   }
 }
 
-// ===== 客服联系方式（后台可配置：Line / WhatsApp；匿名可读的 RPC，未登录也能显示） =====
-let CS_INFO = null;
+// ===== 客服联系方式（后台可配置多个：WhatsApp / Line；匿名可读的 RPC，未登录也能显示，同时显示全部） =====
+let CS_LIST = [];
 function _csEsc(s){ return String(s==null?'':s).replace(/[&<>"']/g, ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
 
 // 根据平台 + 联系方式生成一键联系链接
@@ -1318,54 +1322,58 @@ function csPlatformMeta(platform){
   return { name:'WhatsApp', icon:'https://cdn.simpleicons.org/whatsapp/25D366', color:'#25D366' };
 }
 
-// 拉取客服信息
+// 拉取所有客服信息（RPC 返回数组）
 async function fetchCustomerService(){
   try{
     const { data, error } = await sb.rpc('get_customer_service');
     if(error) throw error;
-    const row = Array.isArray(data)?data[0]:data;
-    if(row && row.contact && String(row.contact).trim()!==''){
-      CS_INFO = { platform: row.platform||'whatsapp', contact: String(row.contact).trim() };
-    } else { CS_INFO = null; }
-  }catch(e){ console.warn('load customer service failed', e); CS_INFO = null; }
+    const arr = Array.isArray(data) ? data : (data ? [data] : []);
+    CS_LIST = arr.filter(x => x && x.contact && String(x.contact).trim()!=='')
+                 .map(x => ({ platform: x.platform||'whatsapp', contact: String(x.contact).trim() }));
+  }catch(e){ console.warn('load customer service failed', e); CS_LIST = []; }
   renderCsFloat();
 }
 
-// 落地页右侧悬浮客服
+// 落地页右侧悬浮客服（同时显示所有联系方式）
 function renderCsFloat(){
   const box=document.getElementById('cs-float');
   if(!box) return;
-  if(!CS_INFO){ box.style.display='none'; return; }
-  const meta=csPlatformMeta(CS_INFO.platform);
-  const link=buildCsLink(CS_INFO.platform, CS_INFO.contact);
-  box.innerHTML =
-    '<div class="cs-float-title">客服 Support</div>'+
-    '<img src="'+meta.icon+'" alt="'+meta.name+'" class="cs-float-icon">'+
-    '<div class="cs-float-name">'+meta.name+'</div>'+
-    '<div class="cs-float-contact">'+_csEsc(CS_INFO.contact)+'</div>';
-  box.onclick=()=>{ if(link) window.open(link,'_blank','noopener'); };
-  box.style.cursor= link?'pointer':'default';
+  if(!CS_LIST.length){ box.style.display='none'; return; }
+  let html='<div class="cs-float-title">客服 Support</div>';
+  CS_LIST.forEach(item=>{
+    const meta=csPlatformMeta(item.platform);
+    const link=buildCsLink(item.platform, item.contact);
+    html += '<a class="cs-float-item" href="'+_csEsc(link)+'" target="_blank" rel="noopener noreferrer">'
+          + '<img src="'+meta.icon+'" alt="'+meta.name+'" class="cs-float-icon">'
+          + '<div class="cs-float-name">'+meta.name+'</div>'
+          + '<div class="cs-float-contact">'+_csEsc(item.contact)+'</div>'
+          + '</a>';
+  });
+  box.innerHTML=html;
   box.style.display='flex';
 }
 
-// 站内点击顶栏"联系客服"弹窗
+// 站内点击顶栏"客服"弹窗（同时显示所有联系方式）
 function showCustomerService(){
   const body=document.getElementById('cs-modal-body');
-  if(!CS_INFO){
+  if(!CS_LIST.length){
     body.innerHTML='<div style="color:var(--text2);font-size:14px;padding:12px 0">暂未设置客服联系方式 / Not available</div>';
-    document.getElementById('modal-cs').classList.add('open'); return;
+  } else {
+    body.innerHTML = CS_LIST.map(item=>{
+      const meta=csPlatformMeta(item.platform);
+      const link=buildCsLink(item.platform, item.contact);
+      return '<div class="cs-modal-item">'
+        + '<img src="'+meta.icon+'" alt="'+meta.name+'" style="width:46px;height:46px;margin-bottom:8px">'
+        + '<div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:2px">'+meta.name+'</div>'
+        + '<div style="font-size:15px;color:var(--text);margin-bottom:12px;word-break:break-all">'+_csEsc(item.contact)+'</div>'
+        + '<a href="'+_csEsc(link)+'" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="justify-content:center;padding:10px 20px;font-size:14px;text-decoration:none;background:'+meta.color+';border-color:'+meta.color+'">立即联系 '+meta.name+'</a>'
+        + '</div>';
+    }).join('');
   }
-  const meta=csPlatformMeta(CS_INFO.platform);
-  const link=buildCsLink(CS_INFO.platform, CS_INFO.contact);
-  body.innerHTML =
-    '<img src="'+meta.icon+'" alt="'+meta.name+'" style="width:56px;height:56px;margin-bottom:10px">'+
-    '<div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px">'+meta.name+'</div>'+
-    '<div style="font-size:16px;color:var(--text);margin-bottom:16px;word-break:break-all">'+_csEsc(CS_INFO.contact)+'</div>'+
-    (link?('<a href="'+_csEsc(link)+'" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;font-size:15px;text-decoration:none;background:'+meta.color+';border-color:'+meta.color+'">立即联系 / Contact</a>'):'');
   document.getElementById('modal-cs').classList.add('open');
 }
 
-// 页面载入即拉取（未登录也可读），用于落地页悬浮客服与站内弹窗
+// 页面载入即拉取（未登录也可读）
 fetchCustomerService();
 
 // 🚀 刷新过场：保证启动动画至少完整显示一段时间后再淡出（仅执行一次）
