@@ -1,0 +1,13 @@
+# 后台管理面板（不纳入本仓库，避免暴露后台接口）
+admin.html
+
+# 历史备份文件
+*.bak
+*.bak-*
+index.html.bak-*
+
+# 系统 / 编辑器杂项
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log

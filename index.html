@@ -214,7 +214,18 @@ tr:hover td{background:rgba(255,255,255,.02)}
 @keyframes splashFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
 /* AUTH */
-#auth-screen{min-height:100vh;background:var(--bg);display:flex;flex-direction:column;overflow-y:auto}
+#auth-screen{min-height:100vh;background:var(--bg);display:flex;flex-direction:column;position:relative;z-index:0}
+/* 宣传页背景：App 图标下雨效果（落在背景色之上、内容之下） */
+#icon-rain{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.rain-drop{position:absolute;top:0;line-height:0;will-change:transform,opacity;opacity:0;animation:icon-fall linear infinite}
+#icon-rain .brand-icon{width:100%;height:100%;object-fit:contain;display:block}
+@keyframes icon-fall{
+  0%{transform:translate3d(0,-12vh,0) rotate(0deg);opacity:0}
+  10%{opacity:var(--op,.3)}
+  90%{opacity:var(--op,.3)}
+  100%{transform:translate3d(var(--dx,0px),113vh,0) rotate(var(--rot,30deg));opacity:0}
+}
+@media(prefers-reduced-motion:reduce){#icon-rain{display:none}}
 .auth-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);width:100%;max-width:850px;display:flex;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,0.3)}
 .auth-left{flex:1;padding:50px 40px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(79,142,247,0.03);border-right:1px solid var(--border);text-align:center}
 .auth-right{flex:1;padding:50px 40px;display:flex;flex-direction:column;justify-content:center}
@@ -255,6 +266,9 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .lp-faq-item h3{font-size:16px;color:var(--text);margin-bottom:8px}
 .lp-faq-item p{font-size:14px;color:var(--text2);line-height:1.75}
 .lp-auth-anchor{display:flex;justify-content:center;padding:8px 20px 0}
+#auth-view{min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px}
+#auth-view .lp-auth-anchor{width:100%}
+.auth-view-bar{width:100%;max-width:850px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:24px}
 .lp-footer{border-top:1px solid var(--border);padding:34px 24px;text-align:center;color:var(--text3);font-size:13px;line-height:1.9}
 .lp-footer a{color:var(--text2)}
 .lp-footer .lp-kw{color:var(--text3);font-size:12px;margin-top:10px}
@@ -553,12 +567,18 @@ tr:hover td{background:rgba(255,255,255,.02)}
   <!-- 右侧悬浮客服（未登录落地页可见；登录后随 #auth-screen 一起隐藏） -->
   <div id="cs-float" class="cs-float" style="display:none"></div>
 
+  <!-- 背景：App 图标下雨动画（宣传页 + 登录/注册界面都显示；仅 logo 无名称；图标取自可筛选项目 PROJECT_DATA，由 JS 生成） -->
+  <div id="icon-rain" aria-hidden="true"></div>
+
+  <!-- 宣传落地页（默认显示；点击登录/注册按钮后切换到 #auth-view 登录界面） -->
+  <div id="landing-view">
+
   <!-- 顶部导航 -->
   <header class="lp-nav">
     <div class="lp-nav-brand"><img src="./favicon.png" alt="本德筛号中心 Logo">本德筛号中心</div>
     <div class="lp-nav-links">
-      <a class="lp-btn" href="#login-area">登录</a>
-      <a class="lp-btn lp-btn-primary" href="#login-area">免费注册</a>
+      <button type="button" class="lp-btn" onclick="showAuthView('login')">登录</button>
+      <button type="button" class="lp-btn lp-btn-primary" onclick="showAuthView('register')">免费注册</button>
     </div>
   </header>
 
@@ -578,54 +598,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
     </div>
   </section>
 
-  <!-- 登录 / 注册（原有功能，完整保留，未做任何修改） -->
-  <section id="login-area" style="padding:24px 0 8px">
-    <div class="lp-auth-anchor">
-  <div class="auth-box">
-    <!-- 左侧：Logo 和 标题 -->
-    <div class="auth-left">
-      <img src="./favicon.png" alt="Logo" class="auth-logo-icon">
-      <h1>本德筛号中心</h1>
-      <p id="auth-subtitle">号码筛选平台<br>Phone Screening Platform</p>
-    </div>
-    
-    <!-- 右侧：登录/注册表单 -->
-    <div class="auth-right">
-      <div class="auth-tabs">
-        <div class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">登录 Login</div>
-        <div class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">注册 Register</div>
-      </div>
-      <div id="auth-err" class="auth-err"></div>
-      <div id="login-form">
-        <div class="form-group">
-          <label class="form-label">邮箱 Email</label>
-          <input type="email" id="login-email" class="form-input" placeholder="your@email.com"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label">密码 Password</label>
-          <input type="password" id="login-pwd" class="form-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
-        </div>
-        <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;font-size:15px;" onclick="doLogin()" id="login-btn">登录 Login</button>
-      </div>
-      <div id="register-form" style="display:none">
-        <div class="form-group">
-          <label class="form-label">邮箱 Email</label>
-          <input type="email" id="reg-email" class="form-input" placeholder="your@email.com"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label">密码 Password（至少6位 / min 6 chars）</label>
-          <input type="password" id="reg-pwd" class="form-input" placeholder="••••••••"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label">确认密码 Confirm Password</label>
-          <input type="password" id="reg-pwd2" class="form-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')doRegister()"/>
-        </div>
-        <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;font-size:15px;" onclick="doRegister()" id="reg-btn">注册 Register</button>
-      </div>
-    </div>
-  </div>
-    </div><!-- /.lp-auth-anchor -->
-  </section><!-- /#login-area -->
+  <!-- 登录 / 注册卡片已从宣传页移出，改为点击导航按钮后在 #auth-view 显示 -->
 
   <!-- 号码筛选服务 -->
   <section class="lp-section">
@@ -656,6 +629,10 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div class="lp-card">
           <h3>全球号码检测</h3>
           <p>支持全球主流国家与地区的手机号码状态查询，数据实时更新，满足跨境与出海业务的筛号需求。</p>
+        </div>
+        <div class="lp-card" style="cursor:pointer" onclick="document.getElementById('crawler').scrollIntoView({behavior:'smooth'})">
+          <h3>爬虫定制 / 数据采集</h3>
+          <p>承接定制化爬虫与数据采集开发，按需抓取指定网站或平台的公开数据，并完成去重、清洗与结构化，一键导出 Excel，支持定时增量采集与全流程自动化。<span style="color:var(--accent);white-space:nowrap">了解更多 →</span></p>
         </div>
       </div>
     </div>
@@ -737,6 +714,61 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <div class="lp-kw">筛号 · 号码筛选 · 空号检测 · 空号过滤 · WhatsApp 筛号 · Telegram 筛号 · 号码活跃度检测 · 性别年龄筛选 · 全球号码筛选 · 定制爬虫 · 数据采集 · 数据抓取</div>
     <div style="margin-top:8px">© 2026 本德筛号中心（benderdata.com）</div>
   </footer>
+
+  </div><!-- /#landing-view -->
+
+  <!-- 登录 / 注册界面（点击宣传页导航的登录/注册按钮后显示；原有登录逻辑完整保留） -->
+  <div id="auth-view" style="display:none">
+    <div class="auth-view-bar">
+      <div class="lp-nav-brand"><img src="./favicon.png" alt="本德筛号中心 Logo">本德筛号中心</div>
+      <button type="button" class="lp-btn" onclick="showLandingView()">← 返回首页 Home</button>
+    </div>
+    <div class="lp-auth-anchor">
+  <div class="auth-box">
+    <!-- 左侧：Logo 和 标题 -->
+    <div class="auth-left">
+      <img src="./favicon.png" alt="Logo" class="auth-logo-icon">
+      <h1>本德筛号中心</h1>
+      <p id="auth-subtitle">号码筛选平台<br>Phone Screening Platform</p>
+    </div>
+
+    <!-- 右侧：登录/注册表单 -->
+    <div class="auth-right">
+      <div class="auth-tabs">
+        <div class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">登录 Login</div>
+        <div class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">注册 Register</div>
+      </div>
+      <div id="auth-err" class="auth-err"></div>
+      <div id="login-form">
+        <div class="form-group">
+          <label class="form-label">邮箱 Email</label>
+          <input type="email" id="login-email" class="form-input" placeholder="your@email.com"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">密码 Password</label>
+          <input type="password" id="login-pwd" class="form-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;font-size:15px;" onclick="doLogin()" id="login-btn">登录 Login</button>
+      </div>
+      <div id="register-form" style="display:none">
+        <div class="form-group">
+          <label class="form-label">邮箱 Email</label>
+          <input type="email" id="reg-email" class="form-input" placeholder="your@email.com"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">密码 Password（至少6位 / min 6 chars）</label>
+          <input type="password" id="reg-pwd" class="form-input" placeholder="••••••••"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">确认密码 Confirm Password</label>
+          <input type="password" id="reg-pwd2" class="form-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')doRegister()"/>
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;font-size:15px;" onclick="doRegister()" id="reg-btn">注册 Register</button>
+      </div>
+    </div>
+  </div>
+    </div><!-- /.lp-auth-anchor -->
+  </div><!-- /#auth-view -->
 
 </div><!-- /#auth-screen -->
 
@@ -1167,6 +1199,61 @@ function switchAuthTab(tab){
   document.getElementById('register-form').style.display=tab==='register'?'':'none';
   document.getElementById('auth-err').style.display='none';
 }
+// 从宣传落地页跳转到登录/注册界面
+function showAuthView(tab){
+  const lv=document.getElementById('landing-view');
+  if(lv) lv.style.display='none';
+  const av=document.getElementById('auth-view');
+  if(av) av.style.display='flex';
+  switchAuthTab(tab==='register'?'register':'login');
+  window.scrollTo(0,0);
+}
+// 返回宣传落地页（隐藏登录/注册界面）
+function showLandingView(){
+  const av=document.getElementById('auth-view');
+  if(av) av.style.display='none';
+  const lv=document.getElementById('landing-view');
+  if(lv) lv.style.display='';
+  const err=document.getElementById('auth-err');
+  if(err) err.style.display='none';
+  window.scrollTo(0,0);
+}
+// 记录本浏览器已注册/登录过（老用户）
+function markReturningUser(){ try{ localStorage.setItem('bd_returning_user','1'); }catch(e){} }
+function isReturningUser(){ try{ return localStorage.getItem('bd_returning_user')==='1'; }catch(e){ return false; } }
+// 未登录进入时的入口：老用户直达登录界面；从未登录过的新用户展示宣传落地页
+function showAuthEntry(){
+  if(isReturningUser()) showAuthView('login');
+  else showLandingView();
+}
+// 宣传页背景：App 图标下雨（图标来自可筛选项目 PROJECT_DATA，仅 logo 无名称）
+function buildIconRain(){
+  var host=document.getElementById('icon-rain');
+  if(!host || host.dataset.built) return;
+  var icons=(typeof PROJECT_DATA!=='undefined'?PROJECT_DATA:[]).map(function(p){return p.icon;}).filter(Boolean);
+  if(!icons.length) return;
+  // 洗牌，保证每个筛选项目图标至少出现一次
+  var pool=icons.slice();
+  for(var s=pool.length-1;s>0;s--){var j=Math.floor(Math.random()*(s+1));var t=pool[s];pool[s]=pool[j];pool[j]=t;}
+  var COUNT=Math.max(46, icons.length);
+  var html='';
+  for(var i=0;i<COUNT;i++){
+    var icon = i<pool.length ? pool[i] : icons[Math.floor(Math.random()*icons.length)];
+    var left = (Math.random()*100).toFixed(2);          // 水平位置 %
+    var size = (16+Math.random()*26).toFixed(0);         // 16–42px
+    var dur  = (7+Math.random()*9).toFixed(2);           // 7–16s
+    var delay= (-Math.random()*dur).toFixed(2);          // 负延迟错峰，加载即已在下雨
+    var op   = (0.18+Math.random()*0.27).toFixed(2);     // 透明度 0.18–0.45
+    var dx   = (Math.random()*80-40).toFixed(0);         // 水平漂移 -40~40px
+    var rot  = (Math.random()*90-45).toFixed(0);         // 旋转 -45~45deg
+    html+='<span class="rain-drop" style="left:'+left+'%;width:'+size+'px;height:'+size+'px;'+
+          'animation-duration:'+dur+'s;animation-delay:'+delay+'s;'+
+          '--op:'+op+';--dx:'+dx+'px;--rot:'+rot+'deg">'+icon+'</span>';
+  }
+  host.innerHTML=html;
+  host.dataset.built='1';
+}
+if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',buildIconRain);}else{buildIconRain();}
 async function doLogin(){
   const email=document.getElementById('login-email').value.trim();
   const pwd=document.getElementById('login-pwd').value;
@@ -1201,6 +1288,7 @@ async function doLogin(){
           });
         }catch(ue){console.warn('upsert profile failed:',ue.message);}
       }
+      markReturningUser(); // 登录成功，记录为老用户；下次访问直达登录界面
       document.getElementById('auth-screen').style.display='none';
       document.getElementById('app').style.display='flex';
       updateSidebar();
@@ -1228,6 +1316,7 @@ async function doRegister(){
   const{error}=await sb.auth.signUp({email,password:pwd});
   document.getElementById('reg-btn').textContent='注册 Register';
   if(error){showAuthErr(error.message);return;}
+  markReturningUser(); // 注册成功，记录为老用户；下次访问直达登录界面
   toast('注册成功！请登录 / Registered! Please log in','success');
   switchAuthTab('login');
 }
@@ -1244,6 +1333,7 @@ async function doLogout(){
   currentUser=null;currentProfile=null;
   document.getElementById('app').style.display='none';
   document.getElementById('auth-screen').style.display='flex';
+  showAuthEntry(); // 老用户退出后直达登录界面；从未登录过的新用户回到宣传页
 }
 
 // 🚀 新增：从数据库加载动态价格并覆盖本地配置
@@ -1428,6 +1518,7 @@ async function initApp(session) {
     if(!currentProfile){
       currentProfile={id:session.user.id,email:session.user.email,balance:0,role:'user'};
     }
+    markReturningUser(); // 有会话说明登录过，记录为老用户
     document.getElementById('auth-screen').style.display='none';
     document.getElementById('app').style.display='flex';
     hideSplash(); // 🚀 进入主程序，淡出过场动画
@@ -1457,6 +1548,7 @@ sb.auth.onAuthStateChange(async(event,session)=>{
     currentProfile=null;
     document.getElementById('app').style.display='none';
     document.getElementById('auth-screen').style.display='flex';
+    showAuthEntry(); // 老用户退出后直达登录界面；新用户回到宣传页
     hideSplash(); // 🚀 已登出，淡出过场动画，显示登录页
   }
 });
@@ -1465,6 +1557,7 @@ sb.auth.getSession().then(({data:{session}, error})=>{
   if(error || !session){
     if(error) sb.auth.signOut();
     document.getElementById('auth-screen').style.display='flex';
+    showAuthEntry(); // 老用户（注册/登录过）直达登录界面；从未登录过的新用户展示宣传落地页
     hideSplash(); // 🚀 无有效会话，淡出过场动画，显示登录页
   } else {
     initApp(session); 
