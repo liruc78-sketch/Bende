@@ -2780,31 +2780,32 @@ async function downloadInvalid(remoteId) {
     if (srcErr || !srcData) throw new Error(currentLang==='zh'?'源文件已过期，无法生成无效号码':'Source file missing, cannot generate invalid list');
     const srcLines = srcData.file_content.split(/\r\n|\n/).map(l => l.trim()).filter(l => l);
 
-    // 2. 从官方 API 获取有效号码
+    // 2. 从官方 API 获取有效号码（获取失败必须报错，否则会把全部号码当成无效导出）
     const resValid = await proxyFetch('/api/task/result', { queryParams: { taskId: remoteId } });
-    let validLines = [];
-    if (resValid.ok) {
-        const blob = await resValid.blob();
-        const validText = await blob.text();
-        validLines = validText.split(/\r\n|\n/).map(l => l.trim()).filter(l => l);
-    }
+    if (!resValid.ok) throw new Error(currentLang==='zh'?'获取有效号码失败，无法生成无效号码':'Failed to fetch valid numbers, cannot generate invalid list');
+    const validText = await resValid.text();
+    const validLines = validText.split(/\r\n|\n/).map(l => l.trim()).filter(l => l);
 
     // 3. 集合差集计算 (源文件 - 有效文件 = 无效文件)
-    const validSet = new Set(validLines);
-    const invalidLines = srcLines.filter(l => !validSet.has(l));
+    // ⚠️ 号码规范化：仅保留数字，兼容 +、空格、连字符、括号，以及结果为 CSV 时取首列。
+    // 源文件形如 +18032272439，官方结果可能形如 18032272439，若按原始字符串直接比对会
+    // 完全不匹配，导致差集为空、把上传的全部号码都当成“非蓝号码”导出（本次 Bug 根因）。
+    const normPhone = s => (s || '').split(',')[0].replace(/\D/g, '');
+    const validSet = new Set(validLines.map(normPhone).filter(Boolean));
+    const invalidLines = srcLines.filter(l => !validSet.has(normPhone(l)));
 
     if (invalidLines.length === 0) {
         toast(currentLang==='zh'?'该任务没有无效号码':'No invalid numbers found', 'info');
         return;
     }
 
-    // 4. 生成并下载无效文件
+    // 4. 生成并下载无效文件（保留源文件原始格式）
     const blob = new Blob([invalidLines.join('\n')], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url; a.download = `invalid_${remoteId}.txt`; a.click();
     URL.revokeObjectURL(url);
-    toast(currentLang==='zh'?'无效号码下载成功':'Invalid numbers downloaded','success');
+    toast(currentLang==='zh'?`无效号码下载成功（${invalidLines.length} 条）`:`Invalid numbers downloaded (${invalidLines.length})`,'success');
   } catch(e) { toast(e.message, 'error'); }
 }
 
