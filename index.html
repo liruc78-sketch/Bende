@@ -314,10 +314,6 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .toast-info{background:#1a3a6b}
 @keyframes slideIn{from{transform:translateX(40px);opacity:0}to{transform:translateX(0);opacity:1}}
 
-/* ADMIN TAB */
-.admin-tabs{display:flex;gap:4px;margin-bottom:20px;background:var(--bg3);padding:4px;border-radius:10px;display:inline-flex}
-.admin-tab{padding:7px 16px;border-radius:7px;cursor:pointer;font-size:13px;color:var(--text2)}
-.admin-tab.active{background:var(--bg2);color:var(--text);font-weight:500}
 
 /* HOME SEARCH */
 .home-search-wrap { margin-bottom: 20px; position: relative; }
@@ -836,24 +832,6 @@ tr:hover td{background:rgba(255,255,255,.02)}
 </div>
 
 <!-- MODALS -->
-<div class="modal-overlay" id="modal-approve">
-  <div class="modal-box">
-    <div class="modal-header">
-      <div class="modal-title" id="modal-approve-title">审核充值订单</div>
-      <div class="modal-close" onclick="closeModal('modal-approve')">×</div>
-    </div>
-    <div id="modal-approve-body"></div>
-  </div>
-</div>
-<div class="modal-overlay" id="modal-adjust">
-  <div class="modal-box">
-    <div class="modal-header">
-      <div class="modal-title">手动调整积分 / Adjust Balance</div>
-      <div class="modal-close" onclick="closeModal('modal-adjust')">×</div>
-    </div>
-    <div id="modal-adjust-body"></div>
-  </div>
-</div>
 
 <!-- ANNOUNCEMENT MODAL -->
 <div class="modal-overlay" id="modal-announcement" style="z-index: 9999;">
@@ -1036,6 +1014,7 @@ document.addEventListener('DOMContentLoaded', () => {
 const PROJECT_DATA = [
   { id: 'whatsapp', name: {zh:'WhatsApp', en:'WhatsApp'}, icon: '<img src="https://cdn.simpleicons.org/whatsapp/25D366" class="brand-icon">', items: [
     {label:'WS筛开通',price:'0.00008/条',val:'wsValid', rule:'📌 数量范围: 1,000-5,000,000 | 不支持国家: 中国'},
+    {label:'WS开通简筛',price:'0.00008/条',val:'wsSimpleValid', rule:'📌 数量范围: 1,000-5,000,000 | 不支持国家: 中国', defaultClosed:true},
     {label:'WS筛活跃',price:'0.0008/条',val:'wsActive', rule:'📌 数量范围: 500-1,000,000 | 不支持国家: 中国'},
     {label:'WS性别年龄-全格式',price:'0.002/条',val:'wsGender', rule:'📌 数量范围: 100-1,000,000 | 不支持国家: 中国'}
   ]},
@@ -1085,7 +1064,8 @@ const PROJECT_DATA = [
     {label:'Mexc筛开通',price:'0.0055/条',val:'mexcValid', rule:'📌 数量范围: 500-1,000,000 | 不支持国家: 中国、香港、澳门、台湾'}
   ]},
   { id: 'wechat', name: {zh:'WeChat/微信', en:'WeChat'}, icon: '<img src="https://cdn.simpleicons.org/wechat/07C160" class="brand-icon">', items: [
-    {label:'WeChat筛开通',price:'0.001/条',val:'wxValid', rule:'📌 数量范围: 100-1,000,000 | 不支持国家: 中国、香港、澳门'}
+    {label:'WeChat筛开通',price:'0.001/条',val:'wxValid', rule:'📌 数量范围: 100-1,000,000 | 不支持国家: 中国、香港、澳门'},
+    {label:'WeChat筛全格式',price:'0.002/条',val:'wxAll', rule:'📌 数量范围: 100-1,000,000 | 不支持国家: 中国、香港、澳门', defaultClosed:true}
   ]},
   { id: 'rcs', name: {zh:'RCS', en:'RCS'}, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#4285F4" stroke-width="2" class="brand-icon"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>', items: [
     {label:'RCS筛开通+系统',price:'0.001/条',val:'rcsSystem', rule:'📌 数量范围: 1,000-1,000,000 | 不支持国家: 中国'}
@@ -1111,6 +1091,7 @@ const PROJECT_DATA = [
   { id: 'zalo', name: {zh:'Zalo', en:'Zalo'}, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#0068ff" stroke-width="2" class="brand-icon"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>', items: [
     {label:'Zalo筛开通',price:'0.0005/条',val:'zaloValid', rule:'📌 数量范围: 2,000-1,000,000 | 不支持国家: 中国、香港、澳门、台湾'},
     {label:'Zalo筛活跃',price:'0.0055/条',val:'zaloActive', rule:'📌 数量范围: 500-1,000,000 | 不支持国家: 中国'},
+    {label:'Zalo筛性别年龄',price:'0.006/条',val:'zaloGender', rule:'📌 数量范围: 500-1,000,000 | 不支持国家: 中国、香港、澳门、台湾', defaultClosed:true},
     {label:'Zalo急速筛性别年龄',price:'0.0065/条',val:'zaloGenderQuick', rule:'📌 数量范围: 500-1,000,000 | 不支持国家: 中国、香港、澳门、台湾'}
   ]},
   { id: 'sideline', name: {zh:'Sideline', en:'Sideline'}, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#00b894" stroke-width="2" class="brand-icon"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>', items: [
@@ -1154,7 +1135,6 @@ const T={
   'tasks':{zh:'任务列表',en:'My Tasks'},
   'recharge':{zh:'充值',en:'Recharge'},
   'logs':{zh:'积分记录',en:'Balance Logs'},
-  'admin':{zh:'后台管理',en:'Admin Panel'},
   'profile':{zh:'个人中心',en:'Profile'},
   'points':{zh:'积分',en:'pts'},
   'balance':{zh:'余额',en:'Balance'},
@@ -1338,26 +1318,29 @@ async function doLogout(){
 
 // 🚀 新增：从数据库加载动态价格并覆盖本地配置
 async function loadDynamicPrices() {
+  let prices = {};
   try {
     const { data } = await sb.from('site_settings').select('value').eq('key', 'project_prices').single();
-    if (data && data.value) {
-      const prices = JSON.parse(data.value);
-      PROJECT_DATA.forEach(cat => {
-        cat.items.forEach(item => {
-          if (prices[item.val] !== undefined) {
-            const newPrice = parseFloat(prices[item.val]);
-            // 后台价格为 0（或负数/非法值）即视为关闭，无法筛选
-            if (!(newPrice > 0)) {
-              item.price = '暂时关闭';
-              item.val = 'closed'; // 强制将 val 改为 closed，阻断提交
-            } else {
-              item.price = newPrice + '/条';
-            }
-          }
-        });
-      });
-    }
+    if (data && data.value) prices = JSON.parse(data.value);
   } catch (e) { console.warn("Load prices failed", e); }
+  PROJECT_DATA.forEach(cat => {
+    cat.items.forEach(item => {
+      if (prices[item.val] !== undefined) {
+        const newPrice = parseFloat(prices[item.val]);
+        // 后台价格为 0（或负数/非法值）即视为关闭，无法筛选
+        if (!(newPrice > 0)) {
+          item.price = '暂时关闭';
+          item.val = 'closed'; // 强制将 val 改为 closed，阻断提交
+        } else {
+          item.price = newPrice + '/条';
+        }
+      } else if (item.defaultClosed) {
+        // 新增项目：后台『动态价格管理』尚未设置正价前默认关闭；设好价格(>0)后自动开放
+        item.price = '暂时关闭';
+        item.val = 'closed';
+      }
+    });
+  });
 }
 
 // 🚀 新增：把公告文本安全地渲染进弹窗（转义 HTML 后，将 http(s) 链接变为可点击）
@@ -1615,8 +1598,6 @@ function updateStaticText() {
   document.getElementById('nav-label-recharge').textContent = t('recharge');
   document.getElementById('nav-sec-services').textContent = currentLang==='zh'?'筛选项目':'SERVICES';
   document.getElementById('nav-label-logs').textContent = t('logs');
-  if(document.getElementById('nav-sec2')) document.getElementById('nav-sec2').textContent = currentLang==='zh'?'管理员':'ADMIN';
-  if(document.getElementById('nav-label-admin')) document.getElementById('nav-label-admin').textContent = t('admin');
   document.getElementById('logout-label').textContent = currentLang==='zh'?'退出':'Logout';
 }
 
@@ -1639,7 +1620,6 @@ const STATIC_ICONS = {
   dashboard: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>',
   recharge: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>',
   logs: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>',
-  admin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
   profile: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>'
 };
 
@@ -1751,7 +1731,6 @@ function navigate(page, subType = null, isPopState = false){
       dashboard:renderDashboard,
       recharge:renderRecharge,
       logs:renderLogs,
-      admin:renderAdmin,
       profile:renderProfile,
     };
     if(pages[page])pages[page]();
@@ -3493,199 +3472,6 @@ async function renderLogs(){
       </table></div>`}
     </div>
   </div>`;
-}
-
-// ─── NOTE: Run this SQL in Supabase to fix RLS policies ───
-// DROP POLICY IF EXISTS profiles_admin_all ON public.profiles;
-// CREATE POLICY profiles_admin_all ON public.profiles FOR ALL TO authenticated USING (true);
-// ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tasks_own ON public.tasks FOR ALL USING (auth.uid()=user_id) WITH CHECK (auth.uid()=user_id);
-// ALTER TABLE public.recharge_orders ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY orders_own ON public.recharge_orders FOR ALL USING (auth.uid()=user_id) WITH CHECK (auth.uid()=user_id);
-// ALTER TABLE public.balance_logs ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY logs_own ON public.balance_logs FOR ALL USING (auth.uid()=user_id) WITH CHECK (auth.uid()=user_id);
-// ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY settings_read ON public.site_settings FOR SELECT TO authenticated USING (true);
-// CREATE POLICY settings_write ON public.site_settings FOR ALL USING (EXISTS(SELECT 1 FROM public.profiles WHERE id=auth.uid() AND role='admin'));
-// ─── ADMIN PANEL ───
-let adminTab='orders';
-async function renderAdmin(){
-  if(!currentProfile||currentProfile.role!=='admin'){
-    document.getElementById('content').innerHTML='<div class="empty-state">Access Denied</div>';return;
-  }
-  const c=document.getElementById('content');
-  c.innerHTML=`
-  <div class="admin-tabs">
-    <div class="admin-tab ${adminTab==='orders'?'active':''}" onclick="setAdminTab('orders')">${currentLang==='zh'?'充值审核':'Recharge Review'}</div>
-    <div class="admin-tab ${adminTab==='users'?'active':''}" onclick="setAdminTab('users')">${currentLang==='zh'?'用户管理':'Users'}</div>
-    <div class="admin-tab ${adminTab==='settings'?'active':''}" onclick="setAdminTab('settings')">${currentLang==='zh'?'系统设置':'Settings'}</div>
-  </div>
-  <div id="admin-content"></div>`;
-  loadAdminTab(adminTab);
-}
-function setAdminTab(tab){
-  adminTab=tab;renderAdmin();
-}
-async function loadAdminTab(tab){
-  const c=document.getElementById('admin-content');
-  if(tab==='orders'){
-    const{data:orders}=await sb.from('recharge_orders').select('*,profiles!recharge_orders_user_id_fkey(email,username)').order('created_at',{ascending:false});
-    c.innerHTML=`<div class="section">
-      <div class="section-header"><div class="section-title">${currentLang==='zh'?'充值审核':'Recharge Orders'}</div></div>
-      <div class="section-body" style="padding:0">
-        ${(orders||[]).length===0?`<div class="empty-state">${t('empty')}</div>`:
-        `<div class="table-wrap"><table>
-          <thead><tr>
-            <th>${currentLang==='zh'?'用户':'User'}</th>
-            <th>USDT</th>
-            <th>${t('points')}</th>
-            <th>TXID</th>
-            <th>${t('status')}</th>
-            <th>${currentLang==='zh'?'时间':'Date'}</th>
-            <th>${t('actions')}</th>
-          </tr></thead>
-          <tbody>
-            ${(orders||[]).map(o=>`<tr>
-              <td style="font-size:12px">${o.profiles?.email||o.user_id.slice(0,8)}</td>
-              <td>${o.usdt_amount}</td>
-              <td style="color:var(--green)">${o.points_amount}</td>
-              <td style="font-family:monospace;font-size:10px;color:var(--text3)">${(o.tx_hash||'-').slice(0,14)}...</td>
-              <td>${statusBadge(o.status)}</td>
-              <td style="font-size:11px;color:var(--text3)">${new Date(o.created_at).toLocaleDateString()}</td>
-              <td>${o.status==='pending'?`<div style="display:flex;gap:6px">
-                <button class="btn btn-success btn-sm" onclick="approveOrder('${o.id}','${o.user_id}',${o.points_amount},'${o.usdt_amount}')">${currentLang==='zh'?'通过':'Approve'}</button>
-                <button class="btn btn-danger btn-sm" onclick="rejectOrder('${o.id}')">${currentLang==='zh'?'拒绝':'Reject'}</button>
-              </div>`:'-'}</td>
-            </tr>`).join('')}
-          </tbody>
-        </table></div>`}
-      </div>
-    </div>`;
-  } else if(tab==='users'){
-    const{data:users}=await sb.from('profiles').select('*').order('created_at',{ascending:false});
-    c.innerHTML=`<div class="section">
-      <div class="section-header"><div class="section-title">${currentLang==='zh'?'用户列表':'User List'} (${(users||[]).length})</div></div>
-      <div class="section-body" style="padding:0">
-        <div class="table-wrap"><table>
-          <thead><tr>
-            <th>${currentLang==='zh'?'邮箱':'Email'}</th>
-            <th>${currentLang==='zh'?'用户名':'Username'}</th>
-            <th>${t('balance')}</th>
-            <th>${currentLang==='zh'?'角色':'Role'}</th>
-            <th>${currentLang==='zh'?'注册时间':'Joined'}</th>
-            <th>${t('actions')}</th>
-          </tr></thead>
-          <tbody>
-            ${(users||[]).map(u=>`<tr>
-              <td style="font-size:12px">${u.email}</td>
-              <td>${u.username||'-'}</td>
-              <td style="color:var(--green);font-weight:600">${parseFloat(u.balance||0).toFixed(2)}</td>
-              <td><span class="badge ${u.role==='admin'?'badge-purple':'badge-gray'}">${u.role}</span></td>
-              <td style="font-size:11px;color:var(--text3)">${new Date(u.created_at).toLocaleDateString()}</td>
-              <td><button class="btn btn-secondary btn-sm" onclick="openAdjustModal('${u.id}','${u.email}',${u.balance})">${currentLang==='zh'?'调整积分':'Adjust'}</button></td>
-            </tr>`).join('')}
-          </tbody>
-        </table>
-        </div>
-      </div>
-    </div>`;
-  } else if(tab==='settings'){
-    const{data:settings}=await sb.from('site_settings').select('*');
-    const cfg={};(settings||[]).forEach(s=>cfg[s.key]=s.value);
-    c.innerHTML=`<div class="section">
-      <div class="section-header"><div class="section-title">${currentLang==='zh'?'系统设置':'System Settings'}</div></div>
-      <div class="section-body">
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">USDT → 积分 汇率 / Exchange Rate</label>
-            <input type="text" id="cfg-rate" class="form-input" value="${cfg.usdt_to_points||'6.8'}"/>
-          </div>
-          <div class="form-group">
-            <label class="form-label">${currentLang==='zh'?'网站名称':'Site Name'}</label>
-            <input type="text" id="cfg-sitename" class="form-input" value="${cfg.site_name||'本德筛号中心'}"/>
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">TRC20-USDT ${currentLang==='zh'?'收款钱包地址':'Wallet Address'}</label>
-          <input type="text" id="cfg-wallet" class="form-input" value="${cfg.usdt_wallet_address||''}"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label">${currentLang==='zh'?'自定义收款二维码 URL (可选)':'Custom QR Code URL (Optional)'}</label>
-          <input type="text" id="cfg-qr" class="form-input" value="${cfg.pay_qr_url||''}" placeholder="http://... (留空则自动根据钱包地址生成)"/>
-        </div>
-        <button class="btn btn-primary" onclick="saveSettings()">${currentLang==='zh'?'保存设置':'Save Settings'}</button>
-      </div>
-    </div>`;
-  }
-}
-
-async function approveOrder(orderId,userId,points,usdt){
-  if(!confirm(`${currentLang==='zh'?'确认通过此充值申请？':'Approve this recharge?'}\nUSDT: ${usdt} | ${t('points')}: ${points}`))return;
-  // Get user balance
-  const{data:profile}=await sb.from('profiles').select('balance').eq('id',userId).single();
-  const balBefore=parseFloat(profile?.balance||0);
-  const balAfter=balBefore+parseFloat(points);
-  // Update order
-  await sb.from('recharge_orders').update({status:'approved',reviewed_by:currentUser.id,reviewed_at:new Date().toISOString()}).eq('id',orderId);
-  // Add balance
-  await sb.from('profiles').update({balance:balAfter}).eq('id',userId);
-  // Log
-  await sb.from('balance_logs').insert({user_id:userId,type:'recharge',amount:parseFloat(points),balance_before:balBefore,balance_after:balAfter,note:`充值 ${usdt} USDT`,ref_id:orderId});
-  toast(currentLang==='zh'?'已通过，积分已到账':'Approved, points added','success');
-  loadAdminTab('orders');
-}
-
-async function rejectOrder(orderId){
-  const reason=prompt(currentLang==='zh'?'拒绝原因（可选）:':'Reject reason (optional):');
-  await sb.from('recharge_orders').update({status:'rejected',admin_note:reason||'',reviewed_by:currentUser.id,reviewed_at:new Date().toISOString()}).eq('id',orderId);
-  toast(currentLang==='zh'?'已拒绝':'Rejected','info');
-  loadAdminTab('orders');
-}
-
-function openAdjustModal(userId,email,balance){
-  document.getElementById('modal-adjust-body').innerHTML=`
-    <div class="form-group">
-      <label class="form-label">${currentLang==='zh'?'用户':'User'}: ${email}</label>
-      <label class="form-label">${currentLang==='zh'?'当前余额':'Current Balance'}: <strong>${parseFloat(balance).toFixed(2)} 积分</strong></label>
-    </div>
-    <div class="form-group">
-      <label class="form-label">${currentLang==='zh'?'调整金额（正数增加，负数减少）':'Adjust amount (positive=add, negative=deduct)'}</label>
-      <input type="number" id="adjust-amt" class="form-input" placeholder="e.g. 100 or -50"/>
-    </div>
-    <div class="form-group">
-      <label class="form-label">${currentLang==='zh'?'备注':'Note'}</label>
-      <input type="text" id="adjust-note" class="form-input" placeholder="${currentLang==='zh'?'调整原因...':'Reason...'}"/>
-    </div>
-    <button class="btn btn-primary" onclick="doAdjust('${userId}',${balance})">${t('confirm')}</button>`;
-  openModal('modal-adjust');
-}
-
-async function doAdjust(userId,currentBal){
-  const amt=parseFloat(document.getElementById('adjust-amt').value);
-  const note=document.getElementById('adjust-note').value;
-  if(isNaN(amt)||amt===0){toast(currentLang==='zh'?'请输入有效金额':'Enter valid amount','error');return;}
-  const balBefore=parseFloat(currentBal);
-  const balAfter=balBefore+amt;
-  if(balAfter<0){toast(currentLang==='zh'?'余额不能为负':'Balance cannot be negative','error');return;}
-  await sb.from('profiles').update({balance:balAfter}).eq('id',userId);
-  await sb.from('balance_logs').insert({user_id:userId,type:'admin_adjust',amount:amt,balance_before:balBefore,balance_after:balAfter,note:note||'管理员调整'});
-  toast(currentLang==='zh'?'积分已调整':'Balance adjusted','success');
-  closeModal('modal-adjust');
-  loadAdminTab('users');
-}
-
-async function saveSettings(){
-  const rate=document.getElementById('cfg-rate').value.trim();
-  const wallet=document.getElementById('cfg-wallet').value.trim();
-  const siteName=document.getElementById('cfg-sitename').value.trim();
-  const qrUrl=document.getElementById('cfg-qr').value.trim();
-  await Promise.all([
-    sb.from('site_settings').upsert({key:'usdt_to_points',value:rate,updated_at:new Date().toISOString()}),
-    sb.from('site_settings').upsert({key:'usdt_wallet_address',value:wallet,updated_at:new Date().toISOString()}),
-    sb.from('site_settings').upsert({key:'site_name',value:siteName,updated_at:new Date().toISOString()}),
-    sb.from('site_settings').upsert({key:'pay_qr_url',value:qrUrl,updated_at:new Date().toISOString()}),
-  ]);
-  toast(currentLang==='zh'?'设置已保存':'Settings saved','success');
 }
 
 // ─── PROFILE (个人中心) ───
