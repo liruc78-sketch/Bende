@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>本德筛号中心 - 全球号码筛选与空号检测平台 | WhatsApp/Telegram 筛号</title>
 
-<!-- 网站图标 (Favicon) -->
+
 <link rel="icon" href="./favicon.png" type="image/png"/>
 
-<!-- SEO 与 社交媒体分享标签 (Open Graph) -->
+
 <meta name="description" content="本德筛号中心（benderdata.com）是专业的号码筛选与空号检测平台，提供 WhatsApp、Telegram、Facebook、Line、Viber 等全球主流社交软件的号码开通检测、活跃度筛选、空号过滤，以及性别、年龄精准筛选，支持大批量上传与结果一键导出。"/>
 <meta name="keywords" content="筛号,号码筛选,空号检测,空号过滤,筛号平台,WhatsApp筛号,WS筛号,Telegram筛号,TG筛号,电报筛号,号码开通检测,号码活跃度检测,性别年龄筛选,全球号码筛选,出海营销筛号,定制爬虫,数据采集,数据抓取,爬虫定制,本德筛号中心"/>
 <meta name="robots" content="index,follow"/>
@@ -24,7 +24,7 @@
 <meta name="twitter:description" content="专业号码筛选与空号检测平台，支持 WhatsApp、Telegram 等全球主流社交软件的号码筛选。"/>
 <meta name="twitter:image" content="https://benderdata.com/favicon.png"/>
 
-<!-- 结构化数据 (JSON-LD)：帮助谷歌理解站点、服务与常见问题 -->
+
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -66,7 +66,7 @@
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<!-- 引入 SheetJS 用于生成 Excel 表格 -->
+
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 :root{
@@ -90,7 +90,7 @@
   --radius2:14px;
 }
 
-/* LIGHT THEME */
+ 
 .light-theme {
   --bg: #f4f6f8;
   --bg2: #ffffff;
@@ -111,7 +111,7 @@
 .light-theme .tab-item.active { background: var(--bg2); }
 .light-theme .tab-bar { background: var(--bg); }
 
-/* 自适应黑白图标颜色 */
+ 
 .theme-adaptive-icon { fill: #ffffff; }
 .light-theme .theme-adaptive-icon { fill: #000000; }
 
@@ -119,14 +119,14 @@
 body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;min-height:100vh;overflow-x:hidden}
 a{color:var(--accent);text-decoration:none}
 
-/* LAYOUT */
+ 
 #app{display:flex;min-height:100vh}
 #sidebar{width:220px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;transition:transform .3s}
 #main{margin-left:220px;flex:1;display:flex;flex-direction:column;min-height:100vh}
 #topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
 #content{padding:28px;flex:1}
 
-/* SIDEBAR */
+ 
 .logo{padding:20px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
 .logo-icon{width:36px;height:36px;border-radius:8px;object-fit:contain;display:block;}
 .logo-text{font-weight:700;font-size:16px;color:var(--text)}
@@ -144,13 +144,13 @@ a{color:var(--accent);text-decoration:none}
 .user-name{font-size:12.5px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .user-bal{font-size:11px;color:var(--green);white-space:nowrap}
 
-/* TOPBAR */
+ 
 .page-title{font-size:15px;font-weight:600;color:var(--text)}
 .topbar-actions{display:flex;align-items:center;gap:10px}
 .lang-btn{background:var(--bg3);border:1px solid var(--border);color:var(--text2);padding:5px 10px;border-radius:6px;cursor:pointer;font-size:12px}
 .lang-btn:hover{color:var(--text);border-color:var(--border2)}
 
-/* CARDS */
+ 
 .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px}
 .stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:18px 20px}
 .stat-label{font-size:12px;color:var(--text3);margin-bottom:6px}
@@ -160,13 +160,13 @@ a{color:var(--accent);text-decoration:none}
 .stat-card.accent-blue .stat-value{color:var(--accent)}
 .stat-card.accent-yellow .stat-value{color:var(--yellow)}
 
-/* SECTION */
+ 
 .section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);overflow:hidden}
 .section-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
 .section-title{font-size:14px;font-weight:600;color:var(--text)}
 .section-body{padding:20px}
 
-/* BUTTONS */
+ 
 .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;border:none;transition:all .15s;text-decoration:none}
 .btn-primary{background:var(--accent);color:#fff}
 .btn-primary:hover{background:var(--accent2)}
@@ -176,7 +176,7 @@ a{color:var(--accent);text-decoration:none}
 .btn-success{background:rgba(46,204,122,.15);border:1px solid var(--green);color:var(--green)}
 .btn-sm{padding:5px 10px;font-size:12px}
 
-/* FORMS */
+ 
 .form-group{margin-bottom:16px}
 .form-label{display:block;font-size:12px;color:var(--text2);margin-bottom:6px;font-weight:500}
 .form-input,.form-select,.form-textarea{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:9px 12px;font-size:13.5px;font-family:inherit;outline:none;transition:border-color .15s}
@@ -186,7 +186,7 @@ a{color:var(--accent);text-decoration:none}
 .form-select option{background:var(--bg3)}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 
-/* TABLE */
+ 
 .table-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse}
 th{padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;border-bottom:1px solid var(--border)}
@@ -194,7 +194,7 @@ td{padding:11px 14px;font-size:13px;color:var(--text);border-bottom:1px solid va
 tr:last-child td{border-bottom:none}
 tr:hover td{background:rgba(255,255,255,.02)}
 
-/* BADGES */
+ 
 .badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:500}
 .badge-green{background:rgba(46,204,122,.15);color:var(--green)}
 .badge-blue{background:rgba(79,142,247,.15);color:var(--accent)}
@@ -203,7 +203,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .badge-gray{background:rgba(255,255,255,.07);color:var(--text2)}
 .badge-purple{background:rgba(139,92,246,.15);color:var(--purple)}
 
-/* SPLASH / 刷新过场动画 */
+ 
 #splash-screen{position:fixed;inset:0;z-index:99999;background:var(--bg);display:flex;align-items:center;justify-content:center;transition:opacity .55s ease}
 .splash-inner{display:flex;flex-direction:column;align-items:center;gap:22px;animation:splashFade .4s ease}
 .splash-logo{width:64px;height:64px;border-radius:16px;animation:splashPulse 1.6s ease-in-out infinite}
@@ -213,9 +213,9 @@ tr:hover td{background:rgba(255,255,255,.02)}
 @keyframes splashPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.08);opacity:.82}}
 @keyframes splashFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
-/* AUTH */
+ 
 #auth-screen{min-height:100vh;background:var(--bg);display:flex;flex-direction:column;position:relative;z-index:0}
-/* 宣传页背景：App 图标下雨效果（落在背景色之上、内容之下） */
+ 
 #icon-rain{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
 .rain-drop{position:absolute;top:0;line-height:0;will-change:transform,opacity;opacity:0;animation:icon-fall linear infinite}
 #icon-rain .brand-icon{width:100%;height:100%;object-fit:contain;display:block}
@@ -238,7 +238,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .auth-divider{text-align:center;font-size:12px;color:var(--text3);margin:8px 0}
 .auth-err{background:rgba(224,82,82,.12);border:1px solid var(--red);color:var(--red);border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none}
 
-/* ===== LANDING / SEO 公开落地页（未登录访客与搜索引擎可见） ===== */
+ 
 .lp-nav{display:flex;align-items:center;justify-content:space-between;padding:16px 6vw;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:20}
 .lp-nav-brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;color:var(--text)}
 .lp-nav-brand img{width:34px;height:34px;border-radius:8px}
@@ -274,7 +274,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .lp-footer .lp-kw{color:var(--text3);font-size:12px;margin-top:10px}
 @media(max-width:768px){.lp-hero h1{font-size:27px}.lp-hero{padding:40px 16px 24px}.lp-nav{padding:14px 20px}.lp-section{padding:38px 0}}
 
-/* 右侧悬浮客服（可同时显示多个联系方式） */
+ 
 .cs-float{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:40;background:var(--bg2);border:1px solid var(--border);border-right:none;border-radius:12px 0 0 12px;box-shadow:-4px 4px 20px rgba(0,0,0,.25);padding:12px 10px;display:flex;flex-direction:column;align-items:center;gap:2px;width:100px;text-align:center}
 .cs-float-title{font-size:12px;color:var(--green);font-weight:700;margin-bottom:4px}
 .cs-float-item{display:flex;flex-direction:column;align-items:center;gap:3px;text-decoration:none;padding:8px 0;width:100%;border-top:1px solid var(--border);transition:opacity .15s}
@@ -287,17 +287,17 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .cs-modal-item:last-child{border-bottom:none}
 @media(max-width:768px){.cs-float{width:82px;padding:10px 6px}.cs-float-icon{width:28px;height:28px}}
 
-/* PROGRESS BAR */
+ 
 .progress-bar{background:var(--bg3);border-radius:20px;height:6px;overflow:hidden}
 .progress-fill{height:100%;border-radius:20px;background:var(--accent);transition:width .4s}
 
-/* UPLOAD ZONE */
+ 
 .upload-zone{border:2px dashed var(--border2);border-radius:var(--radius2);padding:32px;text-align:center;cursor:pointer;transition:all .15s;background:var(--bg3)}
 .upload-zone:hover,.upload-zone.dragover{border-color:var(--accent);background:rgba(79,142,247,.05)}
 .upload-zone p{color:var(--text2);font-size:13px;margin-top:8px}
 .upload-zone.has-file{border-color:var(--green);background:rgba(46,204,122,.05)}
 
-/* MODAL */
+ 
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;display:none}
 .modal-overlay.open{display:flex}
 .modal-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:28px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
@@ -306,7 +306,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .modal-close{cursor:pointer;color:var(--text3);font-size:28px;font-weight:bold;line-height:1;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px;transition:all 0.2s;}
 .modal-close:hover{color:var(--red);background:rgba(224,82,82,0.1);}
 
-/* TOAST */
+ 
 #toast{position:fixed;bottom:24px;right:24px;z-index:999;display:flex;flex-direction:column;gap:8px}
 .toast-item{padding:12px 18px;border-radius:var(--radius);font-size:13.5px;color:#fff;min-width:220px;animation:slideIn .2s ease;box-shadow:0 4px 20px rgba(0,0,0,.5)}
 .toast-success{background:#1a6b3e}
@@ -314,19 +314,19 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .toast-info{background:#1a3a6b}
 @keyframes slideIn{from{transform:translateX(40px);opacity:0}to{transform:translateX(0);opacity:1}}
 
-/* ADMIN TAB */
+ 
 .admin-tabs{display:flex;gap:4px;margin-bottom:20px;background:var(--bg3);padding:4px;border-radius:10px;display:inline-flex}
 .admin-tab{padding:7px 16px;border-radius:7px;cursor:pointer;font-size:13px;color:var(--text2)}
 .admin-tab.active{background:var(--bg2);color:var(--text);font-weight:500}
 
-/* HOME SEARCH */
+ 
 .home-search-wrap { margin-bottom: 20px; position: relative; }
 .home-search-input { width: 100%; background: var(--bg2); border: 1px solid var(--border); color: var(--text); border-radius: var(--radius2); padding: 14px 20px 14px 48px; font-size: 15px; outline: none; transition: all .2s; }
 .home-search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79,142,247,.15); }
 .home-search-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--text3); width: 18px; height: 18px; pointer-events: none; }
 
-/* HOME GRID */
-/* 核心修复：将 minmax 的最小值改小，让卡片在窄屏幕下能自动缩小而不是溢出 */
+ 
+ 
 .home-stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
 .home-stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:20px;position:relative;overflow:hidden}
 .home-stat-title{font-size:14px;color:var(--text);font-weight:600;margin-bottom:12px;display:flex;justify-content:space-between}
@@ -334,7 +334,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .home-stat-bottom{display:flex;justify-content:space-between;font-size:12px;color:var(--text3);border-top:1px solid var(--border);padding-top:12px}
 .home-stat-bottom span{color:var(--text2)}
 
-/* 核心修复：将 260px 改为 220px，适应更窄的屏幕 */
+ 
 .service-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-top:16px}
 .service-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:16px}
 .service-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:15px;font-weight:600;color:var(--text)}
@@ -345,20 +345,20 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .service-price{color:var(--accent);font-family:monospace;font-size:12px}
 .service-closed{color:var(--text3);font-size:12px;background:rgba(255,255,255,.05);padding:2px 6px;border-radius:4px}
 
-/* 针对极小屏幕（如手机）的终极适配 */
+ 
 @media(max-width: 500px) {
   .home-stat-grid { grid-template-columns: 1fr; }
   .service-grid { grid-template-columns: 1fr; }
   #content { padding: 15px; }
 }
 
-/* TAB BAR */
-#topbar { border-bottom: none; } /* 移除顶部栏的底边框，让标签栏接管 */
+ 
+#topbar { border-bottom: none; }  
 .tab-bar { display: flex; background: var(--bg2); border-bottom: 1px solid var(--border); padding: 6px 24px 0; gap: 6px; overflow-x: auto; }
 .tab-bar::-webkit-scrollbar { height: 0; display: none; }
 
-/* ===== 侧边栏滚动条 —— "Ghost" 幽灵滚动条（细、悬浮、跨浏览器）===== */
-/* 深色（默认 :root） */
+ 
+ 
 .nav-scroll { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.10) transparent; }
 .nav-scroll::-webkit-scrollbar { width: 8px; }
 .nav-scroll::-webkit-scrollbar-track { background: transparent; }
@@ -374,7 +374,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .nav-scroll::-webkit-scrollbar-button,
 .nav-scroll::-webkit-scrollbar-corner { display: none; background: transparent; }
 #sidebar:hover .nav-scroll { scrollbar-color: rgba(255,255,255,.16) transparent; }
-/* 浅色主题：反相为白底上的低透明度黑 */
+ 
 .light-theme .nav-scroll { scrollbar-color: rgba(0,0,0,.15) transparent; }
 .light-theme .nav-scroll::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,.10); }
 .light-theme .nav-scroll:hover::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,.18); }
@@ -388,24 +388,24 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .tab-close { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border-radius: 50%; margin-left: 6px; color: var(--text3); transition: all 0.2s; font-size: 18px; font-weight: bold; line-height: 1; }
 .tab-close:hover { background: rgba(224,82,82,0.15); color: var(--red); }
 
-/* BRAND ICONS */
+ 
 .brand-icon { width: 18px; height: 18px; object-fit: contain; display: block; }
 .service-icon .brand-icon { width: 22px; height: 22px; }
 .badge .brand-icon { width: 13px; height: 13px; }
 
-/* 页面/项目切换：先淡出旧内容，再淡入新内容 */
+ 
 @keyframes contentFadeOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-6px); } }
 @keyframes contentFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 #content.content-fade-out { animation: contentFadeOut .22s ease forwards; }
 #content.content-fade-in { animation: contentFadeIn .4s ease; }
 
-/* PROJECT SUB TABS */
+ 
 .project-sub-tabs { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
 .project-sub-tab { padding: 10px 18px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.15); font-size: 13px; cursor: pointer; border-radius: 8px; transition: all .2s; color: var(--text2); }
 .project-sub-tab:hover { border-color: var(--accent); background: rgba(79,142,247,.08); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.1); color: var(--text); }
 .project-sub-tab.active { border-color: var(--accent); background: rgba(79,142,247,.15); color: var(--accent); font-weight: 600; }
 
-/* RECHARGE NEW UI */
+ 
 .recharge-steps { display: flex; align-items: center; justify-content: center; margin-bottom: 30px; gap: 15px; }
 .r-step { display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--text3); font-size: 13px; }
 .r-step.active { color: var(--accent); }
@@ -444,11 +444,11 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .r-inst-list { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 13px; color: var(--text2); line-height: 1.6; }
 @media(max-width: 768px) { .r-inst-list { grid-template-columns: 1fr; } }
 
-/* MODAL BANNERS */
+ 
 .modal-rule-banner { background: rgba(139,92,246,0.08); border: 1px solid rgba(139,92,246,0.2); border-radius: 8px; padding: 12px 16px; font-size: 12px; color: var(--text2); margin-bottom: 20px; line-height: 1.5; display: flex; gap: 8px; align-items: flex-start; }
 .modal-hint-banner { background: rgba(245,166,35,0.08); border: 1px solid rgba(245,166,35,0.2); border-radius: 8px; padding: 12px 16px; font-size: 12px; color: var(--yellow); margin-top: 20px; display: flex; gap: 8px; align-items: center; }
 
-/* CUSTOM CONFIRM MODAL */
+ 
 .confirm-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; display: flex; align-items: center; justify-content: center; }
 .confirm-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 24px; width: 320px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
 .confirm-title { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: bold; color: var(--text); margin-bottom: 15px; }
@@ -460,7 +460,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .btn-confirm-modal { background: var(--purple); border: none; color: #fff; padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
 .btn-confirm-modal:hover { filter: brightness(1.1); }
 
-/* MISC */
+ 
 .empty-state{text-align:center;padding:48px 20px;color:var(--text3)}
 .empty-state svg{width:40px;height:40px;margin:0 auto 12px;opacity:.3;display:block}
 .copy-addr{cursor:pointer;color:var(--accent);font-size:12px;margin-left:8px}
@@ -481,7 +481,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .qr-box{background:#fff;border-radius:8px;padding:8px;display:inline-block}
 .wallet-addr{font-family:monospace;font-size:12px;background:var(--bg3);padding:8px 12px;border-radius:6px;word-break:break-all;color:var(--text2);border:1px solid var(--border)}
 
-/* ===== AVATAR GALLERY (头像浏览) ===== */
+ 
 .ag-overlay{position:fixed;inset:0;background:var(--bg);z-index:600;display:none;flex-direction:column}
 .ag-overlay.open{display:flex}
 .ag-topbar{flex-shrink:0;display:flex;align-items:center;gap:12px;padding:12px 22px;background:var(--bg2);border-bottom:1px solid var(--border)}
@@ -552,7 +552,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 </head>
 <body>
 
-<!-- SPLASH / 刷新过场动画 (默认显示，覆盖鉴权空档，避免闪现登录页) -->
+
 <div id="splash-screen">
   <div class="splash-inner">
     <img src="./favicon.png" alt="Logo" class="splash-logo">
@@ -561,19 +561,19 @@ tr:hover td{background:rgba(255,255,255,.02)}
   </div>
 </div>
 
-<!-- AUTH SCREEN + 公开落地页（未登录访客 / 搜索引擎可见；登录成功后由 JS 隐藏并切换到主程序 #app） -->
+
 <div id="auth-screen">
 
-  <!-- 右侧悬浮客服（未登录落地页可见；登录后随 #auth-screen 一起隐藏） -->
+  
   <div id="cs-float" class="cs-float" style="display:none"></div>
 
-  <!-- 背景：App 图标下雨动画（宣传页 + 登录/注册界面都显示；仅 logo 无名称；图标取自可筛选项目 PROJECT_DATA，由 JS 生成） -->
+  
   <div id="icon-rain" aria-hidden="true"></div>
 
-  <!-- 宣传落地页（默认显示；点击登录/注册按钮后切换到 #auth-view 登录界面） -->
+  
   <div id="landing-view">
 
-  <!-- 顶部导航 -->
+  
   <header class="lp-nav">
     <div class="lp-nav-brand"><img src="./favicon.png" alt="本德筛号中心 Logo">本德筛号中心</div>
     <div class="lp-nav-links">
@@ -582,7 +582,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
     </div>
   </header>
 
-  <!-- Hero 首屏 -->
+  
   <section class="lp-hero">
     <div class="lp-wrap">
       <h1>本德筛号中心 — 全球号码筛选与空号检测平台</h1>
@@ -598,9 +598,9 @@ tr:hover td{background:rgba(255,255,255,.02)}
     </div>
   </section>
 
-  <!-- 登录 / 注册卡片已从宣传页移出，改为点击导航按钮后在 #auth-view 显示 -->
+  
 
-  <!-- 号码筛选服务 -->
+  
   <section class="lp-section">
     <div class="lp-wrap">
       <h2>号码筛选服务</h2>
@@ -638,7 +638,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
     </div>
   </section>
 
-  <!-- 支持平台 -->
+  
   <section class="lp-section">
     <div class="lp-wrap">
       <h2>支持的社交平台</h2>
@@ -652,7 +652,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
     </div>
   </section>
 
-  <!-- 平台优势 -->
+  
   <section class="lp-section">
     <div class="lp-wrap">
       <h2>为什么选择本德筛号中心</h2>
@@ -665,7 +665,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
     </div>
   </section>
 
-  <!-- 定制爬虫 / 数据采集业务 -->
+  
   <section class="lp-section" id="crawler">
     <div class="lp-wrap">
       <h2>定制爬虫 / 数据采集业务</h2>
@@ -695,7 +695,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
     </div>
   </section>
 
-  <!-- 常见问题 -->
+  
   <section class="lp-section">
     <div class="lp-wrap">
       <h2>常见问题</h2>
@@ -708,16 +708,16 @@ tr:hover td{background:rgba(255,255,255,.02)}
     </div>
   </section>
 
-  <!-- 页脚 -->
+  
   <footer class="lp-footer">
     <div>本德筛号中心 · 全球号码筛选与空号检测平台 · <a href="https://benderdata.com/">benderdata.com</a></div>
     <div class="lp-kw">筛号 · 号码筛选 · 空号检测 · 空号过滤 · WhatsApp 筛号 · Telegram 筛号 · 号码活跃度检测 · 性别年龄筛选 · 全球号码筛选 · 定制爬虫 · 数据采集 · 数据抓取</div>
     <div style="margin-top:8px">© 2026 本德筛号中心（benderdata.com）</div>
   </footer>
 
-  </div><!-- /#landing-view -->
+  </div>
 
-  <!-- 登录 / 注册界面（点击宣传页导航的登录/注册按钮后显示；原有登录逻辑完整保留） -->
+  
   <div id="auth-view" style="display:none">
     <div class="auth-view-bar">
       <div class="lp-nav-brand"><img src="./favicon.png" alt="本德筛号中心 Logo">本德筛号中心</div>
@@ -725,14 +725,14 @@ tr:hover td{background:rgba(255,255,255,.02)}
     </div>
     <div class="lp-auth-anchor">
   <div class="auth-box">
-    <!-- 左侧：Logo 和 标题 -->
+    
     <div class="auth-left">
       <img src="./favicon.png" alt="Logo" class="auth-logo-icon">
       <h1>本德筛号中心</h1>
       <p id="auth-subtitle">号码筛选平台<br>Phone Screening Platform</p>
     </div>
 
-    <!-- 右侧：登录/注册表单 -->
+    
     <div class="auth-right">
       <div class="auth-tabs">
         <div class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">登录 Login</div>
@@ -767,15 +767,15 @@ tr:hover td{background:rgba(255,255,255,.02)}
       </div>
     </div>
   </div>
-    </div><!-- /.lp-auth-anchor -->
-  </div><!-- /#auth-view -->
+    </div>
+  </div>
 
-</div><!-- /#auth-screen -->
+</div>
 
 
-<!-- MAIN APP -->
+
 <div id="app" style="display:none">
-  <!-- Sidebar -->
+  
   <div id="sidebar">
     <div class="logo">
       <img src="./favicon.png" alt="Logo" class="logo-icon">
@@ -816,7 +816,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
     </div>
   </div>
 
-  <!-- Main -->
+  
   <div id="main">
     <div id="topbar">
       <div class="page-title" id="page-title">控制台</div>
@@ -827,15 +827,15 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <button class="lang-btn" onclick="showCustomerService()" id="topbar-cs-btn" style="color:var(--green);font-weight:bold;border-color:var(--green);background:rgba(46,204,122,0.1);">💬 客服</button>
       </div>
     </div>
-    <!-- 新增的标签栏容器 -->
+    
     <div id="tab-bar" class="tab-bar"></div>
     <div id="content">
-      <!-- Pages rendered here -->
+      
     </div>
   </div>
 </div>
 
-<!-- MODALS -->
+
 <div class="modal-overlay" id="modal-approve">
   <div class="modal-box">
     <div class="modal-header">
@@ -855,7 +855,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
   </div>
 </div>
 
-<!-- ANNOUNCEMENT MODAL -->
+
 <div class="modal-overlay" id="modal-announcement" style="z-index: 9999;">
   <div class="modal-box" style="max-width: 400px;">
     <div class="modal-header" style="justify-content: center; border-bottom: none; margin-bottom: 10px;">
@@ -868,7 +868,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
   </div>
 </div>
 
-<!-- 联系客服 弹窗（站内点击顶栏"联系客服"时弹出） -->
+
 <div class="modal-overlay" id="modal-cs" style="z-index: 9999;">
   <div class="modal-box" style="max-width: 380px;">
     <div class="modal-header" style="justify-content: space-between; border-bottom:none; margin-bottom: 6px;">
@@ -879,7 +879,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
   </div>
 </div>
 
-<!-- AVATAR GALLERY (头像浏览) -->
+
 <div class="ag-overlay" id="avatar-gallery">
   <div class="ag-topbar">
     <div class="ag-title">🖼️ <span id="ag-title-text">头像浏览</span> <span class="ag-sub" id="ag-taskid"></span></div>
@@ -959,13 +959,13 @@ tr:hover td{background:rgba(255,255,255,.02)}
   </div>
 </div>
 
-<!-- TOAST -->
+
 <div id="toast"></div>
 
 <script>
 const SUPABASE_URL='https://tdpavflqliqcxvougcdf.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRkcGF2ZmxxbGlxY3h2b3VnY2RmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMTE3OTUsImV4cCI6MjA5Mjg4Nzc5NX0.qPMFm-qq3B6SkHts0ghqOuBJ07jnfoF6ZB_rWMhpeZE';
-// Supabase Edge Function proxy — avoids direct browser→th333 CORS errors
+
 const PROXY_URL='https://tdpavflqliqcxvougcdf.supabase.co/functions/v1/th333-proxy';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{
   auth:{
@@ -981,38 +981,38 @@ let currentProfile=null;
 let currentLang='zh';
 let currentPage='dashboard';
 
-// --- 自动退出管理 ---
+
 let autoLogoutTimer = null;
 function setupAutoLogout() {
   if (autoLogoutTimer) clearTimeout(autoLogoutTimer);
   
-  // 获取首次登录的时间戳
+
   let loginTime = localStorage.getItem('login_timestamp');
   if (!loginTime) {
     loginTime = Date.now();
     localStorage.setItem('login_timestamp', loginTime);
   }
   
-  // 计算已经过去的时间和剩余时间 (1小时 = 3600000毫秒)
+
   const elapsed = Date.now() - parseInt(loginTime);
   const remaining = 3600000 - elapsed; 
   
   if (remaining <= 0) {
-    // 如果已经超过1小时，立即退出
+
     toast(currentLang==='zh'?'登录已过期，请重新登录':'Session expired, please login again', 'error');
     doLogout();
   } else {
-    // 否则，设置定时器在剩余时间后退出
+
     autoLogoutTimer = setTimeout(() => {
       toast(currentLang==='zh'?'登录已过期，请重新登录':'Session expired, please login again', 'error');
       doLogout();
     }, remaining);
   }
 }
-// ------------------
 
-// --- 主题管理 ---
-// 如果本地没有存储过主题设置，则默认使用 'light' (白天模式)
+
+
+
 let currentTheme = localStorage.getItem('theme') || 'light'; 
 
 if(currentTheme === 'light') {
@@ -1031,7 +1031,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btn = document.getElementById('theme-btn');
   if(btn) btn.textContent = currentTheme === 'light' ? '☀️' : '🌙';
 });
-// --------------
+
 
 const PROJECT_DATA = [
   { id: 'whatsapp', name: {zh:'WhatsApp', en:'WhatsApp'}, icon: '<img src="https://cdn.simpleicons.org/whatsapp/25D366" class="brand-icon">', items: [
@@ -1194,7 +1194,7 @@ function toast(msg,type='info'){
 function openModal(id){document.getElementById(id).classList.add('open')}
 function closeModal(id){document.getElementById(id).classList.remove('open')}
 
-// AUTH
+
 function switchAuthTab(tab){
   document.getElementById('tab-login').classList.toggle('active',tab==='login');
   document.getElementById('tab-register').classList.toggle('active',tab==='register');
@@ -1202,7 +1202,7 @@ function switchAuthTab(tab){
   document.getElementById('register-form').style.display=tab==='register'?'':'none';
   document.getElementById('auth-err').style.display='none';
 }
-// 从宣传落地页跳转到登录/注册界面
+
 function showAuthView(tab){
   const lv=document.getElementById('landing-view');
   if(lv) lv.style.display='none';
@@ -1211,7 +1211,7 @@ function showAuthView(tab){
   switchAuthTab(tab==='register'?'register':'login');
   window.scrollTo(0,0);
 }
-// 返回宣传落地页（隐藏登录/注册界面）
+
 function showLandingView(){
   const av=document.getElementById('auth-view');
   if(av) av.style.display='none';
@@ -1221,34 +1221,34 @@ function showLandingView(){
   if(err) err.style.display='none';
   window.scrollTo(0,0);
 }
-// 记录本浏览器已注册/登录过（老用户）
+
 function markReturningUser(){ try{ localStorage.setItem('bd_returning_user','1'); }catch(e){} }
 function isReturningUser(){ try{ return localStorage.getItem('bd_returning_user')==='1'; }catch(e){ return false; } }
-// 未登录进入时的入口：老用户直达登录界面；从未登录过的新用户展示宣传落地页
+
 function showAuthEntry(){
   if(isReturningUser()) showAuthView('login');
   else showLandingView();
 }
-// 宣传页背景：App 图标下雨（图标来自可筛选项目 PROJECT_DATA，仅 logo 无名称）
+
 function buildIconRain(){
   var host=document.getElementById('icon-rain');
   if(!host || host.dataset.built) return;
   var icons=(typeof PROJECT_DATA!=='undefined'?PROJECT_DATA:[]).map(function(p){return p.icon;}).filter(Boolean);
   if(!icons.length) return;
-  // 洗牌，保证每个筛选项目图标至少出现一次
+
   var pool=icons.slice();
   for(var s=pool.length-1;s>0;s--){var j=Math.floor(Math.random()*(s+1));var t=pool[s];pool[s]=pool[j];pool[j]=t;}
   var COUNT=Math.max(46, icons.length);
   var html='';
   for(var i=0;i<COUNT;i++){
     var icon = i<pool.length ? pool[i] : icons[Math.floor(Math.random()*icons.length)];
-    var left = (Math.random()*100).toFixed(2);          // 水平位置 %
-    var size = (16+Math.random()*26).toFixed(0);         // 16–42px
-    var dur  = (7+Math.random()*9).toFixed(2);           // 7–16s
-    var delay= (-Math.random()*dur).toFixed(2);          // 负延迟错峰，加载即已在下雨
-    var op   = (0.18+Math.random()*0.27).toFixed(2);     // 透明度 0.18–0.45
-    var dx   = (Math.random()*80-40).toFixed(0);         // 水平漂移 -40~40px
-    var rot  = (Math.random()*90-45).toFixed(0);         // 旋转 -45~45deg
+    var left = (Math.random()*100).toFixed(2);
+    var size = (16+Math.random()*26).toFixed(0);
+    var dur  = (7+Math.random()*9).toFixed(2);
+    var delay= (-Math.random()*dur).toFixed(2);
+    var op   = (0.18+Math.random()*0.27).toFixed(2);
+    var dx   = (Math.random()*80-40).toFixed(0);
+    var rot  = (Math.random()*90-45).toFixed(0);
     html+='<span class="rain-drop" style="left:'+left+'%;width:'+size+'px;height:'+size+'px;'+
           'animation-duration:'+dur+'s;animation-delay:'+delay+'s;'+
           '--op:'+op+';--dx:'+dx+'px;--rot:'+rot+'deg">'+icon+'</span>';
@@ -1264,9 +1264,9 @@ async function doLogin(){
   const btn=document.getElementById('login-btn');
   btn.textContent='登录中...';btn.disabled=true;
   try{
-    // 修复BUG核心：登录前强制清除本地可能损坏的旧会话状态
+
     await sb.auth.signOut();
-    localStorage.removeItem('login_timestamp'); // 🚀 新增：登录前清理旧的时间戳
+    localStorage.removeItem('login_timestamp');
     
     const{data,error}=await sb.auth.signInWithPassword({email,password:pwd});
     if(error){showAuthErr(error.message);return;}
@@ -1291,12 +1291,12 @@ async function doLogin(){
           });
         }catch(ue){console.warn('upsert profile failed:',ue.message);}
       }
-      markReturningUser(); // 登录成功，记录为老用户；下次访问直达登录界面
+      markReturningUser();
       document.getElementById('auth-screen').style.display='none';
       document.getElementById('app').style.display='flex';
       updateSidebar();
       
-      // 登录成功后也根据 URL 恢复页面
+
       const urlParams = new URLSearchParams(window.location.search);
       const page = urlParams.get('page') || 'dashboard';
       const sub = urlParams.get('sub');
@@ -1313,13 +1313,14 @@ async function doRegister(){
   const pwd=document.getElementById('reg-pwd').value;
   const pwd2=document.getElementById('reg-pwd2').value;
   if(!email||!pwd){showAuthErr('请填写所有字段 / Please fill all fields');return;}
+  if(!/^[^@\s]+@gmail\.com$/i.test(email)){showAuthErr('仅支持使用 @gmail.com 邮箱注册 / Only @gmail.com email addresses are allowed');return;}
   if(pwd!==pwd2){showAuthErr('两次密码不一致 / Passwords do not match');return;}
   if(pwd.length<6){showAuthErr('密码至少6位 / Password min 6 chars');return;}
   document.getElementById('reg-btn').textContent='注册中...';
   const{error}=await sb.auth.signUp({email,password:pwd});
   document.getElementById('reg-btn').textContent='注册 Register';
   if(error){showAuthErr(error.message);return;}
-  markReturningUser(); // 注册成功，记录为老用户；下次访问直达登录界面
+  markReturningUser();
   toast('注册成功！请登录 / Registered! Please log in','success');
   switchAuthTab('login');
 }
@@ -1329,17 +1330,17 @@ function showAuthErr(msg){
 }
 async function doLogout(){
   if(autoLogoutTimer) clearTimeout(autoLogoutTimer);
-  stopRechargeTimers(); // 🚀 退出时停止充值检测定时器，避免上一账号的轮询写入下一账号（保留 localStorage 以便本人重登恢复）
+  stopRechargeTimers();
   localStorage.removeItem('login_timestamp');
-  sessionStorage.removeItem('announcement_shown'); // 🚀 核心修复：退出时清理公告缓存，确保下次登录必弹
+  sessionStorage.removeItem('announcement_shown');
   await sb.auth.signOut();
   currentUser=null;currentProfile=null;
   document.getElementById('app').style.display='none';
   document.getElementById('auth-screen').style.display='flex';
-  showAuthEntry(); // 老用户退出后直达登录界面；从未登录过的新用户回到宣传页
+  showAuthEntry();
 }
 
-// 🚀 新增：从数据库加载动态价格并覆盖本地配置
+
 async function loadDynamicPrices() {
   let prices = {};
   try {
@@ -1350,15 +1351,15 @@ async function loadDynamicPrices() {
     cat.items.forEach(item => {
       if (prices[item.val] !== undefined) {
         const newPrice = parseFloat(prices[item.val]);
-        // 后台价格为 0（或负数/非法值）即视为关闭，无法筛选
+
         if (!(newPrice > 0)) {
           item.price = '暂时关闭';
-          item.val = 'closed'; // 强制将 val 改为 closed，阻断提交
+          item.val = 'closed';
         } else {
           item.price = newPrice + '/条';
         }
       } else if (item.defaultClosed) {
-        // 新增项目：后台『动态价格管理』尚未设置正价前默认关闭；设好价格(>0)后自动开放
+
         item.price = '暂时关闭';
         item.val = 'closed';
       }
@@ -1366,20 +1367,20 @@ async function loadDynamicPrices() {
   });
 }
 
-// 🚀 新增：把公告文本安全地渲染进弹窗（转义 HTML 后，将 http(s) 链接变为可点击）
+
 function renderAnnouncementBody(text) {
   const body = document.getElementById('modal-announcement-body');
   const esc = (s) => String(s == null ? '' : s)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-  // 只识别 http/https 链接，避免 javascript: 等危险协议；
-  // 仅匹配标准 URL 字符（ASCII），这样中文/空格/表情会自然作为链接的结束边界
+
+
   const urlRe = /https?:\/\/[A-Za-z0-9\-._~:/?#\[\]@!$&'()*+,;=%]+/g;
   let html = '', last = 0, m;
   while ((m = urlRe.exec(text)) !== null) {
     html += esc(text.slice(last, m.index));
     let url = m[0], trailing = '';
-    // 去掉链接结尾多余的标点（如句号、右括号），避免被误当成链接一部分
+
     const tail = url.match(/[.,;:!?)\]}'"，。！？）】]+$/);
     if (tail) { trailing = url.slice(url.length - tail[0].length); url = url.slice(0, -tail[0].length); }
     const safe = esc(url);
@@ -1391,7 +1392,7 @@ function renderAnnouncementBody(text) {
   body.style.whiteSpace = 'pre-line';
 }
 
-// 🚀 新增：检查并显示公告 (自动弹出)
+
 async function checkAnnouncement() {
   if (sessionStorage.getItem('announcement_shown') === 'true') return;
 
@@ -1404,7 +1405,7 @@ async function checkAnnouncement() {
   } catch (e) { console.warn("Load announcement failed", e); }
 }
 
-// 🚀 新增：手动点击查看公告 (不刷新网页)
+
 async function showAnnouncementManual() {
   try {
     const { data } = await sb.from('site_settings').select('value').eq('key', 'announcement').single();
@@ -1417,28 +1418,28 @@ async function showAnnouncementManual() {
   } catch (e) { console.warn("Load announcement failed", e); }
 }
 
-// 🚀 新增：确认公告并刷新
+
 function confirmAnnouncement() {
-  // 如果是首次登录弹出的，点击确定后刷新
+
   if (sessionStorage.getItem('announcement_shown') !== 'true') {
       sessionStorage.setItem('announcement_shown', 'true'); 
       document.getElementById('modal-announcement').classList.remove('open');
       location.reload(); 
   } else {
-      // 如果是手动点击查看的，点击确定直接关闭即可，不刷新
+
       document.getElementById('modal-announcement').classList.remove('open');
   }
 }
 
-// ===== 客服联系方式（后台可配置多个：WhatsApp / Line；匿名可读的 RPC，未登录也能显示，同时显示全部） =====
+
 let CS_LIST = [];
 function _csEsc(s){ return String(s==null?'':s).replace(/[&<>"']/g, ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
 
-// 根据平台 + 联系方式生成一键联系链接
+
 function buildCsLink(platform, contact){
   const c=(contact||'').trim();
   if(!c) return '';
-  if(/^https?:\/\//i.test(c)) return c;                 // 已是完整链接，原样使用
+  if(/^https?:\/\//i.test(c)) return c;
   if(platform==='whatsapp'){ const d=c.replace(/[^0-9]/g,''); return d?('https://wa.me/'+d):''; }
   if(platform==='line'){ return 'https://line.me/ti/p/~'+c.replace(/^@/,''); }
   return '';
@@ -1448,7 +1449,7 @@ function csPlatformMeta(platform){
   return { name:'WhatsApp', icon:'https://cdn.simpleicons.org/whatsapp/25D366', color:'#25D366' };
 }
 
-// 拉取所有客服信息（RPC 返回数组）
+
 async function fetchCustomerService(){
   try{
     const { data, error } = await sb.rpc('get_customer_service');
@@ -1460,7 +1461,7 @@ async function fetchCustomerService(){
   renderCsFloat();
 }
 
-// 落地页右侧悬浮客服（同时显示所有联系方式）
+
 function renderCsFloat(){
   const box=document.getElementById('cs-float');
   if(!box) return;
@@ -1479,7 +1480,7 @@ function renderCsFloat(){
   box.style.display='flex';
 }
 
-// 站内点击顶栏"客服"弹窗（同时显示所有联系方式）
+
 function showCustomerService(){
   const body=document.getElementById('cs-modal-body');
   if(!CS_LIST.length){
@@ -1499,20 +1500,20 @@ function showCustomerService(){
   document.getElementById('modal-cs').classList.add('open');
 }
 
-// 页面载入即拉取（未登录也可读）
+
 fetchCustomerService();
 
-// 🚀 刷新过场：保证启动动画至少完整显示一段时间后再淡出（仅执行一次）
+
 const _splashStart = Date.now();
-const MIN_SPLASH_MS = 1000; // 启动加载动画最短显示时长（即使秒开也会停留这么久）
+const MIN_SPLASH_MS = 1000;
 function hideSplash(){
   const s=document.getElementById('splash-screen');
   if(!s || s.dataset.hidden) return;
-  s.dataset.hidden='1'; // 立刻标记，避免重复触发
+  s.dataset.hidden='1';
   const wait = Math.max(0, MIN_SPLASH_MS - (Date.now() - _splashStart));
   setTimeout(()=>{
     s.style.opacity='0';
-    setTimeout(()=>{ s.style.display='none'; }, 550); // 与 CSS 淡出过渡时长一致
+    setTimeout(()=>{ s.style.display='none'; }, 550);
   }, wait);
 }
 
@@ -1520,28 +1521,28 @@ async function initApp(session) {
   if(session?.user && !currentUser){
     currentUser=session.user;
     await loadProfile();
-    await loadDynamicPrices(); // 🚀 核心修复：在初始化时调用加载动态价格的函数
+    await loadDynamicPrices();
     if(!currentProfile){
       currentProfile={id:session.user.id,email:session.user.email,balance:0,role:'user'};
     }
-    markReturningUser(); // 有会话说明登录过，记录为老用户
+    markReturningUser();
     document.getElementById('auth-screen').style.display='none';
     document.getElementById('app').style.display='flex';
-    hideSplash(); // 🚀 进入主程序，淡出过场动画
+    hideSplash();
     renderProjectNav();
     updateSidebar();
     
-    setupAutoLogout(); // 🚀 新增：启动1小时自动退出定时器
+    setupAutoLogout();
     
-    // 🚀 核心修改：登录成功后，读取 URL 参数恢复之前的页面，而不是死板地跳回首页
+
     const urlParams = new URLSearchParams(window.location.search);
     const page = urlParams.get('page') || 'dashboard';
     const sub = urlParams.get('sub');
     navigate(page, sub, true);
 
-    resumeBackgroundRechargeMonitor(); // 🚀 刷新后即使不在充值页，也继续检测到账并自动充值到账积分
+    resumeBackgroundRechargeMonitor();
 
-    checkAnnouncement(); // 🚀 新增：登录完成后检查公告
+    checkAnnouncement();
   }
 }
 
@@ -1549,13 +1550,13 @@ sb.auth.onAuthStateChange(async(event,session)=>{
   if((event==='SIGNED_IN' || event==='INITIAL_SESSION') && session){
     initApp(session);
   } else if (event === 'SIGNED_OUT') {
-    stopRechargeTimers(); // 🚀 登出时停止充值检测定时器，防止跨账号串号
+    stopRechargeTimers();
     currentUser=null;
     currentProfile=null;
     document.getElementById('app').style.display='none';
     document.getElementById('auth-screen').style.display='flex';
-    showAuthEntry(); // 老用户退出后直达登录界面；新用户回到宣传页
-    hideSplash(); // 🚀 已登出，淡出过场动画，显示登录页
+    showAuthEntry();
+    hideSplash();
   }
 });
 
@@ -1563,8 +1564,8 @@ sb.auth.getSession().then(({data:{session}, error})=>{
   if(error || !session){
     if(error) sb.auth.signOut();
     document.getElementById('auth-screen').style.display='flex';
-    showAuthEntry(); // 老用户（注册/登录过）直达登录界面；从未登录过的新用户展示宣传落地页
-    hideSplash(); // 🚀 无有效会话，淡出过场动画，显示登录页
+    showAuthEntry();
+    hideSplash();
   } else {
     initApp(session); 
   }
@@ -1598,7 +1599,7 @@ async function refreshBalance(){
   updateSidebar();
 }
 
-// ─── PROXY HELPER ───
+
 async function proxyFetch(apiPath, {method='GET', queryParams={}, body}={}){
   const {data:{session}}=await sb.auth.getSession();
   const jwt=session?.access_token||'';
@@ -1639,7 +1640,7 @@ async function toggleLang(){
   updateSidebar();
 }
 
-// --- 标签页状态管理 ---
+
 let openTabs = [{ id: 'dashboard', subType: null }]; 
 const STATIC_ICONS = {
   dashboard: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>',
@@ -1690,8 +1691,8 @@ function closeTab(id) {
   }
 }
 
-// 增加 isPopState 参数，防止浏览器后退时产生死循环
-// 🚀 内容区交叉淡化：先淡出当前内容 → 淡出结束后渲染新内容 → 再淡入
+
+
 let _contentTransitionTimer = null;
 function transitionContent(renderFn){
   const c = document.getElementById('content');
@@ -1701,16 +1702,16 @@ function transitionContent(renderFn){
   c.classList.add('content-fade-out');
   _contentTransitionTimer = setTimeout(()=>{
     _contentTransitionTimer = null;
-    renderFn();              // 此时内容已淡出（不可见），替换为新内容
+    renderFn();
     c.classList.remove('content-fade-out');
-    void c.offsetWidth;      // 强制重排，重新触发淡入动画
+    void c.offsetWidth;
     c.classList.add('content-fade-in');
-  }, 220);                   // 与 .content-fade-out 动画时长一致
+  }, 220);
 }
 
 function navigate(page, subType = null, isPopState = false){
   currentPage=page;
-  // 🚀 离开充值页时停止倒计时 UI（保留后台到账检测，仍可自动充值到账积分）
+
   if(page !== 'recharge' && rechargeState.countdownTimer){
     clearInterval(rechargeState.countdownTimer);
     rechargeState.countdownTimer = null;
@@ -1719,7 +1720,7 @@ function navigate(page, subType = null, isPopState = false){
   const nav=document.getElementById('nav-'+page);
   if(nav)nav.classList.add('active');
   
-  // --- 记录并渲染标签页 ---
+
   const existingTab = openTabs.find(t => t.id === page);
   if (existingTab) {
     existingTab.subType = subType; 
@@ -1727,13 +1728,13 @@ function navigate(page, subType = null, isPopState = false){
     openTabs.push({ id: page, subType: subType }); 
   }
   renderTabs();
-  // ------------------------
 
-  // 🚀 新增：动态修改浏览器地址栏 URL
+
+
   if (!isPopState) {
     const url = new URL(window.location);
     if (page === 'dashboard') {
-      url.search = ''; // 首页保持干净的 URL
+      url.search = '';
     } else {
       url.searchParams.set('page', page);
       if (subType) url.searchParams.set('sub', subType);
@@ -1742,9 +1743,9 @@ function navigate(page, subType = null, isPopState = false){
     window.history.pushState({ page, subType }, '', url);
   }
 
-  // 🚀 实际渲染逻辑包装为函数，交给交叉淡化在「淡出后」执行
+
   const doRender = () => {
-    // 拦截项目专属路由
+
     if(page.startsWith('project_')) {
       const projectId = page.replace('project_', '');
       const project = PROJECT_DATA.find(p => p.id === projectId);
@@ -1766,7 +1767,7 @@ function navigate(page, subType = null, isPopState = false){
   transitionContent(doRender);
 }
 
-// 🚀 新增：监听浏览器的“前进/后退”按钮事件
+
 window.addEventListener('popstate', (event) => {
   if (event.state) {
     navigate(event.state.page, event.state.subType, true);
@@ -1789,7 +1790,7 @@ function goToTask(typeVal) {
   }
 }
 
-// ─── DASHBOARD (HOME) ───
+
 async function renderDashboard(){
   const c=document.getElementById('content');
   c.innerHTML=`<div style="color:var(--text3);font-size:13px">${t('loading')}</div>`;
@@ -1917,7 +1918,7 @@ function statusBadge(s){
   return `<span class="badge ${map[s]||'badge-gray'}">${t(s)||s}</span>`;
 }
 
-// ─── PROJECT & TASKS ───
+
 const COUNTRIES = [
   { code: 'US', name: '美国' }, { code: 'CN', name: '中国' }, { code: 'HK', name: '中国香港' },
   { code: 'MO', name: '中国澳门' }, { code: 'TW', name: '中国台湾' }, { code: 'JP', name: '日本' },
@@ -2013,7 +2014,7 @@ function handleDrop(e){
   }
 }
 
-// 🚀 新增：号码去重 —— 去除空行与重复号码，保留首次出现顺序（所有项目通用）
+
 function dedupeNumbers(text){
   const seen=new Set();
   const unique=[];
@@ -2021,17 +2022,17 @@ function dedupeNumbers(text){
   const lines=(text||'').split(/\r\n|\n/);
   for(let i=0;i<lines.length;i++){
     const line=lines[i].trim();
-    if(!line) continue;        // 跳过空行
+    if(!line) continue;
     original++;
-    if(seen.has(line)) continue; // 跳过重复号码
+    if(seen.has(line)) continue;
     seen.add(line);
     unique.push(line);
   }
   return {content:unique.join('\n'),original:original,unique:unique.length,removed:original-unique.length};
 }
 
-// 🚀 新增：读取上传文件并自动去重，用去重结果替换 selectedFile
-// 之后的计费、提交 API、源文件存档都会使用去重后的号码
+
+
 function processAndDedupeFile(file){
   const zone=document.getElementById('upload-zone');
   if(zone) zone.classList.add('has-file');
@@ -2040,7 +2041,7 @@ function processAndDedupeFile(file){
   const reader=new FileReader();
   reader.onload=function(e){
     const result=dedupeNumbers(e.target.result);
-    // 用去重后的内容重建文件，文件名保持不变
+
     selectedFile=new File([result.content],file.name,{type:'text/plain'});
     if(labelEl){
       labelEl.textContent=result.removed>0
@@ -2057,7 +2058,7 @@ function processAndDedupeFile(file){
     calculateTaskCost(selectedFile,result.unique);
   };
   reader.onerror=function(){
-    // 读取失败时退回原始文件，保证流程不中断
+
     selectedFile=file;
     if(labelEl) labelEl.textContent=`✓ ${file.name}`;
     toast(currentLang==='zh'?'文件读取失败，将按原文件上传':'File read failed, uploading as-is','error');
@@ -2066,7 +2067,7 @@ function processAndDedupeFile(file){
   reader.readAsText(file);
 }
 
-// 解析规则中的最小和最大数量
+
 function parseRuleLimits(ruleStr) {
     if(!ruleStr) return {min: 0, max: Infinity};
     const match = ruleStr.match(/数量范围:\s*([\d,]+)-([\d,]+)/);
@@ -2079,7 +2080,7 @@ function parseRuleLimits(ruleStr) {
     return {min: 0, max: Infinity};
 }
 
-let currentFileLines = 0; // 记录当前文件的行数
+let currentFileLines = 0;
 
 function calculateTaskCost(file, knownLines) {
   const previewEl = document.getElementById('task-cost-preview');
@@ -2090,7 +2091,7 @@ function calculateTaskCost(file, knownLines) {
     currentFileLines = 0;
     return;
   }
-  // 已知去重后的行数时直接计费，避免重复读取大文件
+
   if (typeof knownLines === 'number') {
     currentFileLines = knownLines;
     const cost = (currentFileLines * currentTaskPrice).toFixed(3);
@@ -2131,7 +2132,7 @@ async function renderProject(projectId, subTypeVal = null) {
   currentEstimatedCost = 0;
   currentFileLines = 0;
 
-  // 邮箱检测类任务（fbEmail/insEmail/amazonEmail/twitterEmail）无需国家参数
+
   const isEmailTask = activeItem.val.endsWith('Email');
 
   c.innerHTML = `<div style="color:var(--text3);font-size:13px">${t('loading')}</div>`;
@@ -2206,8 +2207,8 @@ async function renderProject(projectId, subTypeVal = null) {
     </div>
   `;
 
-  // 结果下载按钮：按项目类型定制标签与显隐（activeItem 对整个列表固定，故只需计算一次）
-  // 运营商检测 / 高级美国运营商检测：有效→T卡（仅保留 T-Mobile / Metro by T-Mobile），无效→非T卡（排除 T-Mobile）
+
+
   const isCarrierTask = activeItem.val === 'operatorStandard' || activeItem.val === 'phoneUsCarrier';
   const validTxtLabel =
     isCarrierTask                     ? (currentLang==='zh'?'T卡':'T-Card') :
@@ -2221,7 +2222,7 @@ async function renderProject(projectId, subTypeVal = null) {
     activeItem.val === 'phoneCheck'   ? (currentLang==='zh'?'空号':'Empty Number') :
     activeItem.val === 'phoneActive'  ? (currentLang==='zh'?'非活跃号':'Inactive') :
     (currentLang==='zh'?'无效TXT':'Invalid TXT');
-  // 表格下载：蓝号、空号检测，以及名称含“开通”的项目隐藏；其余（如号码活跃检测、全格式等）保留
+
   const showExcelDownload = !(
     activeItem.val === 'iosBlueValid' ||
     activeItem.val === 'phoneCheck' ||
@@ -2289,7 +2290,7 @@ async function renderProject(projectId, subTypeVal = null) {
 }
 
 async function submitProjectTask(taskType, ruleStr){
-  // 邮箱检测类任务无需国家参数
+
   const isEmailTask = taskType.endsWith('Email');
   const countryEl = document.getElementById('task-country');
   const country = countryEl ? countryEl.value : '';
@@ -2306,7 +2307,7 @@ async function submitProjectTask(taskType, ruleStr){
   }
   if(!selectedFile){toast(currentLang==='zh'?'请上传文件':'Please upload a file','error');return;}
   
-  // 数量范围校验
+
   const limits = parseRuleLimits(ruleStr);
   if (currentFileLines < limits.min || currentFileLines > limits.max) {
       toast(currentLang==='zh'?`上传数量必须在 ${limits.min} 到 ${limits.max} 之间`:`Quantity must be between ${limits.min} and ${limits.max}`, 'error');
@@ -2345,7 +2346,7 @@ async function submitProjectTask(taskType, ruleStr){
         currentProfile.balance = data.newBalance;
     }
     
-    // 🚀 新增：将源文件内容异步存入数据库，供后续下载和比对使用
+
     try {
         const reader = new FileReader();
         reader.onload = async function(e) {
@@ -2412,7 +2413,7 @@ async function downloadResult(taskId,remoteId){
   } catch(e){toast(e.message,'error');}
 }
 
-// 🚀 新增：下载 Excel 表格
+
 async function downloadExcel(remoteId) {
   toast(currentLang==='zh'?'正在生成表格，请稍候...':'Generating Excel, please wait...','info');
   try {
@@ -2427,42 +2428,42 @@ async function downloadExcel(remoteId) {
         return;
     }
 
-    // 解析 CSV/TXT 格式数据
+
     const dataArray = [];
     
-    // 检查第一行是否包含表头（通常包含“手机号”或“phone”）
+
     let startIndex = 0;
     let headers = [];
     if (lines[0].includes('手机号') || lines[0].includes('phone') || lines[0].includes('uid')) {
-        // 移除可能存在的 BOM 头 (ufeff)
+
         headers = lines[0].replace(/^\uFEFF/, '').split(',');
         startIndex = 1;
     } else {
-        // 如果没有表头，根据逗号数量自动生成默认表头
+
         const colCount = lines[0].split(',').length;
         headers = Array.from({length: colCount}, (_, i) => `Column ${i+1}`);
     }
     
     dataArray.push(headers);
 
-    // 解析数据行
+
     for (let i = startIndex; i < lines.length; i++) {
-        // 处理可能包含逗号的字段（简单的 CSV 解析）
+
         const row = lines[i].split(',');
         dataArray.push(row);
     }
 
-    // 使用 SheetJS 生成 Excel
+
     const ws = XLSX.utils.aoa_to_sheet(dataArray);
     
-    // 设置列宽（美化表格）
+
     const wscols = headers.map(h => ({ wch: Math.max(h.length * 2, 15) }));
     ws['!cols'] = wscols;
 
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Result");
     
-    // 触发下载
+
     XLSX.writeFile(wb, `result_${remoteId}.xlsx`);
     toast(currentLang==='zh'?'表格下载成功':'Excel downloaded successfully','success');
 
@@ -2471,7 +2472,7 @@ async function downloadExcel(remoteId) {
   }
 }
 
-// ================= 头像浏览 (Avatar Gallery) =================
+
 const avGallery = { rows: [], filtered: [], rendered: 0, batch: 48, io: null, L: null, deselected: new Set(), taskId: '' };
 
 function agKey(row){ return row.phone || row.ws || row.avatar; }
@@ -2483,7 +2484,7 @@ function agNum(id){ const v=agVal(id); if(v==='' || v==null) return null; const 
 function agNormGender(g){ g=(g||'').trim().toLowerCase(); if(g==='男'||g==='male'||g==='m') return '男'; if(g==='女'||g==='female'||g==='f') return '女'; return 'unknown'; }
 function agNormBiz(b){ b=(b||'').trim().toLowerCase(); if(b==='是'||b==='yes'||b==='true'||b==='1') return '是'; return '否'; }
 
-// 根据表头智能匹配列索引，若无表头则回退到 WS全格式 默认列序
+
 function agMapCols(header){
   const find=(...names)=>{ for(let i=0;i<header.length;i++){ const h=(header[i]||'').toLowerCase().trim(); if(names.some(n=>h.includes(n))) return i; } return -1; };
   const idx={
@@ -2580,7 +2581,7 @@ function setupAvatarUI(remoteId, taskName){
   buildMs('race', races.map(r=>({v:r,l:r})));
 }
 
-// 头像筛选默认值：有头像时默认只看「有头像」；若全部无头像则默认「无头像」
+
 function agSetAvatarDefault(){
   const hasAny = avGallery.rows.some(r=>r.hasAvatar);
   const hasInput = document.querySelector('#ag-ms-avatar-panel input[value="has"]');
@@ -2590,7 +2591,7 @@ function agSetAvatarDefault(){
   agMsSummary('avatar');
 }
 
-// 多选筛选下拉组件 (Multi-select filter dropdowns)
+
 function buildMs(key, opts){
   const panel = document.getElementById('ag-ms-'+key+'-panel');
   panel.innerHTML = opts.map(o=>`<label class="ag-ms-opt"><input type="checkbox" value="${agEsc(o.v)}" data-label="${agEsc(o.l)}" onchange="agMsChanged('${key}')"><span>${agEsc(o.l)}</span></label>`).join('');
@@ -2675,7 +2676,7 @@ function avatarCard(row){
       <div class="ag-phone" title="${agEsc(idText)}">${agEsc(idText)}</div>
       <div class="ag-tags">${gTag}${ageTag}${raceTag}${daysTag}</div>
     </div>`;
-  // 点击图片下方区域 / 勾选圈 = 单独勾选或取消勾选
+
   const toggle = (e)=>{ e.preventDefault(); e.stopPropagation(); agToggleSelect(row, card); };
   card.querySelector('.ag-meta').addEventListener('click', toggle);
   card.querySelector('.ag-check').addEventListener('click', toggle);
@@ -2761,7 +2762,7 @@ function closeAvatars(){
   avGallery.rows=[]; avGallery.filtered=[]; avGallery.rendered=0; avGallery.deselected.clear();
 }
 
-// 🚀 新增：下载源文件
+
 async function downloadSource(remoteId) {
   toast(currentLang==='zh'?'正在获取源文件...':'Fetching source file...','info');
   try {
@@ -2777,25 +2778,25 @@ async function downloadSource(remoteId) {
   } catch(e) { toast(e.message, 'error'); }
 }
 
-// 🚀 新增：自动比对并下载无效号码
+
 async function downloadInvalid(remoteId) {
   toast(currentLang==='zh'?'正在比对生成无效号码...':'Generating invalid numbers...','info');
   try {
-    // 1. 从数据库获取源文件
+
     const { data: srcData, error: srcErr } = await sb.from('task_files').select('file_content').eq('task_id', remoteId).single();
     if (srcErr || !srcData) throw new Error(currentLang==='zh'?'源文件已过期，无法生成无效号码':'Source file missing, cannot generate invalid list');
     const srcLines = srcData.file_content.split(/\r\n|\n/).map(l => l.trim()).filter(l => l);
 
-    // 2. 从官方 API 获取有效号码（获取失败必须报错，否则会把全部号码当成无效导出）
+
     const resValid = await proxyFetch('/api/task/result', { queryParams: { taskId: remoteId } });
     if (!resValid.ok) throw new Error(currentLang==='zh'?'获取有效号码失败，无法生成无效号码':'Failed to fetch valid numbers, cannot generate invalid list');
     const validText = await resValid.text();
     const validLines = validText.split(/\r\n|\n/).map(l => l.trim()).filter(l => l);
 
-    // 3. 集合差集计算 (源文件 - 有效文件 = 无效文件)
-    // ⚠️ 号码规范化：仅保留数字，兼容 +、空格、连字符、括号，以及结果为 CSV 时取首列。
-    // 源文件形如 +18032272439，官方结果可能形如 18032272439，若按原始字符串直接比对会
-    // 完全不匹配，导致差集为空、把上传的全部号码都当成“非蓝号码”导出（本次 Bug 根因）。
+
+
+
+
     const normPhone = s => (s || '').split(',')[0].replace(/\D/g, '');
     const validSet = new Set(validLines.map(normPhone).filter(Boolean));
     const invalidLines = srcLines.filter(l => !validSet.has(normPhone(l)));
@@ -2805,7 +2806,7 @@ async function downloadInvalid(remoteId) {
         return;
     }
 
-    // 4. 生成并下载无效文件（保留源文件原始格式）
+
     const blob = new Blob([invalidLines.join('\n')], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -2815,15 +2816,15 @@ async function downloadInvalid(remoteId) {
   } catch(e) { toast(e.message, 'error'); }
 }
 
-// 🚀 新增：运营商检测 T卡 / 非T卡 筛选下载
-// 规则：底层运营商为 T-Mobile / Metro by T-Mobile 的号码即为「T卡」，其余为「非T卡」。
-// 依据行内是否出现 "t-mobile" 判定（"Metro by T-Mobile" 亦包含该子串），与运营商列所在位置无关，
-// 兼容 全球运营商检测(operatorStandard) 与 高级美国运营商检测(phoneUsCarrier) 两种结果格式。
+
+
+
+
 function rowIsTCard(cells){
   return cells.some(c => (c||'').toLowerCase().includes('t-mobile'));
 }
 
-// 拉取运营商检测结果并解析为「行数组 + 手机号列索引」
+
 async function fetchCarrierResult(remoteId){
   const res = await proxyFetch('/api/task/result', { queryParams: { taskId: remoteId } });
   if(!res.ok) throw new Error(currentLang==='zh'?'获取结果失败':'Failed to fetch result');
@@ -2832,7 +2833,7 @@ async function fetchCarrierResult(remoteId){
   let start = 0, phoneIdx = 0;
   if(lines.length){
     const first = lines[0].replace(/^﻿/, '');
-    // 检测表头（含「手机号」/phone 等），并定位手机号列
+
     if(/手机号|phone|号码|底层运营商|carrier/i.test(first)){
       const header = first.split(',');
       const pIdx = header.findIndex(h => /手机号|phone/i.test((h||'').trim()));
@@ -2845,7 +2846,7 @@ async function fetchCarrierResult(remoteId){
   return { rows, phoneIdx };
 }
 
-// 下载文件工具
+
 function downloadTextFile(content, filename){
   const blob = new Blob([content], { type: 'text/plain' });
   const url = URL.createObjectURL(blob);
@@ -2854,7 +2855,7 @@ function downloadTextFile(content, filename){
   URL.revokeObjectURL(url);
 }
 
-// T卡：仅保留 T-Mobile / Metro by T-Mobile 号码
+
 async function downloadTCard(remoteId){
   if(!remoteId){toast(currentLang==='zh'?'无远程任务ID':'No remote task ID','error');return;}
   toast(currentLang==='zh'?'正在筛选 T卡 号码...':'Filtering T-Card numbers...','info');
@@ -2867,7 +2868,7 @@ async function downloadTCard(remoteId){
   }catch(e){ toast(e.message,'error'); }
 }
 
-// 非T卡：排除 T-Mobile / Metro by T-Mobile，保留其余号码
+
 async function downloadNonTCard(remoteId){
   if(!remoteId){toast(currentLang==='zh'?'无远程任务ID':'No remote task ID','error');return;}
   toast(currentLang==='zh'?'正在筛选 非T卡 号码...':'Filtering Non-T-Card numbers...','info');
@@ -2880,10 +2881,10 @@ async function downloadNonTCard(remoteId){
   }catch(e){ toast(e.message,'error'); }
 }
 
-// ─── RECHARGE (AUTO DETECT) ───
+
 let rechargeState = { orderId: null, detectTimer: null, countdownTimer: null, expireTime: null };
 
-// 🚀 充值订单持久化：刷新页面后仍能恢复到二维码支付界面，并继续自动检测到账、自动充值到账积分
+
 const RECHARGE_LS_KEY = 'pending_recharge_order';
 function saveRechargeOrder(orderId, expireTime){
   try{
@@ -2897,7 +2898,7 @@ function loadRechargeOrder(){
     const raw = localStorage.getItem(RECHARGE_LS_KEY);
     if(!raw) return null;
     const obj = JSON.parse(raw);
-    // 仅恢复当前登录用户自己的订单，避免同一浏览器多账号切换时串号
+
     if(obj && obj.userId && currentUser && obj.userId !== currentUser.id) return null;
     return obj;
   }catch(e){ return null; }
@@ -2906,7 +2907,7 @@ function clearRechargeOrder(){
   try{ localStorage.removeItem(RECHARGE_LS_KEY); }catch(e){}
 }
 
-// 🚀 停止全部充值相关定时器并复位内存状态（退出登录 / 到账后调用）
+
 function stopRechargeTimers(){
   if(rechargeState.detectTimer) clearInterval(rechargeState.detectTimer);
   if(rechargeState.countdownTimer) clearInterval(rechargeState.countdownTimer);
@@ -2916,12 +2917,12 @@ function stopRechargeTimers(){
   rechargeState.expireTime = null;
 }
 
-// 后端返回「已到账」的判定（paid = 链上到账，approved = 管理员人工通过）
+
 function isPaidStatus(data){
   return data && data.code === 0 && (data.status === 'paid' || data.status === 'approved');
 }
 
-// 调用后端检测某订单是否到账，返回解析后的数据（失败返回 null）
+
 async function fetchPaymentStatus(orderId){
   try{
     const res = await proxyFetch('/api/internal/check-payment', {
@@ -2932,12 +2933,12 @@ async function fetchPaymentStatus(orderId){
   }catch(e){ console.warn('检测支付失败', e); return null; }
 }
 
-// 到账成功后的统一处理：停止检测、清理持久化、刷新余额、界面反馈
+
 function onRechargePaid(data){
   stopRechargeTimers();
   clearRechargeOrder();
 
-  // 界面元素可能因刷新后停留在其它页面而不存在，逐一判空更新
+
   const statusEl = document.getElementById('r-order-status');
   if (statusEl) { statusEl.className = 'badge badge-green'; statusEl.innerText = currentLang==='zh'?'已支付':'Paid'; }
   const cdEl = document.getElementById('r-countdown');
@@ -2950,7 +2951,7 @@ function onRechargePaid(data){
     loadProfile().then(updateSidebar);
   }
   toast(currentLang==='zh'?'充值成功！':'Recharge successful!','success');
-  // 3 秒后回到创建订单界面；触发时二次校验仍停留在充值页，避免覆盖用户已切换到的其它页面
+
   if (document.getElementById('recharge-view')) {
     setTimeout(() => {
       if (currentPage === 'recharge' && document.getElementById('recharge-view')) renderRecharge();
@@ -2958,7 +2959,7 @@ function onRechargePaid(data){
   }
 }
 
-// 🚀 用服务端权威订单数据填充「步骤2」支付界面（创建订单与刷新恢复共用同一套渲染）
+
 function populateStep2(order, walletAddr, qrUrl){
   const serverUsdt = parseFloat(order.usdt_amount);
   const serverPts = parseFloat(order.points_amount);
@@ -2982,7 +2983,7 @@ function populateStep2(order, walletAddr, qrUrl){
   if(step2) step2.style.display = 'block';
 }
 
-// 回到「步骤1：创建订单」界面（当恢复失败/订单已结束时用）
+
 function showStep1(){
   const step1 = document.getElementById('recharge-step1');
   const step2 = document.getElementById('recharge-step2');
@@ -2990,9 +2991,9 @@ function showStep1(){
   if(step2) step2.style.display = 'none';
 }
 
-// 🚀 后台恢复：即使刷新后停留在其它页面，也继续检测到账并自动充值到账积分
+
 async function resumeBackgroundRechargeMonitor(){
-  if(currentPage === 'recharge') return; // 充值页由 renderRecharge 负责恢复
+  if(currentPage === 'recharge') return;
   const saved = loadRechargeOrder();
   if(!saved || !saved.orderId) return;
   try{
@@ -3007,16 +3008,16 @@ async function resumeBackgroundRechargeMonitor(){
       if(saved.expireTime && saved.expireTime > Date.now()){
         rechargeState.orderId = order.id;
         rechargeState.expireTime = saved.expireTime;
-        startBackendDetection(); // 仅后台轮询检测到账，无倒计时 UI
+        startBackendDetection();
       } else {
-        // 已超时但仍是 pending：做最后一次到账检测，避免临界时间到账的资金漏充
+
         rechargeState.orderId = order.id;
         const data = await fetchPaymentStatus(order.id);
         if(isPaidStatus(data)){ onRechargePaid(data); }
         else { rechargeState.orderId = null; clearRechargeOrder(); }
       }
     } else {
-      clearRechargeOrder(); // cancelled / rejected
+      clearRechargeOrder();
     }
   }catch(e){ console.warn('后台恢复充值检测失败', e); }
 }
@@ -3032,7 +3033,7 @@ async function renderRecharge(){
   const qrUrl=cfg.pay_qr_url||'';
   const rate=cfg.usdt_to_points||'6.8';
 
-  // 🚀 若本地存在有效期内的未完成订单，首屏直接呈现步骤2，避免刷新时先闪回步骤1
+
   const _saved = loadRechargeOrder();
   const restoringPending = !!(_saved && _saved.orderId && _saved.expireTime && _saved.expireTime > Date.now());
   const step1Style = restoringPending ? ' style="display:none;"' : '';
@@ -3040,7 +3041,7 @@ async function renderRecharge(){
 
   c.innerHTML=`
   <div id="recharge-view">
-      <!-- 步骤1：创建订单 -->
+      
       <div id="recharge-step1"${step1Style}>
         <div class="recharge-steps">
             <div class="r-step active"><div class="r-step-num">1</div><div>${currentLang==='zh'?'创建充值订单':'Create Order'}</div></div>
@@ -3072,7 +3073,7 @@ async function renderRecharge(){
         </div>
       </div>
 
-      <!-- 步骤2：支付订单 -->
+      
       <div id="recharge-step2"${step2Style}>
         <div class="recharge-steps">
             <div class="r-step"><div class="r-step-num">1</div><div>${currentLang==='zh'?'创建充值订单':'Create Order'}</div></div>
@@ -3081,7 +3082,7 @@ async function renderRecharge(){
         </div>
 
         <div class="recharge-container">
-            <!-- 左侧：支付信息 -->
+            
             <div class="r-card">
                 <div class="r-card-title">${currentLang==='zh'?'支付信息':'Payment Info'}</div>
                 <div class="r-qr-box">
@@ -3096,7 +3097,7 @@ async function renderRecharge(){
                 </div>
             </div>
 
-            <!-- 右侧：订单信息 -->
+            
             <div class="r-card">
                 <div class="r-card-title">${currentLang==='zh'?'订单信息':'Order Details'}</div>
                 <div class="r-info-row">
@@ -3139,7 +3140,7 @@ async function renderRecharge(){
   </div>
   `;
 
-  // 🚀 刷新恢复：若存在未完成的充值订单，直接恢复到二维码支付界面并继续检测到账
+
   try{
     const saved = loadRechargeOrder();
     if(saved && saved.orderId){
@@ -3147,7 +3148,7 @@ async function renderRecharge(){
       if(!order){
         clearRechargeOrder(); showStep1();
       } else if(order.status === 'paid' || order.status === 'approved'){
-        // 关闭/刷新期间已到账：清理订单并刷新余额显示
+
         clearRechargeOrder();
         await loadProfile();
         updateSidebar();
@@ -3155,14 +3156,14 @@ async function renderRecharge(){
         toast(currentLang==='zh'?'充值成功！':'Recharge successful!','success');
       } else if(order.status === 'pending'){
         if(saved.expireTime && saved.expireTime > Date.now()){
-          // 订单仍在有效期内：恢复界面 + 倒计时 + 后台自动检测到账
+
           rechargeState.orderId = order.id;
           rechargeState.expireTime = saved.expireTime;
           populateStep2(order, wallet, qrUrl);
           startCountdown();
           startBackendDetection();
         } else {
-          // 已超时但仍是 pending：做最后一次到账检测，避免临界时间到账的资金漏充
+
           rechargeState.orderId = order.id;
           const data = await fetchPaymentStatus(order.id);
           if(isPaidStatus(data)){
@@ -3174,7 +3175,7 @@ async function renderRecharge(){
           }
         }
       } else {
-        // 已取消 / 已拒绝：清理，回到创建订单界面
+
         clearRechargeOrder(); showStep1();
       }
     }
@@ -3200,7 +3201,7 @@ async function generateOrder(walletAddr, qrUrl) {
   const rate=parseFloat(cfg?.value||'6.8');
   const ptsAmt = parseFloat((uniqueAmount * rate).toFixed(3));
 
-  // 注意：points_amount 由数据库触发器服务端强制重算 (防篡改)
+
   const{data:order, error}=await sb.from('recharge_orders').insert({
     user_id: currentUser.id,
     usdt_amount: uniqueAmount,
@@ -3213,10 +3214,10 @@ async function generateOrder(walletAddr, qrUrl) {
   rechargeState.orderId = order.id;
   rechargeState.expireTime = Date.now() + 60 * 60 * 1000;
 
-  // 🚀 持久化订单：刷新页面后可自动恢复二维码界面并继续检测到账
+
   saveRechargeOrder(order.id, rechargeState.expireTime);
 
-  // 使用服务端返回的权威值填充并显示步骤2（与刷新恢复共用）
+
   populateStep2(order, walletAddr, qrUrl);
 
   startCountdown();
@@ -3229,7 +3230,7 @@ function startCountdown() {
     const updateTimer = () => {
         const now = Date.now();
         const diff = rechargeState.expireTime - now;
-        const el = document.getElementById('r-countdown'); // 可能因离开充值页而不存在
+        const el = document.getElementById('r-countdown');
 
         if (diff <= 0) {
             clearInterval(rechargeState.countdownTimer);
@@ -3275,7 +3276,7 @@ async function cancelOrder(isTimeout = false) {
     if(rechargeState.detectTimer) clearInterval(rechargeState.detectTimer);
     if(rechargeState.countdownTimer) clearInterval(rechargeState.countdownTimer);
 
-    // 🚀 清理持久化订单，避免刷新后又被恢复
+
     clearRechargeOrder();
 
     if(rechargeState.orderId) {
@@ -3300,15 +3301,15 @@ function startBackendDetection() {
 async function checkPaymentWithBackend() {
   if (!rechargeState.orderId) return;
 
-  // 🚀 已过有效期：先停止轮询，再做最后一次到账检测（避免临界时间到账漏充）；仍未到账才清理并标记取消
+
   if (rechargeState.expireTime && Date.now() >= rechargeState.expireTime) {
     const expiredOrderId = rechargeState.orderId;
     if (rechargeState.detectTimer) clearInterval(rechargeState.detectTimer);
     rechargeState.detectTimer = null;
     const data = await fetchPaymentStatus(expiredOrderId);
-    if (!rechargeState.orderId) return;                 // 期间已被 cancelOrder 等流程处理
+    if (!rechargeState.orderId) return;
     if (isPaidStatus(data)) { onRechargePaid(data); return; }
-    // 仍未到账：清理持久化，并把订单标记为已取消（后台无倒计时，需在此兜底，避免遗留 pending）
+
     rechargeState.orderId = null;
     clearRechargeOrder();
     try { await sb.from('recharge_orders').update({ status: 'cancelled' }).eq('id', expiredOrderId); } catch(e){ console.warn('标记超时订单失败', e); }
@@ -3316,11 +3317,11 @@ async function checkPaymentWithBackend() {
   }
 
   const data = await fetchPaymentStatus(rechargeState.orderId);
-  if (!rechargeState.orderId) return; // 期间已被其它轮询/流程处理，避免重复入账提示
+  if (!rechargeState.orderId) return;
   if (isPaidStatus(data)) onRechargePaid(data);
 }
 
-// ─── LOGS ───
+
 window.logFilters = { taskId: '', country: '', type: '', taskType: '' };
 
 window.applyLogFilters = function() {
@@ -3340,17 +3341,17 @@ async function renderLogs(){
   const c=document.getElementById('content');
   c.innerHTML=`<div style="color:var(--text3);font-size:13px">${t('loading')}</div>`;
 
-  // 同时拉取账单和任务数据
+
   const[{data:logs},{data:tasks}]=await Promise.all([
     sb.from('balance_logs').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false}),
     sb.from('tasks').select('*').eq('user_id',currentUser.id)
   ]);
 
-  // 将任务数据转为 Map 方便快速查找
+
   const taskMap = {};
   (tasks || []).forEach(t => { taskMap[t.remote_task_id] = t; });
 
-  // 智能合并数据
+
   let mergedLogs = (logs || []).map(log => {
     let item = { ...log };
     item.transType = log.amount > 0 ? (currentLang==='zh'?'收入':'Income') : (currentLang==='zh'?'支出':'Expense');
@@ -3380,7 +3381,7 @@ async function renderLogs(){
 
       const task = taskMap[tid];
       if (task) {
-        // 查找项目中文名称与图标用于显示 Badge
+
         let pLabel = task.task_type;
         let pIcon = '';
         PROJECT_DATA.forEach(p => {
@@ -3413,7 +3414,7 @@ async function renderLogs(){
     return item;
   });
 
-  // 应用搜索过滤条件
+
   if (window.logFilters.taskId) {
     mergedLogs = mergedLogs.filter(l => l.displayId.toLowerCase().includes(window.logFilters.taskId.toLowerCase()));
   }
@@ -3501,19 +3502,19 @@ async function renderLogs(){
   </div>`;
 }
 
-// ─── NOTE: Run this SQL in Supabase to fix RLS policies ───
-// DROP POLICY IF EXISTS profiles_admin_all ON public.profiles;
-// CREATE POLICY profiles_admin_all ON public.profiles FOR ALL TO authenticated USING (true);
-// ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY tasks_own ON public.tasks FOR ALL USING (auth.uid()=user_id) WITH CHECK (auth.uid()=user_id);
-// ALTER TABLE public.recharge_orders ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY orders_own ON public.recharge_orders FOR ALL USING (auth.uid()=user_id) WITH CHECK (auth.uid()=user_id);
-// ALTER TABLE public.balance_logs ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY logs_own ON public.balance_logs FOR ALL USING (auth.uid()=user_id) WITH CHECK (auth.uid()=user_id);
-// ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY settings_read ON public.site_settings FOR SELECT TO authenticated USING (true);
-// CREATE POLICY settings_write ON public.site_settings FOR ALL USING (EXISTS(SELECT 1 FROM public.profiles WHERE id=auth.uid() AND role='admin'));
-// ─── ADMIN PANEL ───
+
+
+
+
+
+
+
+
+
+
+
+
+
 let adminTab='orders';
 async function renderAdmin(){
   if(!currentProfile||currentProfile.role!=='admin'){
@@ -3627,15 +3628,15 @@ async function loadAdminTab(tab){
 
 async function approveOrder(orderId,userId,points,usdt){
   if(!confirm(`${currentLang==='zh'?'确认通过此充值申请？':'Approve this recharge?'}\nUSDT: ${usdt} | ${t('points')}: ${points}`))return;
-  // Get user balance
+
   const{data:profile}=await sb.from('profiles').select('balance').eq('id',userId).single();
   const balBefore=parseFloat(profile?.balance||0);
   const balAfter=balBefore+parseFloat(points);
-  // Update order
+
   await sb.from('recharge_orders').update({status:'approved',reviewed_by:currentUser.id,reviewed_at:new Date().toISOString()}).eq('id',orderId);
-  // Add balance
+
   await sb.from('profiles').update({balance:balAfter}).eq('id',userId);
-  // Log
+
   await sb.from('balance_logs').insert({user_id:userId,type:'recharge',amount:parseFloat(points),balance_before:balBefore,balance_after:balAfter,note:`充值 ${usdt} USDT`,ref_id:orderId});
   toast(currentLang==='zh'?'已通过，积分已到账':'Approved, points added','success');
   loadAdminTab('orders');
@@ -3694,7 +3695,7 @@ async function saveSettings(){
   toast(currentLang==='zh'?'设置已保存':'Settings saved','success');
 }
 
-// ─── PROFILE (个人中心) ───
+
 function renderProfile() {
   const c = document.getElementById('content');
   c.innerHTML = `
@@ -3735,7 +3736,7 @@ async function updatePassword() {
   btn.disabled = true;
   btn.textContent = currentLang==='zh'?'提交中...':'Updating...';
 
-  // 调用 Supabase Auth API 更新密码
+
   const { error } = await sb.auth.updateUser({ password: p1 });
   
   btn.disabled = false;

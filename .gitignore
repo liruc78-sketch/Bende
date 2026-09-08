@@ -11,3 +11,6 @@ index.html.bak-*
 Thumbs.db
 desktop.ini
 *.log
+
+# 带注释的前端开发源码（仅本地维护，纯净版在 index.html）
+index.src.html
