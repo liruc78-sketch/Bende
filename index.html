@@ -2270,7 +2270,7 @@ async function renderProject(projectId, subTypeVal = null) {
                 ${task.status==='Finish'?`
                   <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start;">
                     ${activeItem.val.toLowerCase().includes('gender')?`<a href="javascript:void(0)" onclick="viewAvatars('${task.remote_task_id}','${(task.task_name||'').replace(/['"\\]/g,'')}')" style="color:var(--yellow);font-size:12px;font-weight:bold;">${currentLang==='zh'?'🖼️ 查看头像':'🖼️ View Avatars'}</a>`:''}
-                    ${!activeItem.label.includes('性别年龄-全格式')?`<a href="javascript:void(0)" onclick="${isCarrierTask?`downloadTCard('${task.remote_task_id}')`:`downloadResult('${task.id}','${task.remote_task_id}')`}" style="color:var(--accent);font-size:12px;font-weight:500;">${validTxtLabel}</a>`:''}
+                    ${!activeItem.label.includes('性别年龄-全格式')?`<a href="javascript:void(0)" onclick="${isCarrierTask?`downloadTCard('${task.remote_task_id}')`:`downloadResult('${task.id}','${task.remote_task_id}','${activeItem.val}')`}" style="color:var(--accent);font-size:12px;font-weight:500;">${validTxtLabel}</a>`:''}
                     ${showExcelDownload?`<a href="javascript:void(0)" onclick="downloadExcel('${task.remote_task_id}')" style="color:var(--green);font-size:12px;font-weight:bold;">${currentLang==='zh'?'表格下载':'Download Excel'}</a>`:''}
                     ${!activeItem.label.includes('性别年龄-全格式')?`<a href="javascript:void(0)" onclick="${isCarrierTask?`downloadNonTCard('${task.remote_task_id}')`:`downloadInvalid('${task.remote_task_id}')`}" style="color:var(--purple);font-size:12px;font-weight:500;">${invalidTxtLabel}</a>`:''}
                     <a href="javascript:void(0)" onclick="downloadSource('${task.remote_task_id}')" style="color:var(--text2);font-size:12px;">${currentLang==='zh'?'源文件':'Source File'}</a>
@@ -2398,18 +2398,46 @@ async function refreshProjectTask(taskId,remoteId, projectId, subTypeVal){
   } catch(e){toast(e.message,'error');}
 }
 
-async function downloadResult(taskId,remoteId){
+
+
+function extractActiveNumbers(text){
+  const lines = text.replace(/^\uFEFF/, '').split(/\r\n|\n|\r/).filter(l => l.trim());
+  let col = 0, start = 0;
+
+  if(lines.length && !/\d{5,}/.test(lines[0])){
+    const header = lines[0].split(',').map(h => h.trim());
+    const idx = header.findIndex(h => /^(活跃|active)/i.test(h));
+    if(idx >= 0) col = idx;
+    start = 1;
+  }
+  const seen = new Set(), out = [];
+  for(let i = start; i < lines.length; i++){
+    const cell = (lines[i].split(',')[col] || '').trim();
+    if(/\d{5,}/.test(cell) && !seen.has(cell)){ seen.add(cell); out.push(cell); }
+  }
+  return out;
+}
+
+async function downloadResult(taskId,remoteId,taskType){
   if(!remoteId){toast(currentLang==='zh'?'无远程任务ID':'No remote task ID','error');return;}
   toast(currentLang==='zh'?'正在下载...':'Downloading...','info');
   try{
     const res=await proxyFetch('/api/task/result',{queryParams:{taskId:remoteId}});
     if(!res.ok){toast(currentLang==='zh'?'下载失败':'Download failed','error');return;}
-    const blob=await res.blob();
+    let blob, okMsg=currentLang==='zh'?'下载成功':'Downloaded';
+    if(taskType==='phoneActive'){
+      const nums=extractActiveNumbers(await res.text());
+      if(!nums.length){toast(currentLang==='zh'?'该任务没有活跃号':'No active numbers found','info');return;}
+      blob=new Blob([nums.join('\n')],{type:'text/plain'});
+      okMsg=currentLang==='zh'?`活跃号下载成功（${nums.length} 条）`:`Active numbers downloaded (${nums.length})`;
+    }else{
+      blob=await res.blob();
+    }
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
     a.href=url;a.download=`valid_${remoteId}.txt`;a.click();
     URL.revokeObjectURL(url);
-    toast(currentLang==='zh'?'下载成功':'Downloaded','success');
+    toast(okMsg,'success');
   } catch(e){toast(e.message,'error');}
 }
 
@@ -2434,7 +2462,7 @@ async function downloadExcel(remoteId) {
 
     let startIndex = 0;
     let headers = [];
-    if (lines[0].includes('手机号') || lines[0].includes('phone') || lines[0].includes('uid')) {
+    if (lines[0].includes('手机号') || lines[0].includes('phone') || lines[0].includes('uid') || lines[0].includes('活跃号')) {
 
         headers = lines[0].replace(/^\uFEFF/, '').split(',');
         startIndex = 1;
