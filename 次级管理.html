@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="robots" content="noindex,nofollow"/>
+<meta name="color-scheme" content="dark light"/>
+<title>本德筛号中心</title>
+<link rel="icon" href="favicon.png"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  /* 一张只做一件事的"钥匙台"——找到用户，给 TA 换一把新密码。
+     沿用主后台的墨色底 + 紫色强调；层级靠边框与字重，不靠阴影和渐变。 */
+  :root{
+    --ink:#0d0f14; --desk:#12151c; --slot:#181c26; --well:#0a0c10;
+    --line:rgba(255,255,255,.08); --line-strong:rgba(255,255,255,.14);
+    --text:#e8eaf0; --text2:#a3aac4; --text3:#6f7690;
+    --violet:#8b5cf6; --violet-ink:#ffffff; --violet-soft:rgba(139,92,246,.14); --focus:rgba(139,92,246,.45);
+    --green:#2ecc7a; --green-soft:rgba(46,204,122,.12); --red:#ef6b6b; --red-soft:rgba(224,82,82,.12);
+    --sans:"PingFang SC","Microsoft YaHei UI","Microsoft YaHei","Hiragino Sans GB","Segoe UI",system-ui,sans-serif;
+    --mono:"Cascadia Mono","SF Mono",ui-monospace,Menlo,Consolas,monospace;
+    --r-sm:6px; --r-md:10px; --r-lg:14px;
+    --ease:cubic-bezier(.23,1,.32,1);
+  }
+  @media (prefers-color-scheme: light){
+    :root{
+      --ink:#f4f4f6; --desk:#ffffff; --slot:#f7f6fb; --well:#efeff3;
+      --line:rgba(16,18,27,.10); --line-strong:rgba(16,18,27,.18);
+      --text:#15161c; --text2:#4b5066; --text3:#80859a;
+      --violet:#6d3fe0; --violet-soft:rgba(109,63,224,.10); --focus:rgba(109,63,224,.35);
+      --green:#178a4f; --green-soft:rgba(23,138,79,.10); --red:#c63c3c; --red-soft:rgba(198,60,60,.10);
+    }
+  }
+  *{ box-sizing:border-box; }
+  html{ -webkit-font-smoothing:antialiased; }
+  body{ margin:0; min-height:100vh; background:var(--ink); color:var(--text); font:14px/1.6 var(--sans); }
+  button,input{ font:inherit; color:inherit; }
+  [hidden]{ display:none !important; }
+
+  /* 按钮 */
+  .btn{ display:inline-flex; align-items:center; justify-content:center; gap:6px; height:36px; padding:0 16px; border-radius:var(--r-sm);
+        border:1px solid var(--line-strong); background:transparent; color:var(--text); font-size:13px; font-weight:500; cursor:pointer;
+        transition:background-color .15s var(--ease), border-color .15s var(--ease), transform .12s var(--ease); white-space:nowrap; }
+  .btn:hover{ background:var(--slot); border-color:var(--text3); }
+  .btn:active{ transform:scale(.97); }
+  .btn:focus-visible, .field:focus-visible{ outline:2px solid var(--focus); outline-offset:2px; }
+  .btn:disabled{ opacity:.5; cursor:not-allowed; transform:none; }
+  .btn-primary{ background:var(--violet); border-color:var(--violet); color:var(--violet-ink); }
+  .btn-primary:hover{ background:var(--violet); border-color:var(--violet); filter:brightness(1.08); }
+  .btn-key{ color:var(--violet); border-color:var(--violet-soft); background:var(--violet-soft); }
+  .btn-key:hover{ background:var(--violet-soft); border-color:var(--violet); }
+  .btn-ghost{ border-color:transparent; color:var(--text2); }
+  .btn-ghost:hover{ background:var(--slot); border-color:transparent; color:var(--text); }
+
+  /* 输入框：比所在表面更暗，表示"往这里填" */
+  .field{ width:100%; height:44px; padding:0 14px; border-radius:var(--r-sm); border:1px solid var(--line-strong); background:var(--well);
+          outline:none; transition:border-color .15s var(--ease); }
+  .field:focus{ border-color:var(--violet); }
+  .field::placeholder{ color:var(--text3); }
+  .label{ display:block; margin-bottom:8px; font-size:12px; font-weight:500; color:var(--text2); }
+  .mono{ font-family:var(--mono); font-variant-numeric:tabular-nums; }
+  .err{ min-height:20px; margin-top:12px; font-size:13px; color:var(--red); }
+
+  /* 登录 */
+  #login-view{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px 16px; }
+  .login-card{ width:100%; max-width:380px; padding:32px; border:1px solid var(--line); border-radius:var(--r-lg); background:var(--desk); }
+  .brand{ display:flex; align-items:center; gap:8px; flex-shrink:0; white-space:nowrap; font-size:13px; font-weight:600; color:var(--text2); letter-spacing:.02em; }
+  .brand b{ color:var(--violet); font-weight:600; }
+  .login-card h1{ margin:24px 0; font-size:24px; line-height:1.3; font-weight:600; letter-spacing:-.01em; }
+  .login-card .row{ margin-bottom:16px; }
+  .login-card .btn-primary{ width:100%; height:44px; margin-top:8px; font-size:14px; }
+
+  /* 顶栏 */
+  .topbar{ position:sticky; top:0; z-index:5; display:flex; align-items:center; gap:16px; height:56px; padding:0 24px;
+           background:var(--ink); border-bottom:1px solid var(--line); }
+  .topbar .who{ margin-left:auto; font-size:12px; color:var(--text3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
+
+  /* 主体 */
+  main{ max-width:880px; margin:0 auto; padding:40px 24px 64px; }
+  .head{ display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:24px; }
+  .head h1{ margin:0; font-size:28px; line-height:1.2; font-weight:600; letter-spacing:-.015em; }
+  .scope{ display:inline-flex; align-items:center; gap:8px; height:28px; padding:0 12px; border-radius:999px; border:1px solid var(--line-strong);
+          font-size:12px; color:var(--text2); }
+  .scope b{ color:var(--text); font-weight:600; font-variant-numeric:tabular-nums; }
+  .scope i{ width:6px; height:6px; border-radius:50%; background:var(--violet); }
+  .search-row{ display:flex; align-items:center; gap:12px; margin-bottom:16px; }
+  .search-row .field{ height:48px; font-size:15px; }
+  .count{ font-size:12px; color:var(--text3); white-space:nowrap; font-variant-numeric:tabular-nums; }
+
+  /* 用户名单 */
+  .ledger{ border:1px solid var(--line); border-radius:var(--r-md); background:var(--desk); overflow:hidden; }
+  .ledger-head, .entry{ display:grid; grid-template-columns:minmax(0,1fr) 120px 112px; align-items:center; gap:16px; padding:0 20px; }
+  .ledger-head{ height:40px; font-size:12px; font-weight:500; color:var(--text3); border-bottom:1px solid var(--line); }
+  .entry{ min-height:64px; padding-top:12px; padding-bottom:12px; border-bottom:1px solid var(--line); }
+  .entry:last-child{ border-bottom:none; }
+  .entry:hover{ background:var(--slot); }
+  .who-cell{ min-width:0; }
+  .who-cell .email-line{ display:flex; align-items:center; gap:8px; min-width:0; }
+  .who-cell .email{ min-width:0; font-family:var(--mono); font-size:14px; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .who-cell .uname{ margin-top:2px; font-size:12px; color:var(--text3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .done-tag{ flex-shrink:0; display:inline-flex; align-items:center; padding:0 8px; height:20px; border-radius:999px;
+             font-size:11px; font-weight:500; color:var(--green); background:var(--green-soft); }
+  .date{ font-size:13px; color:var(--text2); font-variant-numeric:tabular-nums; }
+  .entry .btn{ justify-self:end; }
+  .state{ padding:56px 24px; text-align:center; color:var(--text2); }
+  .state strong{ display:block; margin-bottom:4px; font-size:15px; font-weight:600; color:var(--text); }
+  .state span{ font-size:13px; }
+  .state.error strong{ color:var(--red); }
+
+  /* 改密对话框 */
+  dialog{ width:min(440px, calc(100vw - 32px)); padding:0; border:1px solid var(--line-strong); border-radius:var(--r-lg); background:var(--desk); color:var(--text); }
+  dialog::backdrop{ background:rgba(5,6,10,.6); }
+  dialog[open]{ animation:pop .2s var(--ease); }
+  @keyframes pop{ from{ opacity:0; transform:scale(.96); } to{ opacity:1; transform:none; } }
+  .dlg-body{ padding:24px; }
+  .dlg-body h2{ margin:0 0 4px; font-size:18px; font-weight:600; }
+  .dlg-target{ margin:0 0 24px; font-size:13px; color:var(--text2); word-break:break-all; }
+  .dlg-target .mono{ color:var(--text); }
+  .pwd-row{ display:flex; gap:8px; }
+  .pwd-row .field{ font-family:var(--mono); font-size:16px; letter-spacing:.04em; }
+  .hint{ margin-top:8px; font-size:12px; color:var(--text3); }
+  .dlg-actions{ display:flex; justify-content:flex-end; gap:8px; padding:16px 24px; border-top:1px solid var(--line); }
+
+  /* 回执：一张可以直接复制给用户的"钥匙条" */
+  .ok-mark{ display:flex; align-items:center; gap:8px; margin-bottom:16px; font-size:15px; font-weight:600; color:var(--green); }
+  .slip{ border:1px dashed var(--line-strong); border-radius:var(--r-md); background:var(--well); padding:16px; }
+  .slip dl{ display:grid; grid-template-columns:auto 1fr; gap:8px 16px; margin:0; }
+  .slip dt{ font-size:12px; color:var(--text3); line-height:24px; }
+  .slip dd{ margin:0; font-family:var(--mono); font-size:15px; line-height:24px; word-break:break-all; }
+  .slip dd.key{ font-size:18px; font-weight:600; color:var(--violet); letter-spacing:.04em; }
+
+  @media (max-width: 640px){
+    .topbar{ padding:0 16px; }
+    main{ padding:24px 16px 48px; }
+    .head h1{ font-size:24px; }
+    .ledger-head{ display:none; }
+    .entry{ grid-template-columns:minmax(0,1fr) auto; gap:4px 12px; padding:12px 16px; }
+    .entry .date{ grid-column:1; grid-row:2; font-size:12px; color:var(--text3); }
+    .entry .btn{ grid-column:2; grid-row:1 / span 2; }
+    .login-card{ padding:24px; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation:none !important; transition:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<section id="login-view" hidden>
+  <form class="login-card" id="login-form" autocomplete="on">
+    <div class="brand"><b>本德筛号中心</b></div>
+    <h1>登录</h1>
+    <div class="row">
+      <label class="label" for="login-email">邮箱</label>
+      <input class="field" type="email" id="login-email" autocomplete="username" required>
+    </div>
+    <div class="row">
+      <label class="label" for="login-pwd">密码</label>
+      <input class="field" type="password" id="login-pwd" autocomplete="current-password" required>
+    </div>
+    <button class="btn btn-primary" type="submit" id="login-btn">登录</button>
+    <div class="err" id="login-err" role="alert"></div>
+  </form>
+</section>
+
+<section id="app-view" hidden>
+  <header class="topbar">
+    <div class="brand"><b>本德筛号中心</b></div>
+    <span class="who mono" id="me-email"></span>
+    <button class="btn btn-ghost" type="button" onclick="logout()">退出</button>
+  </header>
+  <main>
+    <div class="head">
+      <h1>我的用户</h1>
+      <span class="scope" id="scope"><i></i>可管理 <b id="scope-n">0</b> 位 · 仅限修改密码</span>
+    </div>
+    <div class="search-row">
+      <input class="field" type="search" id="search" placeholder="搜索邮箱或用户名" oninput="renderList()" autocomplete="off">
+      <button class="btn" type="button" onclick="loadUsers()" title="重新加载名单">刷新</button>
+    </div>
+    <div class="count" id="count" style="margin-bottom:8px;"></div>
+    <div class="ledger">
+      <div class="ledger-head"><span>用户</span><span>注册时间</span><span></span></div>
+      <div id="list"><div class="state"><span>加载中…</span></div></div>
+    </div>
+  </main>
+</section>
+
+<dialog id="pwd-dialog">
+  <form method="dialog" id="pwd-form">
+    <div class="dlg-body" id="pwd-step-edit">
+      <h2>修改密码</h2>
+      <p class="dlg-target">用户 <span class="mono" id="dlg-email"></span></p>
+      <label class="label" for="new-pwd">新密码</label>
+      <div class="pwd-row">
+        <input class="field" type="text" id="new-pwd" autocomplete="off" spellcheck="false" maxlength="72">
+        <button class="btn" type="button" onclick="fillRandomPwd()">随机生成</button>
+      </div>
+      <div class="hint">至少 6 位。修改后旧密码立即失效，请把新密码告知该用户。</div>
+      <div class="err" id="pwd-err" role="alert"></div>
+    </div>
+    <div class="dlg-body" id="pwd-step-done" hidden>
+      <div class="ok-mark">✓ 密码已修改</div>
+      <div class="slip">
+        <dl>
+          <dt>账号</dt><dd id="slip-email"></dd>
+          <dt>新密码</dt><dd class="key" id="slip-pwd"></dd>
+        </dl>
+      </div>
+      <div class="hint">这条信息只显示这一次，关闭后无法再查看新密码。</div>
+    </div>
+    <div class="dlg-actions" id="pwd-actions-edit">
+      <button class="btn btn-ghost" type="button" onclick="closePwdDialog()">取消</button>
+      <button class="btn btn-primary" type="submit" id="pwd-submit">确认修改</button>
+    </div>
+    <div class="dlg-actions" id="pwd-actions-done" hidden>
+      <button class="btn" type="button" id="copy-btn" onclick="copySlip()">复制账号和新密码</button>
+      <button class="btn btn-primary" type="button" onclick="closePwdDialog()">完成</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+const SUPABASE_URL='https://tdpavflqliqcxvougcdf.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRkcGF2ZmxxbGlxY3h2b3VnY2RmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMTE3OTUsImV4cCI6MjA5Mjg4Nzc5NX0.qPMFm-qq3B6SkHts0ghqOuBJ07jnfoF6ZB_rWMhpeZE';
+const RESET_URL = SUPABASE_URL + '/functions/v1/sub-admin-reset-password';
+// 独立的会话存储键：在这里登录/退出不会影响同一浏览器里前台站点的登录状态
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storageKey: 'bd-subadmin-auth' }
+});
+
+let me = null;
+let users = [];
+const resetDone = new Set();
+let editing = null;
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+
+function showLogin(msg) {
+  me = null; users = [];
+  $('app-view').hidden = true;
+  $('login-view').hidden = false;
+  $('login-err').textContent = msg || '';
+}
+
+function showApp(user) {
+  me = user;
+  $('me-email').textContent = user.email || '';
+  $('login-view').hidden = true;
+  $('app-view').hidden = false;
+  loadUsers();
+}
+
+// 权限以服务端为准：is_sub_admin() 只认后台设定的名单
+async function enterIfSubAdmin(session) {
+  const { data, error } = await sb.rpc('is_sub_admin');
+  if (error) { await sb.auth.signOut(); return showLogin('验证身份失败：' + error.message); }
+  if (data !== true) { await sb.auth.signOut(); return showLogin('该账号无权访问。'); }
+  showApp(session.user);
+}
+
+$('login-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = $('login-email').value.trim();
+  const password = $('login-pwd').value;
+  if (!email || !password) return;
+  const btn = $('login-btn');
+  btn.disabled = true; btn.textContent = '登录中…';
+  $('login-err').textContent = '';
+  try {
+    await sb.auth.signOut();
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    $('login-pwd').value = '';
+    await enterIfSubAdmin(data.session);
+  } catch (err) {
+    const m = err.message || String(err);
+    $('login-err').textContent = /invalid login credentials/i.test(m) ? '邮箱或密码错误' : m;
+  } finally {
+    btn.disabled = false; btn.textContent = '登录';
+  }
+});
+
+async function logout() {
+  await sb.auth.signOut();
+  showLogin('');
+}
+
+async function loadUsers() {
+  $('list').innerHTML = '<div class="state"><span>加载中…</span></div>';
+  const { data, error } = await sb.rpc('sub_admin_list_users');
+  if (error) {
+    $('list').innerHTML = `<div class="state error"><strong>名单加载失败</strong><span>${esc(error.message)}</span></div>`;
+    return;
+  }
+  users = data || [];
+  if (users.length === 0) {
+    // 名单为空时再确认一次身份，权限被撤销的话直接退回登录页
+    const { data: still } = await sb.rpc('is_sub_admin');
+    if (still !== true) { await sb.auth.signOut(); return showLogin('该账号的访问权限已被撤销。'); }
+  }
+  $('scope-n').textContent = users.length;
+  renderList();
+}
+
+function renderList() {
+  const q = $('search').value.trim().toLowerCase();
+  const rows = q ? users.filter(u => (u.email || '').toLowerCase().includes(q) || (u.username || '').toLowerCase().includes(q)) : users;
+  $('count').textContent = q ? `匹配 ${rows.length} / ${users.length}` : '';
+  if (users.length === 0) {
+    $('list').innerHTML = '<div class="state"><strong>暂无用户</strong><span>点击「刷新」可重新加载。</span></div>';
+    return;
+  }
+  if (rows.length === 0) {
+    $('list').innerHTML = `<div class="state"><strong>没有匹配「${esc(q)}」的用户</strong><span>只能搜索到分配给你的用户。</span></div>`;
+    return;
+  }
+  $('list').innerHTML = rows.map(u => `
+    <div class="entry">
+      <div class="who-cell">
+        <div class="email-line"><span class="email" title="${esc(u.email)}">${esc(u.email)}</span>${resetDone.has(u.id) ? '<span class="done-tag">已改密</span>' : ''}</div>
+        <div class="uname">${u.username ? esc(u.username) : '未设置用户名'}</div>
+      </div>
+      <div class="date">${new Date(u.created_at).toLocaleDateString()}</div>
+      <button class="btn btn-key" type="button" data-uid="${esc(u.id)}">修改密码</button>
+    </div>`).join('');
+}
+
+$('list').addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-uid]');
+  if (btn) openPwdDialog(btn.dataset.uid);
+});
+
+function openPwdDialog(uid) {
+  const u = users.find(x => x.id === uid);
+  if (!u) return;
+  editing = { id: u.id, email: u.email, pwd: '' };
+  $('dlg-email').textContent = u.email;
+  $('new-pwd').value = '';
+  $('pwd-err').textContent = '';
+  $('pwd-step-edit').hidden = false; $('pwd-actions-edit').hidden = false;
+  $('pwd-step-done').hidden = true;  $('pwd-actions-done').hidden = true;
+  $('pwd-dialog').showModal();
+  $('new-pwd').focus();
+}
+
+function closePwdDialog() {
+  $('pwd-dialog').close();
+}
+
+$('pwd-dialog').addEventListener('close', () => {
+  editing = null;
+  $('new-pwd').value = '';
+  $('slip-pwd').textContent = '';
+});
+
+// 去掉易混字符(0/O/1/l/I)，保证同时含字母和数字
+function fillRandomPwd() {
+  const letters = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ', digits = '23456789', all = letters + digits;
+  const pick = (set, n) => Array.from(crypto.getRandomValues(new Uint32Array(n)), v => set[v % set.length]);
+  const chars = [...pick(letters, 1), ...pick(digits, 1), ...pick(all, 8)];
+  for (let i = chars.length - 1; i > 0; i--) { const j = crypto.getRandomValues(new Uint32Array(1))[0] % (i + 1); [chars[i], chars[j]] = [chars[j], chars[i]]; }
+  $('new-pwd').value = chars.join('');
+  $('pwd-err').textContent = '';
+}
+
+$('pwd-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (!editing) return;
+  const pwd = $('new-pwd').value;
+  if (pwd.length < 6) return $('pwd-err').textContent = '密码至少需要 6 位';
+  if (/^\s|\s$/.test(pwd)) return $('pwd-err').textContent = '密码首尾不能是空格';
+  const btn = $('pwd-submit');
+  btn.disabled = true; btn.textContent = '修改中…';
+  $('pwd-err').textContent = '';
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { closePwdDialog(); return showLogin('登录已过期，请重新登录。'); }
+    const res = await fetch(RESET_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token, 'apikey': SUPABASE_KEY },
+      body: JSON.stringify({ targetUid: editing.id, newPassword: pwd })
+    });
+    const out = await res.json().catch(() => ({}));
+    if (res.status === 401) { closePwdDialog(); await sb.auth.signOut(); return showLogin('登录已过期，请重新登录。'); }
+    if (out.code !== 0) {
+      $('pwd-err').textContent = out.message || ('修改失败（' + res.status + '）');
+      if (res.status === 403) loadUsers();
+      return;
+    }
+    resetDone.add(editing.id);
+    editing.pwd = pwd;
+    $('slip-email').textContent = editing.email;
+    $('slip-pwd').textContent = pwd;
+    $('pwd-step-edit').hidden = true; $('pwd-actions-edit').hidden = true;
+    $('pwd-step-done').hidden = false; $('pwd-actions-done').hidden = false;
+    renderList();
+  } catch (err) {
+    $('pwd-err').textContent = '网络错误：' + (err.message || err);
+  } finally {
+    btn.disabled = false; btn.textContent = '确认修改';
+  }
+});
+
+let copyTimer = null;
+async function copySlip() {
+  if (!editing) return;
+  const text = `账号：${editing.email}\n新密码：${editing.pwd}`;
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch (_) {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    $('pwd-dialog').appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+  }
+  const btn = $('copy-btn');
+  btn.textContent = '✓ 已复制，可直接发给该用户';
+  clearTimeout(copyTimer);
+  copyTimer = setTimeout(() => { btn.textContent = '复制账号和新密码'; }, 2000);
+}
+
+sb.auth.onAuthStateChange((event) => {
+  if (event === 'SIGNED_OUT' && me) showLogin('');
+});
+
+sb.auth.getSession().then(({ data: { session }, error }) => {
+  if (error || !session) { if (error) sb.auth.signOut(); return showLogin(''); }
+  enterIfSubAdmin(session);
+});
+</script>
+</body>
+</html>
