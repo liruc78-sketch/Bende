@@ -3531,6 +3531,17 @@ async function renderLogs(){
       item.orderTypeBg = 'rgba(139,92,246,.1)';
       item.orderTypeColor = 'var(--purple)';
       item.displayId = log.note;
+    } else if (log.type === 'refund') {
+      item.orderType = currentLang==='zh'?'退款':'Refund';
+      item.orderTypeBg = 'rgba(46,204,122,.1)';
+      item.orderTypeColor = 'var(--green)';
+      const mixMatch = (log.note || '').match(/补号单\s+(MIX[A-Z0-9]+)/);
+      item.displayId = mixMatch ? mixMatch[1] : (log.note || '-');
+      const task = mixMatch ? taskMap[mixMatch[1]] : null;
+      if (task) {
+        item.country = COUNTRIES.find(c => c.code === task.country)?.name || task.country || '-';
+        item.statusBadge = statusBadge(task.status);
+      }
     }
 
     return item;
@@ -3572,6 +3583,7 @@ async function renderLogs(){
         <option value="consume" ${window.logFilters.type==='consume'?'selected':''}>${currentLang==='zh'?'任务消费':'Task Consume'}</option>
         <option value="recharge" ${window.logFilters.type==='recharge'?'selected':''}>${currentLang==='zh'?'充值':'Recharge'}</option>
         <option value="admin_adjust" ${window.logFilters.type==='admin_adjust'?'selected':''}>${currentLang==='zh'?'后台调整':'Admin Adjust'}</option>
+        <option value="refund" ${window.logFilters.type==='refund'?'selected':''}>${currentLang==='zh'?'退款':'Refund'}</option>
       </select>
     </div>
     <div class="form-group" style="margin-bottom:0; flex:1; min-width:150px;">
@@ -3751,6 +3763,15 @@ async function loadAdminTab(tab){
 async function approveOrder(orderId,userId,points,usdt){
   if(!confirm(`${currentLang==='zh'?'确认通过此充值申请？':'Approve this recharge?'}\nUSDT: ${usdt} | ${t('points')}: ${points}`))return;
 
+  const{data:ar,error:arErr}=await sb.rpc('admin_approve_recharge',{p_order_id:orderId});
+  if(!arErr||arErr.code!=='PGRST202'){
+    if(arErr){toast((currentLang==='zh'?'通过失败：':'Approve failed: ')+arErr.message,'error');return;}
+    if(ar?.status!=='approved'){toast(currentLang==='zh'?`订单已不是待审核（${ar?.orderStatus||ar?.status}），未入账`:`Order is no longer pending (${ar?.orderStatus||ar?.status})`,'error');loadAdminTab('orders');return;}
+    toast(currentLang==='zh'?'已通过，积分已到账':'Approved, points added','success');
+    loadAdminTab('orders');
+    return;
+  }
+
   const{data:profile}=await sb.from('profiles').select('balance').eq('id',userId).single();
   const balBefore=parseFloat(profile?.balance||0);
   const balAfter=balBefore+parseFloat(points);
@@ -3785,6 +3806,10 @@ function openAdjustModal(userId,email,balance){
       <label class="form-label">${currentLang==='zh'?'备注':'Note'}</label>
       <input type="text" id="adjust-note" class="form-input" placeholder="${currentLang==='zh'?'调整原因...':'Reason...'}"/>
     </div>
+    <div class="form-group">
+      <label class="form-label">${currentLang==='zh'?'补号单号（补偿某个补号单时必填，如 MIX…）':'Mix order ID (required when compensating a mix order)'}</label>
+      <input type="text" id="adjust-mix" class="form-input" placeholder="MIX…"/>
+    </div>
     <button class="btn btn-primary" onclick="doAdjust('${userId}',${balance})">${t('confirm')}</button>`;
   openModal('modal-adjust');
 }
@@ -3793,6 +3818,20 @@ async function doAdjust(userId,currentBal){
   const amt=parseFloat(document.getElementById('adjust-amt').value);
   const note=document.getElementById('adjust-note').value;
   if(isNaN(amt)||amt===0){toast(currentLang==='zh'?'请输入有效金额':'Enter valid amount','error');return;}
+  const mix=(document.getElementById('adjust-mix')?.value||'').trim();
+  const{data:adj,error:adjErr}=await sb.rpc('admin_adjust_balance',{p_uid:userId,p_amount:amt,p_note:note||'',p_mix_task:mix||null});
+  if(!adjErr||adjErr.code!=='PGRST202'){
+    if(adjErr){
+      const m=String(adjErr.message||'');
+      const ids=m.startsWith('MIX_REQUIRED:')?m.slice(13).trim():'';
+      toast(ids?(currentLang==='zh'?`该用户有补号单（${ids}），补偿请在「补号单号」里填对应单号`:`This user has mix orders (${ids}); fill in the mix order ID`):(currentLang==='zh'?'调整失败：':'Adjust failed: ')+m,'error');
+      return;
+    }
+    toast(currentLang==='zh'?'积分已调整':'Balance adjusted','success');
+    closeModal('modal-adjust');
+    loadAdminTab('users');
+    return;
+  }
   const balBefore=parseFloat(currentBal);
   const balAfter=balBefore+amt;
   if(balAfter<0){toast(currentLang==='zh'?'余额不能为负':'Balance cannot be negative','error');return;}
