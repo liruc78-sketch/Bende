@@ -2270,7 +2270,7 @@ async function renderProject(projectId, subTypeVal = null) {
                     ${activeItem.val.toLowerCase().includes('gender')?`<a href="javascript:void(0)" onclick="viewAvatars('${task.remote_task_id}','${(task.task_name||'').replace(/['"\\]/g,'')}')" style="color:var(--yellow);font-size:12px;font-weight:bold;">${currentLang==='zh'?'🖼️ 查看头像':'🖼️ View Avatars'}</a>`:''}
                     ${!activeItem.label.includes('性别年龄-全格式')?`<a href="javascript:void(0)" onclick="${isCarrierTask?`downloadTCard('${task.remote_task_id}')`:`downloadResult('${task.id}','${task.remote_task_id}','${activeItem.val}')`}" style="color:var(--accent);font-size:12px;font-weight:500;">${validTxtLabel}</a>`:''}
                     ${showExcelDownload?`<a href="javascript:void(0)" onclick="downloadExcel('${task.remote_task_id}')" style="color:var(--green);font-size:12px;font-weight:bold;">${currentLang==='zh'?'表格下载':'Download Excel'}</a>`:''}
-                    ${!activeItem.label.includes('性别年龄-全格式')?`<a href="javascript:void(0)" onclick="${isCarrierTask?`downloadNonTCard('${task.remote_task_id}')`:`downloadInvalid('${task.remote_task_id}')`}" style="color:var(--purple);font-size:12px;font-weight:500;">${invalidTxtLabel}</a>`:''}
+                    ${!activeItem.label.includes('性别年龄-全格式')?`<a href="javascript:void(0)" onclick="${isCarrierTask?`downloadNonTCard('${task.remote_task_id}')`:`downloadInvalid('${task.remote_task_id}','${activeItem.val}')`}" style="color:var(--purple);font-size:12px;font-weight:500;">${invalidTxtLabel}</a>`:''}
                     <a href="javascript:void(0)" onclick="downloadSource('${task.remote_task_id}')" style="color:var(--text2);font-size:12px;">${currentLang==='zh'?'源文件':'Source File'}</a>
                   </div>
                 `:''}
@@ -2805,27 +2805,79 @@ async function downloadSource(remoteId) {
 }
 
 
-async function downloadInvalid(remoteId) {
+function splitResultCells(line){
+  return line.split(/\t|,/).map(c => c.trim().replace(/^"+|"+$/g, '').trim());
+}
+
+function numberMatchKey(cell){
+  const s = String(cell || '').replace(/^\uFEFF/, '').trim();
+  if (s.includes('@')) return s.toLowerCase();
+  const d = s.replace(/\D/g, '');
+  return d.length >= 5 ? d : '';
+}
+
+function looksLikeNumberCell(cell){
+  return cell.includes('@') || (/^\+?[\d\s().\-]+$/.test(cell) && cell.replace(/\D/g, '').length >= 5);
+}
+
+function resultMatchKeys(text, taskType){
+  const lines = String(text || '').replace(/^\uFEFF/, '').split(/\r\n|\n|\r/).filter(l => l.trim());
+  if (!lines.length) return new Set();
+  const rows = lines.map(splitResultCells);
+  let start = 0, col = -1;
+  if (!rows[0].some(looksLikeNumberCell)) {
+    start = 1;
+    const headerRe = taskType === 'phoneActive'
+      ? /^(活跃号|active)/i
+      : /^(原?手机号码?|号码|电话(号码)?|mobile|phone( ?number)?|number|tel|e-?mail|邮箱)$/i;
+    col = rows[0].findIndex(h => headerRe.test(h));
+  }
+  if (col < 0) {
+    const sample = rows.slice(start, start + 500);
+    const width = Math.max(1, ...sample.map(r => r.length));
+    const hits = Array.from({ length: width }, (_, i) => sample.filter(r => looksLikeNumberCell(r[i] || '')).length);
+    col = hits.indexOf(Math.max(...hits));
+  }
+  return new Set(rows.slice(start).map(r => numberMatchKey(r[col])).filter(Boolean));
+}
+
+function sourceMatchKey(line){
+  for (const cell of splitResultCells(line)) {
+    const k = numberMatchKey(cell);
+    if (k) return k;
+  }
+  return '';
+}
+
+function upstreamJsonError(res, text){
+  const body = String(text || '').replace(/^\uFEFF/, '').trim();
+  const ctJson = (res.headers.get('content-type') || '').includes('application/json');
+  if (!ctJson && !body.startsWith('{')) return null;
+  let j = null;
+  try { j = JSON.parse(body); } catch(e) { if (!ctJson) return null; }
+  return (j && (j.message || j.msg)) || (currentLang==='zh'?'上游返回了错误':'Upstream returned an error');
+}
+
+async function downloadInvalid(remoteId, taskType) {
   toast(currentLang==='zh'?'正在比对生成无效号码...':'Generating invalid numbers...','info');
   try {
 
     const { data: srcData, error: srcErr } = await sb.from('task_files').select('file_content').eq('task_id', remoteId).single();
     if (srcErr || !srcData) throw new Error(currentLang==='zh'?'源文件已过期，无法生成无效号码':'Source file missing, cannot generate invalid list');
-    const srcLines = srcData.file_content.split(/\r\n|\n/).map(l => l.trim()).filter(l => l);
+    const srcLines = srcData.file_content.split(/\r\n|\n|\r/).map(l => l.trim()).filter(l => l);
 
 
     const resValid = await proxyFetch('/api/task/result', { queryParams: { taskId: remoteId } });
     if (!resValid.ok) throw new Error(currentLang==='zh'?'获取有效号码失败，无法生成无效号码':'Failed to fetch valid numbers, cannot generate invalid list');
     const validText = await resValid.text();
-    const validLines = validText.split(/\r\n|\n/).map(l => l.trim()).filter(l => l);
+    const upstreamErr = upstreamJsonError(resValid, validText);
+    if (upstreamErr) throw new Error((currentLang==='zh'?'获取有效号码失败，无法生成无效号码：':'Failed to fetch valid numbers, cannot generate invalid list: ') + upstreamErr);
 
-
-
-
-
-    const normPhone = s => (s || '').split(',')[0].replace(/\D/g, '');
-    const validSet = new Set(validLines.map(normPhone).filter(Boolean));
-    const invalidLines = srcLines.filter(l => !validSet.has(normPhone(l)));
+    const validSet = resultMatchKeys(validText, taskType);
+    const invalidLines = srcLines.filter(l => {
+      const k = sourceMatchKey(l);
+      return k && !validSet.has(k);
+    });
 
     if (invalidLines.length === 0) {
         toast(currentLang==='zh'?'该任务没有无效号码':'No invalid numbers found', 'info');
