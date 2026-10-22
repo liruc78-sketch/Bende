@@ -2268,9 +2268,9 @@ async function renderProject(projectId, subTypeVal = null) {
                 ${task.status==='Finish'?`
                   <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start;">
                     ${activeItem.val.toLowerCase().includes('gender')?`<a href="javascript:void(0)" onclick="viewAvatars('${task.remote_task_id}','${(task.task_name||'').replace(/['"\\]/g,'')}')" style="color:var(--yellow);font-size:12px;font-weight:bold;">${currentLang==='zh'?'🖼️ 查看头像':'🖼️ View Avatars'}</a>`:''}
-                    ${!activeItem.label.includes('性别年龄-全格式')?`<a href="javascript:void(0)" onclick="${isCarrierTask?`downloadTCard('${task.remote_task_id}')`:`downloadResult('${task.id}','${task.remote_task_id}','${activeItem.val}')`}" style="color:var(--accent);font-size:12px;font-weight:500;">${validTxtLabel}</a>`:''}
+                    <a href="javascript:void(0)" onclick="${isCarrierTask?`downloadTCard('${task.remote_task_id}')`:`downloadResult('${task.id}','${task.remote_task_id}','${activeItem.val}')`}" style="color:var(--accent);font-size:12px;font-weight:500;">${validTxtLabel}</a>
                     ${showExcelDownload?`<a href="javascript:void(0)" onclick="downloadExcel('${task.remote_task_id}')" style="color:var(--green);font-size:12px;font-weight:bold;">${currentLang==='zh'?'表格下载':'Download Excel'}</a>`:''}
-                    ${!activeItem.label.includes('性别年龄-全格式')?`<a href="javascript:void(0)" onclick="${isCarrierTask?`downloadNonTCard('${task.remote_task_id}')`:`downloadInvalid('${task.remote_task_id}','${activeItem.val}')`}" style="color:var(--purple);font-size:12px;font-weight:500;">${invalidTxtLabel}</a>`:''}
+                    <a href="javascript:void(0)" onclick="${isCarrierTask?`downloadNonTCard('${task.remote_task_id}')`:`downloadInvalid('${task.remote_task_id}','${activeItem.val}')`}" style="color:var(--purple);font-size:12px;font-weight:500;">${invalidTxtLabel}</a>
                     <a href="javascript:void(0)" onclick="downloadSource('${task.remote_task_id}')" style="color:var(--text2);font-size:12px;">${currentLang==='zh'?'源文件':'Source File'}</a>
                   </div>
                 `:''}
@@ -2432,6 +2432,11 @@ async function downloadResult(taskId,remoteId,taskType){
       if(!nums.length){toast(currentLang==='zh'?'该任务没有活跃号':'No active numbers found','info');return;}
       blob=new Blob([nums.join('\n')],{type:'text/plain'});
       okMsg=currentLang==='zh'?`活跃号下载成功（${nums.length} 条）`:`Active numbers downloaded (${nums.length})`;
+    }else if(['lineValid','wsGender','tgGender'].includes(taskType)){
+      const nums=[...new Set(resultNumberCells(text,taskType))];
+      if(!nums.length){toast(currentLang==='zh'?'该任务没有有效号码':'No valid numbers found','info');return;}
+      blob=new Blob([nums.join('\n')],{type:'text/plain'});
+      okMsg=currentLang==='zh'?`有效号码下载成功（${nums.length} 条）`:`Valid numbers downloaded (${nums.length})`;
     }else{
       blob=raw;
     }
@@ -2453,7 +2458,7 @@ async function downloadExcel(remoteId) {
     const text = await res.text();
     const upstreamErr = upstreamJsonError(res, text);
     if (upstreamErr) throw new Error((currentLang==='zh'?'获取数据失败：':'Failed to fetch data: ') + upstreamErr);
-    const lines = text.split(/\r\n|\n/).filter(l => l.trim());
+    const lines = text.replace(/^\uFEFF/, '').split(/\r\n|\n/).filter(l => l.trim());
     
     if (lines.length === 0) {
         toast(currentLang==='zh'?'结果为空':'Result is empty', 'info');
@@ -2466,14 +2471,18 @@ async function downloadExcel(remoteId) {
 
     let startIndex = 0;
     let headers = [];
-    if (lines[0].includes('手机号') || lines[0].includes('phone') || lines[0].includes('uid') || lines[0].includes('活跃号')) {
+    const delim = lines[0].includes('\t') ? '\t' : ',';
+    const firstCells = lines[0].split(delim);
+    const isHeader = !firstCells.some(c => looksLikeNumberCell(c.trim())) &&
+      (/手机号|号码|phone|mobile|uid|活跃号|用户名|username|e-?mail|邮箱/i.test(lines[0]) ||
+       (lines.length > 1 && lines[1].split(delim).some(c => looksLikeNumberCell(c.trim()))));
+    if (isHeader) {
 
-        headers = lines[0].replace(/^\uFEFF/, '').split(',');
+        headers = firstCells;
         startIndex = 1;
     } else {
 
-        const colCount = lines[0].split(',').length;
-        headers = Array.from({length: colCount}, (_, i) => `Column ${i+1}`);
+        headers = Array.from({length: firstCells.length}, (_, i) => `Column ${i+1}`);
     }
     
     dataArray.push(headers);
@@ -2481,7 +2490,7 @@ async function downloadExcel(remoteId) {
 
     for (let i = startIndex; i < lines.length; i++) {
 
-        const row = lines[i].split(',');
+        const row = lines[i].split(delim);
         dataArray.push(row);
     }
 
@@ -2569,6 +2578,8 @@ async function viewAvatars(remoteId, taskName){
     const res = await proxyFetch('/api/task/result', { queryParams:{ taskId: remoteId } });
     if(!res.ok) throw new Error(currentLang==='zh'?'获取数据失败':'Failed to fetch data');
     const text = await res.text();
+    const upstreamErr = upstreamJsonError(res, text);
+    if(upstreamErr) throw new Error((currentLang==='zh'?'获取数据失败：':'Failed to fetch data: ') + upstreamErr);
     const rows = parseAvatarRows(text);
     if(!rows.length){ toast(currentLang==='zh'?'该任务结果为空':'This result is empty','info'); return; }
     avGallery.rows = rows;
@@ -2826,9 +2837,9 @@ function looksLikeNumberCell(cell){
   return cell.includes('@') || (/^\+?[\d\s().\-]+$/.test(cell) && cell.replace(/\D/g, '').length >= 5);
 }
 
-function resultMatchKeys(text, taskType){
+function resultNumberCells(text, taskType){
   const lines = String(text || '').replace(/^\uFEFF/, '').split(/\r\n|\n|\r/).filter(l => l.trim());
-  if (!lines.length) return new Set();
+  if (!lines.length) return [];
   const rows = lines.map(splitResultCells);
   let start = 0, col = -1;
   if (!rows[0].some(looksLikeNumberCell)) {
@@ -2844,7 +2855,11 @@ function resultMatchKeys(text, taskType){
     const hits = Array.from({ length: width }, (_, i) => sample.filter(r => looksLikeNumberCell(r[i] || '')).length);
     col = hits.indexOf(Math.max(...hits));
   }
-  return new Set(rows.slice(start).map(r => numberMatchKey(r[col])).filter(Boolean));
+  return rows.slice(start).map(r => (r[col] || '').trim()).filter(Boolean);
+}
+
+function resultMatchKeys(text, taskType){
+  return new Set(resultNumberCells(text, taskType).map(numberMatchKey).filter(Boolean));
 }
 
 function sourceMatchKey(line){
@@ -2878,21 +2893,22 @@ function upstreamJsonError(res, text){
 }
 
 async function downloadInvalid(remoteId, taskType) {
-  toast(currentLang==='zh'?'正在比对生成无效号码...':'Generating invalid numbers...','info');
+  const byName = taskType === 'tgNameValid';
+  const zhWhat = byName ? '用户名' : '号码', enWhat = byName ? 'usernames' : 'numbers';
+  toast(currentLang==='zh'?`正在比对生成无效${zhWhat}...`:`Generating invalid ${enWhat}...`,'info');
   try {
 
     const { data: srcData, error: srcErr } = await sb.from('task_files').select('file_content').eq('task_id', remoteId).single();
-    if (srcErr || !srcData) throw new Error(currentLang==='zh'?'源文件已过期，无法生成无效号码':'Source file missing, cannot generate invalid list');
+    if (srcErr || !srcData) throw new Error(currentLang==='zh'?`源文件已过期，无法生成无效${zhWhat}`:'Source file missing, cannot generate invalid list');
     const srcLines = srcData.file_content.split(/\r\n|\n|\r/).map(l => l.trim()).filter(l => l);
 
 
     const resValid = await proxyFetch('/api/task/result', { queryParams: { taskId: remoteId } });
-    if (!resValid.ok) throw new Error(currentLang==='zh'?'获取有效号码失败，无法生成无效号码':'Failed to fetch valid numbers, cannot generate invalid list');
+    if (!resValid.ok) throw new Error(currentLang==='zh'?`获取有效${zhWhat}失败，无法生成无效${zhWhat}`:`Failed to fetch valid ${enWhat}, cannot generate invalid list`);
     const validText = await resValid.text();
     const upstreamErr = upstreamJsonError(resValid, validText);
-    if (upstreamErr) throw new Error((currentLang==='zh'?'获取有效号码失败，无法生成无效号码：':'Failed to fetch valid numbers, cannot generate invalid list: ') + upstreamErr);
+    if (upstreamErr) throw new Error((currentLang==='zh'?`获取有效${zhWhat}失败，无法生成无效${zhWhat}：`:`Failed to fetch valid ${enWhat}, cannot generate invalid list: `) + upstreamErr);
 
-    const byName = taskType === 'tgNameValid';
     const validSet = byName ? resultNameKeys(validText) : resultMatchKeys(validText, taskType);
     const invalidLines = srcLines.filter(l => {
       const k = byName ? nameMatchKey(l) : sourceMatchKey(l);
@@ -2900,7 +2916,7 @@ async function downloadInvalid(remoteId, taskType) {
     });
 
     if (invalidLines.length === 0) {
-        toast(currentLang==='zh'?'该任务没有无效号码':'No invalid numbers found', 'info');
+        toast(currentLang==='zh'?`该任务没有无效${zhWhat}`:`No invalid ${enWhat} found`, 'info');
         return;
     }
 
@@ -2910,7 +2926,7 @@ async function downloadInvalid(remoteId, taskType) {
     const a = document.createElement('a');
     a.href = url; a.download = `invalid_${remoteId}.txt`; a.click();
     URL.revokeObjectURL(url);
-    toast(currentLang==='zh'?`无效号码下载成功（${invalidLines.length} 条）`:`Invalid numbers downloaded (${invalidLines.length})`,'success');
+    toast(currentLang==='zh'?`无效${zhWhat}下载成功（${invalidLines.length} 条）`:`Invalid ${enWhat} downloaded (${invalidLines.length})`,'success');
   } catch(e) { toast(e.message, 'error'); }
 }
 
@@ -3437,6 +3453,12 @@ window.resetLogFilters = function() {
   renderLogs();
 };
 
+function escapeHtml(s){
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 async function renderLogs(){
   const c=document.getElementById('content');
   c.innerHTML=`<div style="color:var(--text3);font-size:13px">${t('loading')}</div>`;
@@ -3490,7 +3512,7 @@ async function renderLogs(){
         });
 
         item.taskTypeLabel = pLabel;
-        item.taskTypeBadge = `<span class="badge badge-blue" style="gap:5px">${pIcon}${pLabel}</span>`;
+        item.taskTypeBadge = `<span class="badge badge-blue" style="gap:5px">${pIcon}${escapeHtml(pLabel)}</span>`;
         item.country = COUNTRIES.find(c => c.code === task.country)?.name || task.country || '-';
         item.quantity = task.task_total || 0;
         item.unitPrice = task.task_total > 0 ? (Math.abs(log.amount) / task.task_total).toFixed(5) : '-';
@@ -3585,9 +3607,9 @@ async function renderLogs(){
           ${mergedLogs.map(l=>`<tr>
             <td><span style="padding:4px 8px; border-radius:4px; font-size:11px; background:${l.transBg}; color:${l.transColor}; border:1px solid ${l.transColor}33;">${l.transType}</span></td>
             <td><span style="padding:4px 8px; border-radius:4px; font-size:11px; background:${l.orderTypeBg}; color:${l.orderTypeColor}; border:1px solid ${l.orderTypeColor}33;">${l.orderType}</span></td>
-            <td style="font-family:monospace;font-size:11px;color:var(--text3)">${l.displayId}</td>
+            <td style="font-family:monospace;font-size:11px;color:var(--text3)">${escapeHtml(l.displayId)}</td>
             <td>${l.taskTypeBadge}</td>
-            <td>${l.country}</td>
+            <td>${escapeHtml(l.country)}</td>
             <td>${l.quantity}</td>
             <td>${l.unitPrice}</td>
             <td style="color:${l.transColor};font-weight:600">${Math.abs(l.amount).toFixed(3)}</td>
