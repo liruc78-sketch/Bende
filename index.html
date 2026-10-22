@@ -2855,6 +2855,19 @@ function sourceMatchKey(line){
   return '';
 }
 
+function nameMatchKey(cell){
+  const s = String(cell || '').replace(/^\uFEFF/, '').trim().replace(/^@/, '').replace(/-/g, '').toLowerCase();
+  return /^[a-z][a-z0-9_]{4,31}$/.test(s) ? s : '';
+}
+
+function resultNameKeys(text){
+  const lines = String(text || '').replace(/^\uFEFF/, '').split(/\r?\n/).filter(l => l.trim());
+  if (!lines.length) return new Set();
+  const col = lines[0].split(',').findIndex(h => /^(TG用户名|username|用户名)$/i.test(h.trim()));
+  if (col < 0) throw new Error(currentLang==='zh'?'结果里没有「TG用户名」列，无法生成无效用户名':'No username column in the result, cannot generate invalid list');
+  return new Set(lines.slice(1).map(l => nameMatchKey(l.split(',')[col])).filter(Boolean));
+}
+
 function upstreamJsonError(res, text){
   const body = String(text || '').replace(/^\uFEFF/, '').trim();
   const ctJson = (res.headers.get('content-type') || '').includes('application/json');
@@ -2879,9 +2892,10 @@ async function downloadInvalid(remoteId, taskType) {
     const upstreamErr = upstreamJsonError(resValid, validText);
     if (upstreamErr) throw new Error((currentLang==='zh'?'获取有效号码失败，无法生成无效号码：':'Failed to fetch valid numbers, cannot generate invalid list: ') + upstreamErr);
 
-    const validSet = resultMatchKeys(validText, taskType);
+    const byName = taskType === 'tgNameValid';
+    const validSet = byName ? resultNameKeys(validText) : resultMatchKeys(validText, taskType);
     const invalidLines = srcLines.filter(l => {
-      const k = sourceMatchKey(l);
+      const k = byName ? nameMatchKey(l) : sourceMatchKey(l);
       return k && !validSet.has(k);
     });
 
