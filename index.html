@@ -2422,14 +2422,18 @@ async function downloadResult(taskId,remoteId,taskType){
   try{
     const res=await proxyFetch('/api/task/result',{queryParams:{taskId:remoteId}});
     if(!res.ok){toast(currentLang==='zh'?'下载失败':'Download failed','error');return;}
+    const raw=await res.blob();
+    const text=await raw.text();
+    const upstreamErr=upstreamJsonError(res,text);
+    if(upstreamErr){toast((currentLang==='zh'?'下载失败：':'Download failed: ')+upstreamErr,'error');return;}
     let blob, okMsg=currentLang==='zh'?'下载成功':'Downloaded';
     if(taskType==='phoneActive'){
-      const nums=extractActiveNumbers(await res.text());
+      const nums=extractActiveNumbers(text);
       if(!nums.length){toast(currentLang==='zh'?'该任务没有活跃号':'No active numbers found','info');return;}
       blob=new Blob([nums.join('\n')],{type:'text/plain'});
       okMsg=currentLang==='zh'?`活跃号下载成功（${nums.length} 条）`:`Active numbers downloaded (${nums.length})`;
     }else{
-      blob=await res.blob();
+      blob=raw;
     }
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
@@ -2447,6 +2451,8 @@ async function downloadExcel(remoteId) {
     if (!res.ok) throw new Error(currentLang==='zh'?'获取数据失败':'Failed to fetch data');
     
     const text = await res.text();
+    const upstreamErr = upstreamJsonError(res, text);
+    if (upstreamErr) throw new Error((currentLang==='zh'?'获取数据失败：':'Failed to fetch data: ') + upstreamErr);
     const lines = text.split(/\r\n|\n/).filter(l => l.trim());
     
     if (lines.length === 0) {
@@ -2907,6 +2913,8 @@ async function fetchCarrierResult(remoteId){
   const res = await proxyFetch('/api/task/result', { queryParams: { taskId: remoteId } });
   if(!res.ok) throw new Error(currentLang==='zh'?'获取结果失败':'Failed to fetch result');
   const text = await res.text();
+  const upstreamErr = upstreamJsonError(res, text);
+  if(upstreamErr) throw new Error((currentLang==='zh'?'获取结果失败：':'Failed to fetch result: ') + upstreamErr);
   const lines = text.split(/\r\n|\n/).filter(l => l.trim());
   let start = 0, phoneIdx = 0;
   if(lines.length){
