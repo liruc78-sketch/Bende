@@ -3812,7 +3812,7 @@ function openAdjustModal(userId,email,balance){
       <label class="form-label" style="margin-top:6px"><input type="checkbox" id="adjust-unrelated"/> ${currentLang==='zh'?'与补号单无关（例如充值没到账）':'Not related to any mix order'}</label>
     </div>
     <button class="btn btn-primary" onclick="doAdjust('${userId}',${balance})">${t('confirm')}</button>`;
-  adjustRequestId = crypto.randomUUID();   // 这次对话框的请求号：响应丢了 / 重复点击也只加一次
+  adjustRequestId = crypto.randomUUID();
   openModal('modal-adjust');
 }
 let adjustRequestId = null;
