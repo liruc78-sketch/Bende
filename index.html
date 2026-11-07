@@ -2245,7 +2245,7 @@ async function renderProject(projectId, subTypeVal = null) {
               <td>
                 ${task.status==='Finish'?`
                   <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start;">
-                    ${activeItem.val.toLowerCase().includes('gender')?`<a href="javascript:void(0)" onclick="viewAvatars('${task.remote_task_id}','${(task.task_name||'').replace(/['"\\]/g,'')}')" style="color:var(--yellow);font-size:12px;font-weight:bold;">${currentLang==='zh'?'🖼️ 查看头像':'🖼️ View Avatars'}</a>`:''}
+                    ${activeItem.val.toLowerCase().includes('gender')?`<a href="javascript:void(0)" onclick="viewAvatars('${task.remote_task_id}','${(task.task_name||'').replace(/['"\\]/g,'')}','${activeItem.val}')" style="color:var(--yellow);font-size:12px;font-weight:bold;">${currentLang==='zh'?'🖼️ 查看头像':'🖼️ View Avatars'}</a>`:''}
                     <a href="javascript:void(0)" onclick="${isCarrierTask?`downloadTCard('${task.remote_task_id}')`:`downloadResult('${task.id}','${task.remote_task_id}','${activeItem.val}')`}" style="color:var(--accent);font-size:12px;font-weight:500;">${validTxtLabel}</a>
                     ${showExcelDownload?`<a href="javascript:void(0)" onclick="downloadExcel('${task.remote_task_id}')" style="color:var(--green);font-size:12px;font-weight:bold;">${currentLang==='zh'?'表格下载':'Download Excel'}</a>`:''}
                     <a href="javascript:void(0)" onclick="${isCarrierTask?`downloadNonTCard('${task.remote_task_id}')`:`downloadInvalid('${task.remote_task_id}','${activeItem.val}')`}" style="color:var(--purple);font-size:12px;font-weight:500;">${invalidTxtLabel}</a>
@@ -2492,7 +2492,7 @@ async function downloadExcel(remoteId) {
 }
 
 
-const avGallery = { rows: [], filtered: [], rendered: 0, batch: 48, io: null, L: null, deselected: new Set(), taskId: '' };
+const avGallery = { rows: [], filtered: [], rendered: 0, batch: 48, io: null, L: null, deselected: new Set(), taskId: '', showAll: false };
 
 function agKey(row){ return row.phone || row.ws || row.avatar; }
 function agIsSelected(row){ return !avGallery.deselected.has(agKey(row)); }
@@ -2550,7 +2550,7 @@ function parseAvatarRows(text){
   return rows;
 }
 
-async function viewAvatars(remoteId, taskName){
+async function viewAvatars(remoteId, taskName, taskType){
   toast(currentLang==='zh'?'正在加载头像数据，请稍候...':'Loading avatars, please wait...','info');
   try{
     const res = await proxyFetch('/api/task/result', { queryParams:{ taskId: remoteId } });
@@ -2561,6 +2561,8 @@ async function viewAvatars(remoteId, taskName){
     const rows = parseAvatarRows(text);
     if(!rows.length){ toast(currentLang==='zh'?'该任务结果为空':'This result is empty','info'); return; }
     avGallery.rows = rows;
+    // 电报：默认展示所有用户（含无头像），与 WhatsApp 浏览到的效果一致
+    avGallery.showAll = (PROJECT_DATA.find(p => p.items.some(i => i.val === taskType))?.id === 'telegram');
     setupAvatarUI(remoteId, taskName);
     resetAvatarFilters();
     openAvatarOverlay();
@@ -2604,11 +2606,17 @@ function setupAvatarUI(remoteId, taskName){
 
 
 function agSetAvatarDefault(){
-  const hasAny = avGallery.rows.some(r=>r.hasAvatar);
   const hasInput = document.querySelector('#ag-ms-avatar-panel input[value="has"]');
   const noneInput = document.querySelector('#ag-ms-avatar-panel input[value="none"]');
-  if(hasInput) hasInput.checked = hasAny;
-  if(noneInput) noneInput.checked = !hasAny;
+  if(avGallery.showAll){
+    // 不预设过滤，默认「全部」：有头像和无头像的用户都展示
+    if(hasInput) hasInput.checked = false;
+    if(noneInput) noneInput.checked = false;
+  } else {
+    const hasAny = avGallery.rows.some(r=>r.hasAvatar);
+    if(hasInput) hasInput.checked = hasAny;
+    if(noneInput) noneInput.checked = !hasAny;
+  }
   agMsSummary('avatar');
 }
 
@@ -2780,7 +2788,7 @@ function closeAvatars(){
   document.removeEventListener('click', agMsOutsideClose);
   agMsCloseAll();
   document.getElementById('ag-grid').innerHTML='';
-  avGallery.rows=[]; avGallery.filtered=[]; avGallery.rendered=0; avGallery.deselected.clear();
+  avGallery.rows=[]; avGallery.filtered=[]; avGallery.rendered=0; avGallery.deselected.clear(); avGallery.showAll=false;
 }
 
 
