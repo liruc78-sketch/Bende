@@ -1638,13 +1638,19 @@ function renderTabs() {
       icon = STATIC_ICONS[tab.id] || '';
     }
     return `
-      <div class="tab-item ${tab.id === currentPage ? 'active' : ''}" onclick="navigate('${tab.id}', ${tab.subType ? `'${tab.subType}'` : 'null'})">
+      <div class="tab-item ${tab.id === currentPage ? 'active' : ''}" data-page="${escapeHtml(tab.id)}" data-sub="${escapeHtml(tab.subType || '')}">
         <div class="tab-icon">${icon}</div>
-        <span>${title}</span>
-        ${tab.id !== 'dashboard' ? `<div class="tab-close" onclick="event.stopPropagation(); closeTab('${tab.id}')">×</div>` : ''}
+        <span>${escapeHtml(title)}</span>
+        ${tab.id !== 'dashboard' ? `<div class="tab-close" data-close="${escapeHtml(tab.id)}">×</div>` : ''}
       </div>
     `;
   }).join('');
+  bar.onclick = (e) => {
+    const close = e.target.closest('.tab-close');
+    if(close){ e.stopPropagation(); closeTab(close.dataset.close); return; }
+    const item = e.target.closest('.tab-item');
+    if(item) navigate(item.dataset.page, item.dataset.sub || null);
+  };
 }
 
 function closeTab(id) {
@@ -1682,10 +1688,22 @@ function transitionContent(renderFn){
   }, 220);
 }
 
+function safePage(page, subType){
+  const p = String(page == null ? '' : page);
+  if(['dashboard','recharge','logs','profile'].includes(p)) return { page: p, subType: null };
+  const project = p.startsWith('project_') ? PROJECT_DATA.find(x => 'project_' + x.id === p) : null;
+  if(!project) return null;
+  const s = subType == null ? null : String(subType);
+  return { page: p, subType: (s !== null && project.items.some(i => i.val === s)) ? s : null };
+}
+
 function navigate(page, subType = null, isPopState = false){
-  if(!String(page).startsWith('project_') && !['dashboard','recharge','logs','profile'].includes(page)){
+  const safe = safePage(page, subType);
+  if(!safe){
     page='dashboard'; subType=null;
     if(isPopState) window.history.replaceState({ page }, '', window.location.pathname);
+  } else {
+    page = safe.page; subType = safe.subType;
   }
   currentPage=page;
 
