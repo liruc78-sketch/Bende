@@ -966,27 +966,25 @@ function setupAutoLogout() {
   if (autoLogoutTimer) clearTimeout(autoLogoutTimer);
   
 
-  let loginTime = localStorage.getItem('login_timestamp');
-  if (!loginTime) {
+  let loginTime = parseInt(localStorage.getItem('login_timestamp'), 10);
+  if (!Number.isFinite(loginTime) || loginTime > Date.now()) {
     loginTime = Date.now();
-    localStorage.setItem('login_timestamp', loginTime);
+    try { localStorage.setItem('login_timestamp', String(loginTime)); } catch (e) {}
   }
-  
 
-  const elapsed = Date.now() - parseInt(loginTime);
-  const remaining = 3600000 - elapsed; 
-  
+  const elapsed = Date.now() - loginTime;
+  const remaining = 3600000 - elapsed;
+
   if (remaining <= 0) {
-
     toast(currentLang==='zh'?'登录已过期，请重新登录':'Session expired, please login again', 'error');
-    doLogout();
-  } else {
-
-    autoLogoutTimer = setTimeout(() => {
-      toast(currentLang==='zh'?'登录已过期，请重新登录':'Session expired, please login again', 'error');
-      doLogout();
-    }, remaining);
+    doLogout('local');
+    return true;
   }
+  autoLogoutTimer = setTimeout(() => {
+    toast(currentLang==='zh'?'登录已过期，请重新登录':'Session expired, please login again', 'error');
+    doLogout('local');
+  }, remaining);
+  return false;
 }
 
 
@@ -1233,28 +1231,42 @@ function buildIconRain(){
   host.dataset.built='1';
 }
 if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',buildIconRain);}else{buildIconRain();}
+let loginInFlight=false;
+function loginErrText(error){
+  const code=(error&&error.code)||'';
+  if(code==='invalid_credentials') return '邮箱或密码错误，请检查后重试 / Invalid email or password';
+  if(code==='email_not_confirmed') return '邮箱尚未验证 / Email not confirmed';
+  if(code==='user_banned') return '该账号已被停用，请联系客服 / This account has been disabled';
+  if(code==='over_request_rate_limit'||(error&&error.status===429)) return '尝试次数过多，请稍后再试 / Too many attempts, please try again later';
+  if(error&&error.name==='AuthRetryableFetchError') return '网络连接失败，请检查网络后重试 / Network error, please try again';
+  return (error&&error.message)||'登录失败，请重试 / Login failed, please try again';
+}
+function showLoginErr(msg){
+  const av=document.getElementById('auth-view');
+  if(av&&av.style.display==='none') showAuthView('login');
+  showAuthErr(msg);
+}
 async function doLogin(){
+  if(loginInFlight) return;
   const email=document.getElementById('login-email').value.trim();
   const pwd=document.getElementById('login-pwd').value;
   if(!email||!pwd){showAuthErr('请填写邮箱和密码 / Please fill in email and password');return;}
   const btn=document.getElementById('login-btn');
   btn.textContent='登录中...';btn.disabled=true;
+  loginInFlight=true;
   try{
-
-    await sb.auth.signOut();
+    document.getElementById('auth-err').style.display='none';
+    markReturningUser();
+    if(logoutInFlight){ try{ await logoutInFlight; }catch(le){} }
+    try{ await sb.auth.signOut({scope:'local'}); }catch(se){ console.warn('pre-login signOut failed:',se&&se.message); }
     localStorage.removeItem('login_timestamp');
-    
     const{data,error}=await sb.auth.signInWithPassword({email,password:pwd});
-    if(error){showAuthErr(error.message);return;}
-    if(data?.session){
-      await sb.auth.setSession({
-        access_token:data.session.access_token,
-        refresh_token:data.session.refresh_token
-      });
-    }
+    if(error){showLoginErr(loginErrText(error));return;}
     if(data?.user){
+      const stillSignedIn=()=>!!currentUser&&currentUser.id===data.user.id;
       currentUser=data.user;
       await loadProfile();
+      if(!stillSignedIn()){showLoginErr('登录状态已失效，请重新登录 / Session ended, please log in again');return;}
       if(!currentProfile){
         currentProfile={id:data.user.id,email:data.user.email,balance:0,role:'user'};
         try{
@@ -1266,6 +1278,7 @@ async function doLogin(){
             created_at:new Date().toISOString()
           });
         }catch(ue){console.warn('upsert profile failed:',ue.message);}
+        if(!stillSignedIn()){showLoginErr('登录状态已失效，请重新登录 / Session ended, please log in again');return;}
       }
       markReturningUser();
       document.getElementById('auth-screen').style.display='none';
@@ -1279,8 +1292,9 @@ async function doLogin(){
       navigate(page, sub, true);
     }
   } catch(e){
-    showAuthErr('登录异常，请重试 / Login error: '+e.message);
+    showLoginErr('登录异常，请重试 / Login error: '+e.message);
   } finally{
+    loginInFlight=false;
     btn.textContent='登录 Login';btn.disabled=false;
   }
 }
@@ -1304,16 +1318,26 @@ function showAuthErr(msg){
   const el=document.getElementById('auth-err');
   el.textContent=msg;el.style.display='block';
 }
-async function doLogout(){
+let logoutInFlight=null;
+async function doLogout(scope){
   if(autoLogoutTimer) clearTimeout(autoLogoutTimer);
+  autoLogoutTimer=null;
   stopRechargeTimers();
   localStorage.removeItem('login_timestamp');
   sessionStorage.removeItem('announcement_shown');
-  await sb.auth.signOut();
   currentUser=null;currentProfile=null;
   document.getElementById('app').style.display='none';
   document.getElementById('auth-screen').style.display='flex';
   showAuthEntry();
+  const p=(async()=>{
+    try{
+      const r=await sb.auth.signOut(scope?{scope}:undefined);
+      if(r&&r.error&&scope!=='local') await sb.auth.signOut({scope:'local'});
+    }catch(se){ console.warn('signOut failed:',se&&se.message); }
+  })();
+  logoutInFlight=p;
+  await p;
+  if(logoutInFlight===p) logoutInFlight=null;
 }
 
 
@@ -1498,6 +1522,7 @@ async function initApp(session) {
     currentUser=session.user;
     await loadProfile();
     await loadDynamicPrices();
+    if(!currentUser || currentUser.id!==session.user.id) return;
     if(!currentProfile){
       currentProfile={id:session.user.id,email:session.user.email,balance:0,role:'user'};
     }
@@ -1507,9 +1532,9 @@ async function initApp(session) {
     hideSplash();
     renderProjectNav();
     updateSidebar();
-    
-    setupAutoLogout();
-    
+
+    if(setupAutoLogout()) return;
+
 
     const urlParams = new URLSearchParams(window.location.search);
     const page = urlParams.get('page') || 'dashboard';
@@ -1526,19 +1551,22 @@ sb.auth.onAuthStateChange(async(event,session)=>{
   if((event==='SIGNED_IN' || event==='INITIAL_SESSION') && session){
     initApp(session);
   } else if (event === 'SIGNED_OUT') {
+    const appEl=document.getElementById('app');
+    const wasSignedIn=currentUser!==null||appEl.style.display!=='none';
+    if(autoLogoutTimer){ clearTimeout(autoLogoutTimer); autoLogoutTimer=null; }
     stopRechargeTimers();
     currentUser=null;
     currentProfile=null;
-    document.getElementById('app').style.display='none';
+    appEl.style.display='none';
     document.getElementById('auth-screen').style.display='flex';
-    showAuthEntry();
+    if(wasSignedIn) showAuthEntry();
     hideSplash();
   }
 });
 
 sb.auth.getSession().then(({data:{session}, error})=>{
   if(error || !session){
-    if(error) sb.auth.signOut();
+    if(error && error.name!=='AuthRetryableFetchError') sb.auth.signOut({scope:'local'}).catch(()=>{});
     document.getElementById('auth-screen').style.display='flex';
     showAuthEntry();
     hideSplash();
