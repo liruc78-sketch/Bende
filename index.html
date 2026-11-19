@@ -182,6 +182,15 @@ a{color:var(--accent);text-decoration:none}
 .form-input,.form-select,.form-textarea{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:9px 12px;font-size:13.5px;font-family:inherit;outline:none;transition:border-color .15s}
 .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent)}
 .form-input::placeholder{color:var(--text3)}
+.pwd-wrap{position:relative}
+.pwd-wrap .form-input{padding-right:42px}
+.pwd-wrap input::-ms-reveal,.pwd-wrap input::-ms-clear{display:none}
+.pwd-eye{position:absolute;top:50%;right:3px;transform:translateY(-50%);width:32px;height:32px;padding:0;border:0;border-radius:6px;background:transparent;color:var(--text2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:color .15s,background-color .15s}
+.pwd-eye:hover{color:var(--text);background:var(--bg4)}
+.pwd-eye:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.pwd-eye svg{width:18px;height:18px;pointer-events:none}
+.pwd-eye .pwd-eye-off,.pwd-eye.is-on .pwd-eye-open{display:none}
+.pwd-eye.is-on .pwd-eye-off{display:block}
 .form-textarea{resize:vertical;min-height:80px}
 .form-select option{background:var(--bg3)}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
@@ -977,12 +986,12 @@ function setupAutoLogout() {
 
   if (remaining <= 0) {
     toast(currentLang==='zh'?'登录已过期，请重新登录':'Session expired, please login again', 'error');
-    doLogout('local');
+    doLogout();
     return true;
   }
   autoLogoutTimer = setTimeout(() => {
     toast(currentLang==='zh'?'登录已过期，请重新登录':'Session expired, please login again', 'error');
-    doLogout('local');
+    doLogout();
   }, remaining);
   return false;
 }
@@ -1169,6 +1178,54 @@ function openModal(id){document.getElementById(id).classList.add('open')}
 function closeModal(id){document.getElementById(id).classList.remove('open')}
 
 
+const PWD_EYE_ICONS='<svg class="pwd-eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><svg class="pwd-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+function setPwdShown(btn,shown){
+  const input=btn.parentElement&&btn.parentElement.querySelector('input');
+  if(!input) return;
+  const focused=document.activeElement===input;
+  const s=input.selectionStart,e=input.selectionEnd;
+  input.type=shown?'text':'password';
+  if(focused&&s!=null){ try{ input.setSelectionRange(s,e); }catch(_){} }
+  btn.classList.toggle('is-on',shown);
+  const label=shown?'隐藏密码 / Hide password':'显示密码 / Show password';
+  btn.setAttribute('aria-label',label);
+  btn.title=label;
+}
+function enhancePwdInputs(root){
+  if(!root) return;
+  root.querySelectorAll('input[type="password"].form-input').forEach(input=>{
+    if(input.parentElement&&input.parentElement.classList.contains('pwd-wrap')) return;
+    input.setAttribute('autocapitalize','none');
+    input.setAttribute('autocorrect','off');
+    input.spellcheck=false;
+    const wrap=document.createElement('div');
+    wrap.className='pwd-wrap';
+    input.parentNode.insertBefore(wrap,input);
+    wrap.appendChild(input);
+    const btn=document.createElement('button');
+    btn.type='button';
+    btn.className='pwd-eye';
+    btn.innerHTML=PWD_EYE_ICONS;
+    btn.addEventListener('mousedown',ev=>ev.preventDefault());
+    btn.addEventListener('click',()=>setPwdShown(btn,!btn.classList.contains('is-on')));
+    wrap.appendChild(btn);
+    setPwdShown(btn,false);
+  });
+}
+function hideAllPwd(root){
+  if(!root) return;
+  root.querySelectorAll('.pwd-wrap .pwd-eye.is-on').forEach(btn=>setPwdShown(btn,false));
+}
+function clearPasswordFields(){
+  ['login-pwd','reg-pwd','reg-pwd2','prof-pwd1','prof-pwd2'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  hideAllPwd(document);
+}
+function pwdIsAscii(p){
+  for(const ch of String(p)){ const c=ch.charCodeAt(0); if(c<32||c>126) return false; }
+  return true;
+}
+const PWD_ASCII_MSG='密码只能包含英文字母、数字和英文符号，请切换到英文输入法 / Use only English letters, digits and symbols';
+
 function switchAuthTab(tab){
   document.getElementById('tab-login').classList.toggle('active',tab==='login');
   document.getElementById('tab-register').classList.toggle('active',tab==='register');
@@ -1231,6 +1288,7 @@ function buildIconRain(){
   host.dataset.built='1';
 }
 if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',buildIconRain);}else{buildIconRain();}
+enhancePwdInputs(document.getElementById('auth-screen'));
 let loginInFlight=false;
 function loginErrText(error){
   const code=(error&&error.code)||'';
@@ -1261,7 +1319,7 @@ async function doLogin(){
     try{ await sb.auth.signOut({scope:'local'}); }catch(se){ console.warn('pre-login signOut failed:',se&&se.message); }
     localStorage.removeItem('login_timestamp');
     const{data,error}=await sb.auth.signInWithPassword({email,password:pwd});
-    if(error){showLoginErr(loginErrText(error));return;}
+    if(error){showLoginErr(loginErrText(error)+(error.code==='invalid_credentials'&&!pwdIsAscii(pwd)?'（'+PWD_ASCII_MSG+'）':''));return;}
     if(data?.user){
       const stillSignedIn=()=>!!currentUser&&currentUser.id===data.user.id;
       currentUser=data.user;
@@ -1290,6 +1348,7 @@ async function doLogin(){
       const page = urlParams.get('page') || 'dashboard';
       const sub = urlParams.get('sub');
       navigate(page, sub, true);
+      clearPasswordFields();
     }
   } catch(e){
     showLoginErr('登录异常，请重试 / Login error: '+e.message);
@@ -1306,12 +1365,14 @@ async function doRegister(){
   if(!/^[^@\s]+@gmail\.com$/i.test(email)){showAuthErr('仅支持使用 @gmail.com 邮箱注册 / Only @gmail.com email addresses are allowed');return;}
   if(pwd!==pwd2){showAuthErr('两次密码不一致 / Passwords do not match');return;}
   if(pwd.length<6){showAuthErr('密码至少6位 / Password min 6 chars');return;}
+  if(!pwdIsAscii(pwd)){showAuthErr(PWD_ASCII_MSG);return;}
   document.getElementById('reg-btn').textContent='注册中...';
   const{error}=await sb.auth.signUp({email,password:pwd});
   document.getElementById('reg-btn').textContent='注册 Register';
   if(error){showAuthErr(error.message);return;}
   markReturningUser();
   toast('注册成功！请登录 / Registered! Please log in','success');
+  clearPasswordFields();
   switchAuthTab('login');
 }
 function showAuthErr(msg){
@@ -1319,22 +1380,18 @@ function showAuthErr(msg){
   el.textContent=msg;el.style.display='block';
 }
 let logoutInFlight=null;
-async function doLogout(scope){
+async function doLogout(){
   if(autoLogoutTimer) clearTimeout(autoLogoutTimer);
   autoLogoutTimer=null;
   stopRechargeTimers();
   localStorage.removeItem('login_timestamp');
   sessionStorage.removeItem('announcement_shown');
   currentUser=null;currentProfile=null;
+  clearPasswordFields();
   document.getElementById('app').style.display='none';
   document.getElementById('auth-screen').style.display='flex';
   showAuthEntry();
-  const p=(async()=>{
-    try{
-      const r=await sb.auth.signOut(scope?{scope}:undefined);
-      if(r&&r.error&&scope!=='local') await sb.auth.signOut({scope:'local'});
-    }catch(se){ console.warn('signOut failed:',se&&se.message); }
-  })();
+  const p=sb.auth.signOut({scope:'local'}).catch(se=>{ console.warn('signOut failed:',se&&se.message); });
   logoutInFlight=p;
   await p;
   if(logoutInFlight===p) logoutInFlight=null;
@@ -1559,7 +1616,7 @@ sb.auth.onAuthStateChange(async(event,session)=>{
     currentProfile=null;
     appEl.style.display='none';
     document.getElementById('auth-screen').style.display='flex';
-    if(wasSignedIn) showAuthEntry();
+    if(wasSignedIn){ clearPasswordFields(); showAuthEntry(); }
     hideSplash();
   }
 });
@@ -3707,6 +3764,7 @@ function renderProfile() {
     </div>
   </div>
   `;
+  enhancePwdInputs(c);
 }
 
 async function updatePassword() {
@@ -3716,6 +3774,7 @@ async function updatePassword() {
   if(!p1 || !p2) { toast(currentLang==='zh'?'请输入新密码':'Please enter new password', 'error'); return; }
   if(p1 !== p2) { toast(currentLang==='zh'?'两次密码不一致':'Passwords do not match', 'error'); return; }
   if(p1.length < 6) { toast(currentLang==='zh'?'密码至少6位':'Password min 6 chars', 'error'); return; }
+  if(!pwdIsAscii(p1)) { toast(PWD_ASCII_MSG, 'error'); return; }
 
   const btn = document.getElementById('btn-update-pwd');
   btn.disabled = true;
@@ -3733,6 +3792,7 @@ async function updatePassword() {
     toast(currentLang==='zh'?'密码修改成功！下次请使用新密码登录。':'Password updated successfully!', 'success');
     document.getElementById('prof-pwd1').value = '';
     document.getElementById('prof-pwd2').value = '';
+    hideAllPwd(document.getElementById('content'));
   }
 }
 </script>
