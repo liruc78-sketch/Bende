@@ -2,6 +2,7 @@
 <html lang="zh">
 <head>
 <meta charset="UTF-8"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; base-uri 'none'; object-src 'none'; form-action 'none'; style-src 'unsafe-inline'; img-src 'self' https: data:; connect-src https://tdpavflqliqcxvougcdf.supabase.co; script-src 'sha384-A97u3Qnt9GZHURO9YJZRe7VQgGUeFzcv6I1oIGnUTxQrCxnpQMwR0/G8F2zt9abZ' 'sha384-TVlyoM93dqbrIQJAD4XRSJbDt1d8Q1hhYsG0DNRqS7rs5GpJMTro5XX82tXLxEQV'; script-src-attr 'unsafe-hashes' 'sha384-IqLT1gLv/2+0vhRLGDBhbycKAW+5ZK5bGOAwFWYL8n8/PCvSApTJDou3HdDxTPEu' 'sha384-NNUI72y0hXebwhDe6dz8QnSXwjBSG2rjgKkV5uxxIS+qin4jhPiZ8Qve0PJ6tbL0' 'sha384-dfu9j6L5vcA4psxVAFoZZU7EPk+HFbhqgIC3qe/Dwj/HkHlHx2WXVjDcFcNnOwxS' 'sha384-OpGCKrhiRVAl4Mk0BvxZh7oXh7CnFkQhHh/qRGNvjCUqW+p4XJkcyb3yWwkLDiio' 'sha384-fLXXZ3G77eBlt1X6ypKEqzxON6wR4gFBrwflHbA46b647GyiYOTDAZJ4vfk91hZi' 'sha384-85NJhNMmuU/OANjEb5anjEpx/2Ua/o5iordpC0rx0dUnBnDsA4B1VcvcTOgz9ur7'">
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <meta name="robots" content="noindex,nofollow"/>
 <meta name="color-scheme" content="dark light"/>
@@ -193,10 +194,10 @@
       <p class="dlg-target">用户 <span class="mono" id="dlg-email"></span></p>
       <label class="label" for="new-pwd">新密码</label>
       <div class="pwd-row">
-        <input class="field" type="text" id="new-pwd" autocomplete="off" spellcheck="false" maxlength="72">
+        <input class="field" type="password" id="new-pwd" autocomplete="new-password" spellcheck="false" maxlength="72">
         <button class="btn" type="button" onclick="fillRandomPwd()">随机生成</button>
       </div>
-      <div class="hint">至少 6 位。修改后旧密码立即失效，请把新密码告知该用户。</div>
+      <div class="hint">至少 12 个字符，最多 72 字节。请通过安全渠道告知用户新密码。</div>
       <div class="err" id="pwd-err" role="alert"></div>
     </div>
     <div class="dlg-body" id="pwd-step-done" hidden>
@@ -239,6 +240,8 @@ const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, ch => ({'&':'&am
 
 function showLogin(msg) {
   me = null; users = [];
+  resetDone.clear();
+  if ($('pwd-dialog').open) closePwdDialog();
   $('app-view').hidden = true;
   $('login-view').hidden = false;
   $('login-err').textContent = msg || '';
@@ -359,7 +362,7 @@ $('pwd-dialog').addEventListener('close', () => {
 function fillRandomPwd() {
   const letters = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ', digits = '23456789', all = letters + digits;
   const pick = (set, n) => Array.from(crypto.getRandomValues(new Uint32Array(n)), v => set[v % set.length]);
-  const chars = [...pick(letters, 1), ...pick(digits, 1), ...pick(all, 8)];
+  const chars = [...pick(letters, 1), ...pick(digits, 1), ...pick(all, 14)];
   for (let i = chars.length - 1; i > 0; i--) { const j = crypto.getRandomValues(new Uint32Array(1))[0] % (i + 1); [chars[i], chars[j]] = [chars[j], chars[i]]; }
   $('new-pwd').value = chars.join('');
   $('pwd-err').textContent = '';
@@ -368,8 +371,13 @@ function fillRandomPwd() {
 $('pwd-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   if (!editing) return;
+  const target = editing;
+  const actor = me?.id;
   const pwd = $('new-pwd').value;
-  if (pwd.length < 6) return $('pwd-err').textContent = '密码至少需要 6 位';
+  if (Array.from(pwd).length < 12 || new TextEncoder().encode(pwd).length > 72) {
+    $('pwd-err').textContent = '新密码至少需要 12 个字符，最多 72 字节。';
+    return;
+  }
   if (/^\s|\s$/.test(pwd)) return $('pwd-err').textContent = '密码首尾不能是空格';
   const btn = $('pwd-submit');
   btn.disabled = true; btn.textContent = '修改中…';
@@ -377,19 +385,26 @@ $('pwd-form').addEventListener('submit', async (e) => {
   try {
     const { data: { session } } = await sb.auth.getSession();
     if (!session) { closePwdDialog(); return showLogin('登录已过期，请重新登录。'); }
+    if (session.user.id !== actor || editing !== target) return;
     const res = await fetch(RESET_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token, 'apikey': SUPABASE_KEY },
-      body: JSON.stringify({ targetUid: editing.id, newPassword: pwd })
+      body: JSON.stringify({ targetUid: target.id, newPassword: pwd })
     });
     const out = await res.json().catch(() => ({}));
     if (res.status === 401) { closePwdDialog(); await sb.auth.signOut(); return showLogin('登录已过期，请重新登录。'); }
-    if (out.code !== 0) {
+    if (me?.id !== actor) return;
+    if (out.code === 0 && res.ok) resetDone.add(target.id);
+    if (editing !== target) {
+      renderList();
+      return;
+    }
+    if (!res.ok || out.code !== 0) {
       $('pwd-err').textContent = out.message || ('修改失败（' + res.status + '）');
       if (res.status === 403) loadUsers();
       return;
     }
-    resetDone.add(editing.id);
+    $('new-pwd').value = '';
     editing.pwd = pwd;
     $('slip-email').textContent = editing.email;
     $('slip-pwd').textContent = pwd;
@@ -397,7 +412,7 @@ $('pwd-form').addEventListener('submit', async (e) => {
     $('pwd-step-done').hidden = false; $('pwd-actions-done').hidden = false;
     renderList();
   } catch (err) {
-    $('pwd-err').textContent = '网络错误：' + (err.message || err);
+    if (editing === target) $('pwd-err').textContent = '请求失败，请刷新名单后重试。';
   } finally {
     btn.disabled = false; btn.textContent = '确认修改';
   }
