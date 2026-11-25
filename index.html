@@ -369,9 +369,10 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .service-item:hover{border-color:var(--accent);background:rgba(79,142,247,.08);transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.1)}
 .service-price{color:var(--accent);font-family:monospace;font-size:12px}
 .service-closed{color:var(--text3);font-size:12px;background:rgba(255,255,255,.05);padding:2px 6px;border-radius:4px}
-html[lang="en"] .service-item{gap:5px 12px;flex-wrap:wrap}
-html[lang="en"] .service-item>span:first-child{flex:1 1 9rem}
-html[lang="en"] .service-price,html[lang="en"] .service-closed{white-space:nowrap}
+html[lang="en"] .service-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr))}
+html[lang="en"] .service-item{align-items:baseline;column-gap:8px}
+html[lang="en"] .service-item>span:first-child{min-width:0;overflow-wrap:anywhere}
+html[lang="en"] .service-price,html[lang="en"] .service-closed{flex:none;white-space:nowrap}
 
  
 @media(max-width: 500px) {
